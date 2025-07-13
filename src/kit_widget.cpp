@@ -83,7 +83,7 @@ KitWidget::KitWidget(GeonkickWidget *parent, KitModel *model)
 
         auto kitChannelsView = new KitChannelsView(this, kitModel);
         kitChannelsView->show();
-        topContainer->addSpace(100 - 4 * 16 - 3 * 5 - 10);
+        topContainer->addSpace(163 - 4 * 16 - 3 * 5 - 10);
         topContainer->addWidget(kitChannelsView);
         auto label = new RkLabel(this, "MIDI Ch.");
         label->setTextColor(textColor());
