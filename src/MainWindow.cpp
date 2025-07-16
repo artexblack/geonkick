@@ -57,13 +57,11 @@ MainWindow::MainWindow(RkMain& app, GeonkickApi *api, const std::string &preset)
         , limiterWidget{nullptr}
         , geonkickModel{new GeonkickModel(this, geonkickApi)}
 {
-        setTitle(Geonkick::appName);
-        setName("MainWindow");
+        setTitle(Geonkick::applicationName);
         setScaleFactor(geonkickApi->getScaleFactor());
         createViewState();
         setFixedSize(MAIN_WINDOW_WIDTH + (GeonkickConfig().isShowSidebar() ? 313 : 0),
                      MAIN_WINDOW_HEIGHT);
-        setTitle(GEONKICK_NAME);
         geonkickApi->registerCallbacks(true);
         RK_ACT_BIND(geonkickApi, stateChanged, RK_ACT_ARGS(), this, updateGui());
         createShortcuts();
@@ -78,11 +76,11 @@ MainWindow::MainWindow(RkMain& app, GeonkickApi *api, const RkNativeWindowInfo &
         , limiterWidget{nullptr}
         , geonkickModel{new GeonkickModel(this, geonkickApi)}
 {
+        setTitle(Geonkick::applicationName);
         setScaleFactor(geonkickApi->getScaleFactor());
         createViewState();
         setFixedSize(MAIN_WINDOW_WIDTH + (GeonkickConfig().isShowSidebar() ? 313 : 0),
                      MAIN_WINDOW_HEIGHT);
-        setTitle(GEONKICK_NAME);
         geonkickApi->registerCallbacks(true);
         RK_ACT_BIND(geonkickApi, stateChanged, RK_ACT_ARGS(), this, updateGui());
         createShortcuts();

@@ -78,7 +78,6 @@ namespace fs = std::filesystem;
 namespace Geonkick
 {
         constexpr int defaultSampleRate = GEONKICK_DEFAULT_SAMPLE_RATE;
-        constexpr char appName[] = GEONKICK_NAME;
         constexpr char applicationName[] = GEONKICK_APP_NAME;
         constexpr char applicationVersionStr[] = GEOKICK_VERSION_STRING;
         constexpr std::string_view defaultExportFormat = "flac24";
