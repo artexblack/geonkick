@@ -1145,7 +1145,10 @@ void GeonkickApi::kickUpdatedCallback(void *arg,
 
 void GeonkickApi::limiterCallback(void *arg, size_t index, gkick_real val)
 {
-        GeonkickApi *obj = static_cast<GeonkickApi*>(arg);
+        if (index >= numberOfInstruments())
+                return;
+
+        auto obj = static_cast<GeonkickApi*>(arg);
         if (obj)
                 obj->setLimiterLevelerValue(index, val);
 }
@@ -1548,6 +1551,9 @@ bool GeonkickApi::isMidiChannelForced() const
 
 bool GeonkickApi::setPercussionName(int index, const std::string &name)
 {
+        if (name.empty())
+                return false;
+
         auto res = geonkick_set_percussion_name(geonkickApi,
                                                 index,
                                                 name.c_str(),

@@ -57,13 +57,11 @@ MainWindow::MainWindow(RkMain& app, GeonkickApi *api, const std::string &preset)
         , limiterWidget{nullptr}
         , geonkickModel{new GeonkickModel(this, geonkickApi)}
 {
-        setTitle(Geonkick::appName);
-        setName("MainWindow");
+        setTitle(Geonkick::applicationName);
         setScaleFactor(geonkickApi->getScaleFactor());
         createViewState();
         setFixedSize(MAIN_WINDOW_WIDTH + (GeonkickConfig().isShowSidebar() ? 313 : 0),
                      MAIN_WINDOW_HEIGHT);
-        setTitle(GEONKICK_NAME);
         geonkickApi->registerCallbacks(true);
         RK_ACT_BIND(geonkickApi, stateChanged, RK_ACT_ARGS(), this, updateGui());
         createShortcuts();
@@ -78,11 +76,11 @@ MainWindow::MainWindow(RkMain& app, GeonkickApi *api, const RkNativeWindowInfo &
         , limiterWidget{nullptr}
         , geonkickModel{new GeonkickModel(this, geonkickApi)}
 {
+        setTitle(Geonkick::applicationName);
         setScaleFactor(geonkickApi->getScaleFactor());
         createViewState();
         setFixedSize(MAIN_WINDOW_WIDTH + (GeonkickConfig().isShowSidebar() ? 313 : 0),
                      MAIN_WINDOW_HEIGHT);
-        setTitle(GEONKICK_NAME);
         geonkickApi->registerCallbacks(true);
         RK_ACT_BIND(geonkickApi, stateChanged, RK_ACT_ARGS(), this, updateGui());
         createShortcuts();
@@ -121,25 +119,10 @@ void MainWindow::createShortcuts()
         addShortcut(Rk::Key::Key_k, Rk::KeyModifiers::Control_Left);
         addShortcut(Rk::Key::Key_k, Rk::KeyModifiers::Control_Right);
 
-        addShortcut(Rk::Key::Key_O, Rk::KeyModifiers::Control_Left);
-        addShortcut(Rk::Key::Key_O, Rk::KeyModifiers::Control_Right);
-        addShortcut(Rk::Key::Key_o, Rk::KeyModifiers::Control_Left);
-        addShortcut(Rk::Key::Key_o, Rk::KeyModifiers::Control_Right);
-
-        addShortcut(Rk::Key::Key_S, Rk::KeyModifiers::Control_Left);
-        addShortcut(Rk::Key::Key_S, Rk::KeyModifiers::Control_Right);
-        addShortcut(Rk::Key::Key_s, Rk::KeyModifiers::Control_Left);
-        addShortcut(Rk::Key::Key_s, Rk::KeyModifiers::Control_Right);
-
         addShortcut(Rk::Key::Key_H, Rk::KeyModifiers::Control_Left);
         addShortcut(Rk::Key::Key_H, Rk::KeyModifiers::Control_Right);
         addShortcut(Rk::Key::Key_h, Rk::KeyModifiers::Control_Left);
         addShortcut(Rk::Key::Key_h, Rk::KeyModifiers::Control_Right);
-
-        addShortcut(Rk::Key::Key_E, Rk::KeyModifiers::Control_Left);
-        addShortcut(Rk::Key::Key_E, Rk::KeyModifiers::Control_Right);
-        addShortcut(Rk::Key::Key_e, Rk::KeyModifiers::Control_Left);
-        addShortcut(Rk::Key::Key_e, Rk::KeyModifiers::Control_Right);
 
         addShortcut(Rk::Key::Key_C, Rk::KeyModifiers::Control_Left);
         addShortcut(Rk::Key::Key_C, Rk::KeyModifiers::Control_Right);
@@ -265,19 +248,13 @@ void MainWindow::openPreset(const std::string &fileName)
 
 void MainWindow::shortcutEvent(RkKeyEvent *event)
 {
-        /*if (event->type() == RkEvent::Type::KeyPressed) {
+        if (event->type() == RkEvent::Type::KeyPressed) {
                 if (event->modifiers() & static_cast<int>(Rk::KeyModifiers::Control)
                     && (event->key() == Rk::Key::Key_k || event->key() == Rk::Key::Key_K)) {
                         geonkickApi->playKick();
                 } else if (event->modifiers() & static_cast<int>(Rk::KeyModifiers::Control)
                            && (event->key() == Rk::Key::Key_r || event->key() == Rk::Key::Key_R)) {
                         resetToDefault();
-                } else if (event->modifiers() & static_cast<int>(Rk::KeyModifiers::Control)
-                           && (event->key() == Rk::Key::Key_s || event->key() == Rk::Key::Key_S)) {
-                        showFileBrowser();
-                } else if (event->modifiers() & static_cast<int>(Rk::KeyModifiers::Control)
-                           && (event->key() == Rk::Key::Key_e || event->key() == Rk::Key::Key_E)) {
-                        openExportDialog();
                 } else if ((event->modifiers() & static_cast<int>(Rk::KeyModifiers::Control))
                            && (event->key() == Rk::Key::Key_c || event->key() == Rk::Key::Key_C)) {
                         geonkickApi->copyToClipboard();
@@ -306,9 +283,9 @@ void MainWindow::shortcutEvent(RkKeyEvent *event)
                         envelopeWidget->setPointEditingMode(false);
 
                 if (!(event->modifiers() & static_cast<int>(Rk::KeyModifiers::Control))
-                      || (event->key() == Rk::Key::Key_h || event->key() == Rk::Key::Key_H))
+                    || (event->key() == Rk::Key::Key_h || event->key() == Rk::Key::Key_H))
                         envelopeWidget->hideEnvelope(false);
-                        }*/
+        }
 }
 
 void MainWindow::resetToDefault()
@@ -366,5 +343,6 @@ void MainWindow::updateLimiter(KitModel::PercussionIndex index)
 
 RkSize MainWindow::getWindowSize()
 {
-        return RkSize(MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT);
+        return {MAIN_WINDOW_WIDTH + (GeonkickConfig().isShowSidebar() ? 313 : 0),
+                MAIN_WINDOW_HEIGHT};
 }

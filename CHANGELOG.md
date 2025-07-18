@@ -1,3 +1,11 @@
+## [3.6.1]
+
+### Fixes
+
+- fix crash for single version of Geonkick when selecting some presets
+- fix crash deleting and after selecting a kit instrument
+- fix setting instrument channel after deleting a kit instrument
+
 ## [3.6.0]
 
 ### Features
@@ -8,6 +16,8 @@
 - Bézier curve for envelopes
 - Add UI scale setting in "Settings" tab
 - Add midi key numbers in midi key popup
+- Edit instrument name in the TopBar
+- Add instrument midi channel and note off constrols to TopBar
 
 ### Improvements
 

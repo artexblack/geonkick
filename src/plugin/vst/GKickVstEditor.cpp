@@ -68,7 +68,7 @@ GKickVstEditor::attached(void* parent, FIDString type)
 #ifdef GEONKICK_OS_GNU
         loopTimer = std::make_unique<GKickVstTimer>(guiApp.get());
 #endif // GEONKICK_OS_GNU
-        
+
         geonkickApi->setEventQueue(guiApp->eventQueue());
 
 #ifdef GEONKICK_OS_WINDOWS
@@ -107,7 +107,7 @@ GKickVstEditor::attached(void* parent, FIDString type)
 tresult PLUGIN_API
 GKickVstEditor::removed()
 {
-#ifdef GEONKICK_OS_GNU        
+#ifdef GEONKICK_OS_GNU
         IRunLoop* loop = nullptr;
         if (plugFrame->queryInterface(IRunLoop::iid, (void**)&loop) == Steinberg::kResultOk) {
                 loop->unregisterTimer(loopTimer.get());
@@ -116,7 +116,7 @@ GKickVstEditor::removed()
                 return kResultFalse;
         }
 #endif // GEONKICK_OS_GNU
-        
+
         if (guiApp)
                 guiApp = nullptr;
         return kResultOk;
@@ -135,3 +135,39 @@ GKickVstEditor::getSize(ViewRect* newSize)
 	newSize->bottom = winRect.height() * geonkickApi->getScaleFactor();
 	return kResultOk;
 }
+
+#ifndef GEONKICK_OS_GNU
+tresult GKickVstEditor::processKey(RkEvent::Type keyType, char16 key)
+{
+        if (!mainWindow)
+                return kResultFalse;
+
+        auto keyValue = rk_convertKey(key);
+	if (keyValue == Rk::Key::Key_None)
+                return kResultFalse;
+
+        auto keyEvent = std::make_unique<RkKeyEvent>();
+        keyEvent->setType(keyType);
+        keyEvent->setKey(rk_convertKey(key));
+        rk_updateKeyModifiers(keyEvent->key(), keyEvent->type());
+        if (rk_getKeyModifiers() != static_cast<int>(Rk::KeyModifiers::NoModifier))
+                 keyEvent->setModifiers(rk_getKeyModifiers());
+        rk_processSystemEvent(mainWindow->eventQueue(), std::move(keyEvent));
+
+        return kResultTrue;
+}
+
+tresult GKickVstEditor::onKeyDown(char16 key,
+                                  [[maybe_unused]] int16 keyCode,
+                                  [[maybe_unused]] int16 modifiers)
+{
+        return processKey(RkEvent::Type::KeyPressed, key);
+}
+
+tresult GKickVstEditor::onKeyUp(char16 key,
+                                [[maybe_unused]] int16 keyCode,
+                                [[maybe_unused]] int16 modifiers)
+{
+        return processKey(RkEvent::Type::KeyReleased, key);
+}
+#endif // GEONKICK_OS_GNU

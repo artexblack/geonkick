@@ -83,7 +83,7 @@ KitWidget::KitWidget(GeonkickWidget *parent, KitModel *model)
 
         auto kitChannelsView = new KitChannelsView(this, kitModel);
         kitChannelsView->show();
-        topContainer->addSpace(100 - 4 * 16 - 3 * 5 - 10);
+        topContainer->addSpace(163 - 4 * 16 - 3 * 5 - 10);
         topContainer->addWidget(kitChannelsView);
         auto label = new RkLabel(this, "MIDI Ch.");
         label->setTextColor(textColor());
@@ -133,14 +133,16 @@ void KitWidget::updatePercussion(PercussionIndex index, PercussionModel *model)
 
 void KitWidget::removePercussion(PercussionIndex index)
 {
+        size_t containerIndex = 0;
         for (auto it = percussionViewList.begin(); it != percussionViewList.end(); ++it) {
                 if ((*it)->getModel()->index() == index) {
-                        percussionsContainer->removeAt(index);
+                        percussionsContainer->removeAt(containerIndex);
                         delete *it;
                         percussionViewList.erase(it);
                         percussionsContainer->update();
                         break;
                 }
+                containerIndex++;
         }
 }
 

@@ -52,9 +52,9 @@ class PercussionModel : public AbstractModel {
         size_t keysNumber() const;
         void setKey(KeyIndex keyIndex);
         KeyIndex key() const;
-        void setName(const std::string &name);
+        bool setName(const std::string &name);
         std::string name() const;
-        void setChannel(int index);
+        void setChannel(int chIndex);
         int channel() const;
         size_t numberOfChannels() const;
         bool canCopy() const;

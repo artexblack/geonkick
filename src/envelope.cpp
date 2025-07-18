@@ -383,7 +383,7 @@ void Envelope::drawPointValue(RkPainter &painter, const RkPoint &point, double v
 
 void Envelope::drawLines(RkPainter &painter)
 {
-        if (envelopePoints.size() < 2)  // Ensure there are at least two points
+        if (envelopePoints.size() < 2)
                 return;
 
         auto pen = painter.pen();
@@ -394,7 +394,6 @@ void Envelope::drawLines(RkPainter &painter)
         size_t i = 0;
         while (i < envelopePoints.size() - 1) {
                 if (i + 1 < envelopePoints.size() && !envelopePoints[i + 1].isControlPoint()) {
-                        // Create a vector for two points and draw a polyline
                         std::vector<RkPoint> points;
                         auto scaledPoint1 = scaleUp(envelopePoints[i]);
                         points.push_back(RkPoint(scaledPoint1.x(), -scaledPoint1.y()));
@@ -403,9 +402,8 @@ void Envelope::drawLines(RkPainter &painter)
                         points.push_back(RkPoint(scaledPoint2.x(), -scaledPoint2.y()));
 
                         painter.drawPolyline(points);
-                        i += 1;  // Move to the next point
+                        i += 1;
                 } else if (i + 2 < envelopePoints.size()) {
-                        // Create a vector for three points and draw a curve
                         std::vector<RkPoint> points;
                         auto scaledPoint1 = scaleUp(envelopePoints[i]);
                         points.push_back(RkPoint(scaledPoint1.x(), -scaledPoint1.y()));
@@ -417,9 +415,9 @@ void Envelope::drawLines(RkPainter &painter)
                         points.push_back(RkPoint(scaledPoint3.x(), -scaledPoint3.y()));
 
                         painter.drawCurve(points);
-                        i += 2;  // Skip two points as we processed three in the curve
+                        i += 2;
                 } else {
-                        break;  // Exit if there aren't enough points left for a curve
+                        break;
                 }
         }
 }
@@ -464,7 +462,7 @@ void Envelope::updateSelectedPointValue(double val)
 {
         if (hasEditingPoint() && editedPointIndex < envelopePoints.size()) {
                 EnvelopePoint p = envelopePoints[editedPointIndex];
-                p.setX(convertFromHumanValue(val));
+                p.setY(convertFromHumanValue(val));
                 pointUpdatedEvent(editedPointIndex, p);
                 updatePoints();
         }
@@ -555,44 +553,58 @@ void Envelope::addPoint(const RkPoint &point, bool isControlPoint)
 {
         EnvelopePoint scaledPoint = scaleDown(point);
         scaledPoint.setAsControlPoint(isControlPoint);
-        if (scaledPoint.y() < 0)
-                scaledPoint.setY(0);
-        else if (scaledPoint.y() > 1)
-                scaledPoint.setY(1);
 
-  	if (scaledPoint.x() > 1) {
-	        scaledPoint.setX(1);
-		envelopePoints.push_back(scaledPoint);
-	} else if (scaledPoint.x() < 0) {
-                scaledPoint.setX(0);
-                envelopePoints.insert(envelopePoints.begin(), scaledPoint);
-        } else if (envelopePoints.empty()) {
-                envelopePoints.push_back(scaledPoint);
-	} else if (scaledPoint.x() <= envelopePoints[0].x()) {
-                envelopePoints.insert(envelopePoints.begin(), scaledPoint);
-	} else if (scaledPoint.x() >= envelopePoints.back().x()) {
-                envelopePoints.push_back(scaledPoint);
-	} else {
-		for (auto it = envelopePoints.begin(); it != envelopePoints.end(); ++it) {
-			if (scaledPoint.x() <= it->x()) {
-                                envelopePoints.insert(it, scaledPoint);
-                                break;
-			}
-		}
-	}
+        scaledPoint.setY(std::clamp(scaledPoint.y(), 0.0, 1.0));
+        scaledPoint.setX(std::clamp(scaledPoint.x(), 0.0, 1.0));
+
+        auto it = std::lower_bound(
+                                   envelopePoints.begin(), envelopePoints.end(), scaledPoint.x(),
+                                   [](const EnvelopePoint &ep, float xVal) {
+                                           return ep.x() < xVal;
+                                   });
+
+        if (isControlPoint) {
+                if (it == envelopePoints.begin() || it == envelopePoints.end())
+                        return;
+                auto prev = std::prev(it);
+                auto next = it;
+                if (prev->isControlPoint() || next->isControlPoint())
+                        return;
+        }
+
+        envelopePoints.insert(it, scaledPoint);
         pointAddedEvent(scaledPoint);
 }
 
 void Envelope::removePoint(const RkPoint &point)
 {
-        for (decltype(envelopePoints.size()) i = 0; i < envelopePoints.size(); i++) {
-		if (hasPoint(envelopePoints[i], point)) {
-			if (i != 0 && i != envelopePoints.size() - 1) {
-				envelopePoints.erase(envelopePoints.begin() + i);
-                                pointRemovedEvent(i);
-			}
-			break;
-		}
+        auto it = std::find_if(envelopePoints.begin(), envelopePoints.end(),
+                               [&](const EnvelopePoint &ep) {
+                                       return hasPoint(ep, point);
+                               });
+
+        if (it == envelopePoints.end()
+            || it == envelopePoints.begin()
+            || it == envelopePoints.end() - 1)
+                return;
+
+        auto index = std::distance(envelopePoints.begin(), it);
+        it = envelopePoints.erase(it);
+        pointRemovedEvent(index);
+
+        if (it != envelopePoints.begin() && it != envelopePoints.end() - 1) {
+                auto prev = std::prev(it);
+                auto next = it;
+                if (prev->isControlPoint() && next->isControlPoint()) {
+                        size_t nextIndex = std::distance(envelopePoints.begin(), next);
+                        size_t prevIndex = nextIndex - 1;
+
+                        envelopePoints.erase(next);
+                        pointRemovedEvent(nextIndex);
+
+                        envelopePoints.erase(prev);
+                        pointRemovedEvent(prevIndex);
+                }
         }
 }
 

@@ -30,6 +30,7 @@ KitState::KitState()
         , kitName{"Default"}
         , kitAuthor{"Unknown"}
 {
+        addPercussion(std::move(GeonkickApi::getDefaultPercussionState()));
 }
 
 bool KitState::open(const std::string &fileName)
@@ -40,7 +41,7 @@ bool KitState::open(const std::string &fileName)
         }
 
         std::filesystem::path filePath(fileName);
-        auto fileExt = Geonkick::toLower(filePath.extension());
+        auto fileExt = Geonkick::toLower(filePath.extension().string());
         if (filePath.extension().empty() || (fileExt != ".gkit" && fileExt != ".gkick")) {
                 GEONKICK_LOG_ERROR("can't open kit. Wrong file format.");
                 return false;
@@ -69,7 +70,7 @@ bool KitState::save(const std::string &fileName)
 
         std::filesystem::path filePath(fileName);
         if (filePath.extension().empty()
-            || Geonkick::toLower(filePath.extension()) != ".gkit") {
+            || Geonkick::toLower(filePath.extension().string()) != ".gkit") {
                 filePath.replace_extension(".gkit");
         }
 
@@ -122,6 +123,7 @@ const std::vector<std::unique_ptr<PercussionState>>& KitState::percussions() con
 
  bool KitState::fromJson(const std::string &jsonData, bool oldPreset)
 {
+        percussionsList.clear();
         rapidjson::Document document;
         document.Parse(jsonData.c_str());
         if (!document.IsObject())
@@ -136,6 +138,9 @@ const std::vector<std::unique_ptr<PercussionState>>& KitState::percussions() con
                 auto state = std::make_unique<PercussionState>();
                 if (!state->loadObject(obj))
                         return false;
+#ifdef GEONKICK_SINGLE
+                state->setId(0);
+#endif // GEONKICK_SINGLE
                 addPercussion(std::move(state));
                 return true;
         }
