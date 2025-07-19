@@ -26,7 +26,7 @@
 
 #include "AbstractView.h"
 #include "FilterModel.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 #include "envelope.h"
 
 class GeonkickButton;

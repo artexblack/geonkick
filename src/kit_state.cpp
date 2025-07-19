@@ -30,7 +30,7 @@ KitState::KitState()
         , kitName{"Default"}
         , kitAuthor{"Unknown"}
 {
-        addPercussion(std::move(GeonkickApi::getDefaultPercussionState()));
+        addPercussion(std::move(DspProxy::getDefaultPercussionState()));
 }
 
 bool KitState::open(const std::string &fileName)

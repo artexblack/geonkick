@@ -28,13 +28,13 @@
 
 #include <RkObject.h>
 
-class GeonkickApi;
+class DspProxy;
 class Preset;
 class PresetFolder;
 
 class PresetBrowserModel : public RkObject {
  public:
-        explicit PresetBrowserModel(RkObject *parent, GeonkickApi *api);
+        explicit PresetBrowserModel(RkObject *parent, DspProxy *dsp);
         std::string presetName(int row, int column) const;
         size_t folderPages() const;
         size_t folderPage() const;
@@ -52,7 +52,7 @@ class PresetBrowserModel : public RkObject {
         bool isSelected(size_t row, size_t column) const;
         PresetFolder* currentSelectedFolder() const;
         Preset* currentSelectedPreset() const;
-        GeonkickApi* getGeonkickApi() const;
+        DspProxy* getDspProxy() const;
         void selectPreviousFolder();
         void selectNextFolder();
         void selectPreviousPreset();
@@ -89,7 +89,7 @@ class PresetBrowserModel : public RkObject {
 
 
  private:
-        GeonkickApi* geonkickApi;
+        DspProxy* dspProxy;
         size_t folderPageIndex;
         size_t presetPageIndex;
         size_t numberOfPresetColumns;

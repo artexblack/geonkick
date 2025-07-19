@@ -35,12 +35,12 @@ class Envelope;
 class KickGraph;
 class RkMouseEvent;
 class KickGraph;
-class GeonkickApi;
+class DspProxy;
 
 class EnvelopeWidgetDrawingArea : public GeonkickWidget
 {
  public:
-   EnvelopeWidgetDrawingArea(GeonkickWidget *parent, GeonkickApi *api);
+   EnvelopeWidgetDrawingArea(GeonkickWidget *parent, DspProxy *dsp);
    Envelope* getEnvelope() const;
    const RkRect getDrawingArea();
    void updateKickGraph(const std::shared_ptr<RkImage> &graphImage);
@@ -71,7 +71,7 @@ class EnvelopeWidgetDrawingArea : public GeonkickWidget
    std::string getEnvStateText() const;
 
  private:
-   GeonkickApi* geonkickApi;
+   DspProxy* dspProxy;
    Envelope* currentEnvelope;
    RkRect drawingArea;
    RkPoint mousePoint;

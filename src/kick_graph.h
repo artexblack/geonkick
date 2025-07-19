@@ -24,7 +24,7 @@
 #ifndef GEONKICK_GRAPTH_H
 #define GEONKICK_GRAPTH_H
 
-#include "geonkick_api.h"
+#include "DspProxy.h"
 
 #include <RkPainter.h>
 
@@ -37,7 +37,7 @@ class KickGraph : public RkObject {
 
 public:
 
-     KickGraph(RkObject* parent, GeonkickApi *api, const RkSize &size);
+     KickGraph(RkObject* parent, DspProxy *dsp, const RkSize &size);
      ~KickGraph();
      void start();
      RK_DECL_ACT(graphUpdated,
@@ -54,7 +54,7 @@ protected:
      void drawKickGraph();
 
 private:
-     GeonkickApi *geonkickApi;
+     DspProxy *dspProxy;
      std::unique_ptr<std::thread> graphThread;
      mutable std::mutex  graphMutex;
      std::condition_variable threadConditionVar;

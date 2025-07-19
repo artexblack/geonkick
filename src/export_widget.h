@@ -26,7 +26,7 @@
 
 #include "geonkick_widget.h"
 
-class GeonkickApi;
+class DspProxy;
 class GeonkickButton;
 class RkContainer;
 
@@ -46,7 +46,7 @@ class ExportWidget: public GeonkickWidget {
          };
 
  public:
-        ExportWidget(GeonkickWidget *parent, GeonkickApi *api);
+        ExportWidget(GeonkickWidget *parent, DspProxy *dsp);
         ~ExportWidget();
 
  protected:
@@ -60,7 +60,7 @@ class ExportWidget: public GeonkickWidget {
         void exportInstrument(const std::string &filePath);
 
  private:
-        GeonkickApi *geonkickApi;
+        DspProxy *dspProxy;
         GeonkickButton *flac16Button;
         GeonkickButton *flac24Button;
         GeonkickButton *wav16Button;

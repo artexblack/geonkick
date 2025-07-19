@@ -25,7 +25,7 @@
 #include "preset_browser_model.h"
 #include "FileBrowser.h"
 #include "preset_folder.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 
 #include <RkPainter.h>
 #include <RkImage.h>

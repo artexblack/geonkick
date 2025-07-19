@@ -23,15 +23,15 @@
 
 #include "limiter.h"
 #include "geonkick_slider.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 
 #include <RkTimer.h>
 
 RK_DECLARE_IMAGE_RC(meter_scale);
 
-Limiter::Limiter(GeonkickApi *api, GeonkickWidget *parent)
+Limiter::Limiter(DspProxy *dsp, GeonkickWidget *parent)
         : GeonkickWidget(parent)
-        , geonkickApi{api}
+        , dspProxy{dsp}
         , faderSlider{new GeonkickSlider(this, GeonkickSlider::Orientation::Vertical)}
         , meterValue{0}
         , meterTimer{new RkTimer(this, 30)}
@@ -94,7 +94,7 @@ void Limiter::onSetFaderValue(int val)
 
 void Limiter::onUpdateMeter()
 {
-        int value = toMeterValue(std::fabs(geonkickApi->getLimiterLevelerValue()));
+        int value = toMeterValue(std::fabs(dspProxy->getLimiterLevelerValue()));
         if (meterValue < value)
                 onSetMeterValue(value);
 }
@@ -107,7 +107,7 @@ void Limiter::onSetMeterValue(int val)
 
 void Limiter::onUpdateLimiter()
 {
-        double val = geonkickApi->limiterValue();
+        double val = dspProxy->limiterValue();
         if (val < 1e-3)
                 onSetFaderValue(0);
         else
@@ -138,6 +138,6 @@ void Limiter::onSetLimiterValue(int val)
                 value = 0;
         else
                 value = pow(10, logVal / 20);
-        geonkickApi->setLimiterValue(value);
+        dspProxy->setLimiterValue(value);
         action limiterUpdated(val);
 }

@@ -83,7 +83,7 @@ bool ExportToSfz::doExport()
                                             instrument->data(),
                                             ExportSoundData::ExportFormat::Wav);
                 exportToWav.setBitDepth(32);
-                exportToWav.setSampleRate(kitModel->api()->getSampleRate());
+                exportToWav.setSampleRate(kitModel->getDspProxy()->getSampleRate());
                 exportToWav.doExport();
         }
 

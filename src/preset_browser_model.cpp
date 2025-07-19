@@ -24,14 +24,14 @@
 #include "preset_browser_model.h"
 #include "preset_folder.h"
 #include "preset.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 #include "percussion_state.h"
 #include "kit_state.h"
 #include "GeonkickConfig.h"
 
-PresetBrowserModel::PresetBrowserModel(RkObject *parent, GeonkickApi *api)
+PresetBrowserModel::PresetBrowserModel(RkObject *parent, DspProxy *dsp)
         : RkObject(parent)
-        , geonkickApi{api}
+        , dspProxy{dsp}
         , folderPageIndex{0}
         , presetPageIndex{0}
         , numberOfPresetColumns{3}
@@ -39,7 +39,7 @@ PresetBrowserModel::PresetBrowserModel(RkObject *parent, GeonkickApi *api)
         , folderSelectedRaw{0}
         , presetSelectedRaw{0}
         , presetSelectedColumn{0}
-        , selectedFolder{geonkickApi->getPresetFolder(0)}
+        , selectedFolder{dspProxy->getPresetFolder(0)}
         , selectedPreset{nullptr}
 {
 }
@@ -60,7 +60,7 @@ std::string PresetBrowserModel::presetName(int row, int column) const
 
 PresetFolder* PresetBrowserModel::getPresetFolder(int row) const
 {
-        return geonkickApi->getPresetFolder(folderPage() * rowsPerColumn + row);
+        return dspProxy->getPresetFolder(folderPage() * rowsPerColumn + row);
 }
 
 Preset* PresetBrowserModel::getPreset(int row, int column) const
@@ -77,8 +77,8 @@ Preset* PresetBrowserModel::getPreset(int row, int column) const
 
 size_t PresetBrowserModel::folderPages() const
 {
-        return geonkickApi->numberOfPresetFolders() / rowsPerColumn
-                + ((geonkickApi->numberOfPresetFolders() % rowsPerColumn) ? 1 : 0);
+        return dspProxy->numberOfPresetFolders() / rowsPerColumn
+                + ((dspProxy->numberOfPresetFolders() % rowsPerColumn) ? 1 : 0);
 }
 
 size_t PresetBrowserModel::folderPage() const
@@ -195,9 +195,9 @@ bool PresetBrowserModel::setPreset(Preset* preset)
                 return false;
         }
 
-        if (geonkickApi->setKitState(kit)) {
-                geonkickApi->notifyKitUpdated();
-                geonkickApi->notifyUpdateGui();
+        if (dspProxy->setKitState(kit)) {
+                dspProxy->notifyKitUpdated();
+                dspProxy->notifyUpdateGui();
                 return true;
         }
         return false;
@@ -213,9 +213,9 @@ Preset* PresetBrowserModel::currentSelectedPreset() const
         return selectedPreset;
 }
 
-GeonkickApi* PresetBrowserModel::getGeonkickApi() const
+DspProxy* PresetBrowserModel::getDspProxy() const
 {
-        return geonkickApi;
+        return dspProxy;
 }
 
 void PresetBrowserModel::selectPreviousFolder()

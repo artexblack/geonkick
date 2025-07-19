@@ -1,12 +1,12 @@
 /**
- * File name: geonkick_api.cpp
+ * File name: DspProxy.cpp
  * Project: Geonkick (A kick synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *
  * This file is part of Geonkick.
  *
- * GeonKick is free software; you can redistribute it and/or modify
+ * Geonkick is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
@@ -21,7 +21,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "geonkick_api.h"
+#include "DspProxy.h"
 #include "DesktopPaths.h"
 #include "OscillatorModel.h"
 #include "globals.h"
@@ -37,8 +37,8 @@
 
 #include <sndfile.h>
 
-GeonkickApi::GeonkickApi(int sample_rate, InstanceType instance, geonkick *dsp)
-        : geonkickApi{dsp}
+DspProxy::DspProxy(int sample_rate, InstanceType instance, geonkick *dsp)
+        : geonkickDsp{dsp}
         , instanceType{instance}
         , limiterLevelers{}
         , jackEnabled{false}
@@ -59,53 +59,53 @@ GeonkickApi::GeonkickApi(int sample_rate, InstanceType instance, geonkick *dsp)
         forceMidiChannel(cfg.getMidiChannel(), cfg.isMidiChannelForced());
 }
 
-GeonkickApi::~GeonkickApi()
+DspProxy::~DspProxy()
 {
-  	if (geonkickApi)
-                geonkick_free(&geonkickApi);
+  	if (geonkickDsp)
+                geonkick_free(&geonkickDsp);
 }
 
-void GeonkickApi::setInstanceType(InstanceType type)
+void DspProxy::setInstanceType(InstanceType type)
 {
         instanceType = type;
 }
 
-GeonkickApi::InstanceType GeonkickApi::getInstanceType() const
+DspProxy::InstanceType DspProxy::getInstanceType() const
 {
         return instanceType;
 }
 
-unsigned int GeonkickApi::getVersion()
+unsigned int DspProxy::getVersion()
 {
         return GEONKICK_VERSION;
 }
 
-void GeonkickApi::setEventQueue(RkEventQueue *queue)
+void DspProxy::setEventQueue(RkEventQueue *queue)
 {
-        std::lock_guard<std::mutex> lock(apiMutex);
+        std::lock_guard<std::mutex> lock(dspMutex);
         eventQueue = queue;
 }
 
-bool GeonkickApi::initDSP()
+bool DspProxy::initDSP()
 {
-        if (!geonkickApi) {
-                if (geonkick_create(&geonkickApi, sampleRate) != GEONKICK_OK) {
-                        GEONKICK_LOG_ERROR("can't create geonkick API");
+        if (!geonkickDsp) {
+                if (geonkick_create(&geonkickDsp, sampleRate) != GEONKICK_OK) {
+                        GEONKICK_LOG_ERROR("can't create geonkick DSP");
                         return false;
                 }
         }
         return true;
 }
 
-bool GeonkickApi::init()
+bool DspProxy::init()
 {
         if (!initDSP())
 	        return false;
 
 	loadPresets();
 
-        jackEnabled = geonkick_is_module_enabed(geonkickApi, GEONKICK_MODULE_JACK);
-	geonkick_enable_synthesis(geonkickApi, false);
+        jackEnabled = geonkick_is_module_enabed(geonkickDsp, GEONKICK_MODULE_JACK);
+	geonkick_enable_synthesis(geonkickDsp, false);
 
 	auto nInstruments = numberOfInstruments();
         auto nChannels = numberOfChannels();
@@ -122,37 +122,37 @@ bool GeonkickApi::init()
         addOrderedPercussionId(0);
 
         // Set the first the percussion by default to be controllable.
-	geonkick_set_current_percussion(geonkickApi, 0);
-	geonkick_enable_synthesis(geonkickApi, true);
+	geonkick_set_current_percussion(geonkickDsp, 0);
+	geonkick_enable_synthesis(geonkickDsp, true);
         return true;
 }
 
-size_t GeonkickApi::numberOfInstruments()
+size_t DspProxy::numberOfInstruments()
 {
         return geonkick_instruments_number();
 }
 
-size_t GeonkickApi::numberOfChannels()
+size_t DspProxy::numberOfChannels()
 {
         return geonkick_channels_number();
 }
 
-size_t GeonkickApi::numberOfMidiChannels()
+size_t DspProxy::numberOfMidiChannels()
 {
         return geonkick_midi_channels_number();
 }
 
-size_t GeonkickApi::numberOfLayers()
+size_t DspProxy::numberOfLayers()
 {
         return geonkick_layers_number();
 }
 
-std::unique_ptr<KitState> GeonkickApi::getDefaultKitState()
+std::unique_ptr<KitState> DspProxy::getDefaultKitState()
 {
         return std::make_unique<KitState>();
 }
 
-std::unique_ptr<PercussionState> GeonkickApi::getDefaultPercussionState()
+std::unique_ptr<PercussionState> DspProxy::getDefaultPercussionState()
 {
         auto state = std::make_unique<PercussionState>();
         state->setName("Default");
@@ -166,27 +166,27 @@ std::unique_ptr<PercussionState> GeonkickApi::getDefaultPercussionState()
         state->enableKickFilter(false);
         state->setKickFilterFrequency(200);
         state->setKickFilterQFactor(10);
-        state->setKickFilterType(GeonkickApi::FilterType::LowPass);
+        state->setKickFilterType(DspProxy::FilterType::LowPass);
         std::vector<EnvelopePoint> envelope;
         envelope.push_back({0, 1});
         envelope.push_back({1, 1});
-        state->setKickEnvelopePoints(GeonkickApi::EnvelopeType::Amplitude, envelope);
-        state->setKickEnvelopeApplyType(GeonkickApi::EnvelopeType::FilterCutOff,
+        state->setKickEnvelopePoints(DspProxy::EnvelopeType::Amplitude, envelope);
+        state->setKickEnvelopeApplyType(DspProxy::EnvelopeType::FilterCutOff,
 					EnvelopeApplyType::Logarithmic);
-	state->setKickEnvelopePoints(GeonkickApi::EnvelopeType::FilterCutOff, envelope);
-	state->setKickEnvelopePoints(GeonkickApi::EnvelopeType::FilterQFactor, envelope);
-	state->setKickEnvelopePoints(GeonkickApi::EnvelopeType::DistortionDrive, envelope);
-        state->setKickEnvelopePoints(GeonkickApi::EnvelopeType::DistortionVolume, envelope);
+	state->setKickEnvelopePoints(DspProxy::EnvelopeType::FilterCutOff, envelope);
+	state->setKickEnvelopePoints(DspProxy::EnvelopeType::FilterQFactor, envelope);
+	state->setKickEnvelopePoints(DspProxy::EnvelopeType::DistortionDrive, envelope);
+        state->setKickEnvelopePoints(DspProxy::EnvelopeType::DistortionVolume, envelope);
         state->enableDistortion(false);
         state->setDistortionType(DistortionType::SoftClippingTan);
         state->setDistortionInLimiter(1.0);
         state->setDistortionOutLimiter(0.1);
         state->setDistortionDrive(1.0);
 
-        std::vector<GeonkickApi::OscillatorType> oscillators = {
-                GeonkickApi::OscillatorType::Oscillator1,
-                GeonkickApi::OscillatorType::Oscillator2,
-                GeonkickApi::OscillatorType::Oscillator3
+        std::vector<DspProxy::OscillatorType> oscillators = {
+                DspProxy::OscillatorType::Oscillator1,
+                DspProxy::OscillatorType::Oscillator2,
+                DspProxy::OscillatorType::Oscillator3
         };
 
         auto nLayers = numberOfLayers();
@@ -196,36 +196,36 @@ std::unique_ptr<PercussionState> GeonkickApi::getDefaultPercussionState()
                 state->setLayerAmplitude(layer, 1.0);
                 for (auto const &osc: oscillators) {
                         int index = static_cast<int>(osc) + GKICK_OSC_GROUP_SIZE * static_cast<int>(layer);
-                        state->setOscillatorEnabled(index, osc == GeonkickApi::OscillatorType::Oscillator1);
-                        state->setOscillatorFunction(index, GeonkickApi::FunctionType::Sine);
+                        state->setOscillatorEnabled(index, osc == DspProxy::OscillatorType::Oscillator1);
+                        state->setOscillatorFunction(index, DspProxy::FunctionType::Sine);
                         state->setOscillatorPhase(index, 0);
                         state->setOscillatorAmplitue(index, 0.26);
                         state->setOscillatorFrequency(index, 800);
                         state->setOscillatorPitchShift(index, 12);
                         state->setOscillatorFilterEnabled(index, false);
-                        state->setOscillatorFilterType(index, GeonkickApi::FilterType::LowPass);
+                        state->setOscillatorFilterType(index, DspProxy::FilterType::LowPass);
                         state->setOscillatorFilterCutOffFreq(index, 800);
                         state->setOscillatorFilterFactor(index, 10);
-                        state->setOscillatorEnvelopePoints(index, envelope, GeonkickApi::EnvelopeType::Amplitude);
+                        state->setOscillatorEnvelopePoints(index, envelope, DspProxy::EnvelopeType::Amplitude);
                         state->setOscillatorEnvelopeApplyType(index,
-                                                              GeonkickApi::EnvelopeType::Frequency,
-                                                              GeonkickApi::EnvelopeApplyType::Logarithmic);
-                        state->setOscillatorEnvelopePoints(index, envelope, GeonkickApi::EnvelopeType::Frequency);
-                        state->setOscillatorEnvelopePoints(index, envelope, GeonkickApi::EnvelopeType::PitchShift);
-                        state->setOscillatorEnvelopePoints(index, envelope, GeonkickApi::EnvelopeType::DistortionDrive);
+                                                              DspProxy::EnvelopeType::Frequency,
+                                                              DspProxy::EnvelopeApplyType::Logarithmic);
+                        state->setOscillatorEnvelopePoints(index, envelope, DspProxy::EnvelopeType::Frequency);
+                        state->setOscillatorEnvelopePoints(index, envelope, DspProxy::EnvelopeType::PitchShift);
+                        state->setOscillatorEnvelopePoints(index, envelope, DspProxy::EnvelopeType::DistortionDrive);
                         std::vector<EnvelopePoint> env = envelope;
                         env[0].setY(0.5);
                         env[1].setY(0.5);
-                        state->setOscillatorEnvelopePoints(index, env, GeonkickApi::EnvelopeType::PitchShift);
+                        state->setOscillatorEnvelopePoints(index, env, DspProxy::EnvelopeType::PitchShift);
                         state->setOscillatorEnvelopePoints(index,
 							   envelope,
-							   GeonkickApi::EnvelopeType::FilterCutOff);
+							   DspProxy::EnvelopeType::FilterCutOff);
 			state->setOscillatorEnvelopePoints(index,
 							   envelope,
-							   GeonkickApi::EnvelopeType::FilterQFactor);
+							   DspProxy::EnvelopeType::FilterQFactor);
 			state->setOscillatorEnvelopeApplyType(index,
-							      GeonkickApi::EnvelopeType::FilterCutOff,
-							      GeonkickApi::EnvelopeApplyType::Logarithmic);
+							      DspProxy::EnvelopeType::FilterCutOff,
+							      DspProxy::EnvelopeApplyType::Logarithmic);
                         state->setOscillatorEnvelopePoints(index, envelope, EnvelopeType::DistortionDrive);
                         state->setOscDistortionEnabled(index, false);
                         state->setOscDistortionType(index, DistortionType::SoftClippingTan);
@@ -238,15 +238,15 @@ std::unique_ptr<PercussionState> GeonkickApi::getDefaultPercussionState()
         return state;
 }
 
-void GeonkickApi::setPercussionState(const std::unique_ptr<PercussionState> &state)
+void DspProxy::setPercussionState(const std::unique_ptr<PercussionState> &state)
 {
         if (!state)
                 return;
 
-        geonkick_enable_synthesis(geonkickApi, false);
-        geonkick_enable_percussion(geonkickApi, state->getId(), state->isEnabled());
+        geonkick_enable_synthesis(geonkickDsp, false);
+        geonkick_enable_percussion(geonkickDsp, state->getId(), state->isEnabled());
         auto currentId = currentPercussion();
-        geonkick_set_current_percussion(geonkickApi, state->getId());
+        geonkick_set_current_percussion(geonkickDsp, state->getId());
         setPercussionName(state->getId(), state->getName());
         setPercussionPlayingKey(state->getId(), state->getPlayingKey());
         setPercussionChannel(state->getId(), state->getChannel());
@@ -267,18 +267,18 @@ void GeonkickApi::setPercussionState(const std::unique_ptr<PercussionState> &sta
         setKickFilterFrequency(state->getKickFilterFrequency());
         setKickFilterQFactor(state->getKickFilterQFactor());
         setKickFilterType(state->getKickFilterType());
-        setKickEnvelopePoints(GeonkickApi::EnvelopeType::Amplitude,
-                              state->getKickEnvelopePoints(GeonkickApi::EnvelopeType::Amplitude));
-        setKickEnvelopeApplyType(GeonkickApi::EnvelopeType::FilterCutOff,
-				 state->getKickEnvelopeApplyType(GeonkickApi::EnvelopeType::FilterCutOff));
-	setKickEnvelopePoints(GeonkickApi::EnvelopeType::FilterCutOff,
-                              state->getKickEnvelopePoints(GeonkickApi::EnvelopeType::FilterCutOff));
-	setKickEnvelopePoints(GeonkickApi::EnvelopeType::FilterQFactor,
-                              state->getKickEnvelopePoints(GeonkickApi::EnvelopeType::FilterQFactor));
-	setKickEnvelopePoints(GeonkickApi::EnvelopeType::DistortionDrive,
-                              state->getKickEnvelopePoints(GeonkickApi::EnvelopeType::DistortionDrive));
-        setKickEnvelopePoints(GeonkickApi::EnvelopeType::DistortionVolume,
-                              state->getKickEnvelopePoints(GeonkickApi::EnvelopeType::DistortionVolume));
+        setKickEnvelopePoints(DspProxy::EnvelopeType::Amplitude,
+                              state->getKickEnvelopePoints(DspProxy::EnvelopeType::Amplitude));
+        setKickEnvelopeApplyType(DspProxy::EnvelopeType::FilterCutOff,
+				 state->getKickEnvelopeApplyType(DspProxy::EnvelopeType::FilterCutOff));
+	setKickEnvelopePoints(DspProxy::EnvelopeType::FilterCutOff,
+                              state->getKickEnvelopePoints(DspProxy::EnvelopeType::FilterCutOff));
+	setKickEnvelopePoints(DspProxy::EnvelopeType::FilterQFactor,
+                              state->getKickEnvelopePoints(DspProxy::EnvelopeType::FilterQFactor));
+	setKickEnvelopePoints(DspProxy::EnvelopeType::DistortionDrive,
+                              state->getKickEnvelopePoints(DspProxy::EnvelopeType::DistortionDrive));
+        setKickEnvelopePoints(DspProxy::EnvelopeType::DistortionVolume,
+                              state->getKickEnvelopePoints(DspProxy::EnvelopeType::DistortionVolume));
 
         for (size_t i = 0; i < nLayers; i++) {
                 setOscillatorState(static_cast<Layer>(i), OscillatorType::Oscillator1, state);
@@ -291,35 +291,35 @@ void GeonkickApi::setPercussionState(const std::unique_ptr<PercussionState> &sta
         setDistortionOutLimiter(state->getDistortionOutLimiter());
         setDistortionDrive(state->getDistortionDrive());
 
-        geonkick_set_current_percussion(geonkickApi, currentId);
-        geonkick_enable_synthesis(geonkickApi, true);
+        geonkick_set_current_percussion(geonkickDsp, currentId);
+        geonkick_enable_synthesis(geonkickDsp, true);
 }
 
-void GeonkickApi::setPercussionState(const std::string &data)
+void DspProxy::setPercussionState(const std::string &data)
 {
         auto state = getDefaultPercussionState();
         state->loadData(data);
         setPercussionState(state);
 }
 
-std::unique_ptr<PercussionState> GeonkickApi::getPercussionState(size_t id) const
+std::unique_ptr<PercussionState> DspProxy::getPercussionState(size_t id) const
 {
         if (id == currentPercussion()) {
                 return getPercussionState();
         } else {
                 auto tmpId = currentPercussion();
-                auto res = geonkick_set_current_percussion(geonkickApi, id);
+                auto res = geonkick_set_current_percussion(geonkickDsp, id);
                 if (res != GEONKICK_OK) {
-                        geonkick_set_current_percussion(geonkickApi, tmpId);
+                        geonkick_set_current_percussion(geonkickDsp, tmpId);
                         return getPercussionState();
                 }
                 auto state = getPercussionState();
-                geonkick_set_current_percussion(geonkickApi, tmpId);
+                geonkick_set_current_percussion(geonkickDsp, tmpId);
                 return state;
         }
 }
 
-std::unique_ptr<PercussionState> GeonkickApi::getPercussionState() const
+std::unique_ptr<PercussionState> DspProxy::getPercussionState() const
 {
         auto state = std::make_unique<PercussionState>();
         state->setId(currentPercussion());
@@ -343,18 +343,18 @@ std::unique_ptr<PercussionState> GeonkickApi::getPercussionState() const
         state->setKickFilterFrequency(kickFilterFrequency());
         state->setKickFilterQFactor(kickFilterQFactor());
         state->setKickFilterType(kickFilterType());
-        state->setKickEnvelopePoints(GeonkickApi::EnvelopeType::Amplitude,
-                                     getKickEnvelopePoints(GeonkickApi::EnvelopeType::Amplitude));
-	state->setKickEnvelopeApplyType(GeonkickApi::EnvelopeType::FilterCutOff,
-                                     getKickEnvelopeApplyType(GeonkickApi::EnvelopeType::FilterCutOff));
-        state->setKickEnvelopePoints(GeonkickApi::EnvelopeType::FilterCutOff,
-                                     getKickEnvelopePoints(GeonkickApi::EnvelopeType::FilterCutOff));
-	state->setKickEnvelopePoints(GeonkickApi::EnvelopeType::FilterQFactor,
-                                     getKickEnvelopePoints(GeonkickApi::EnvelopeType::FilterQFactor));
-	state->setKickEnvelopePoints(GeonkickApi::EnvelopeType::DistortionDrive,
-                                     getKickEnvelopePoints(GeonkickApi::EnvelopeType::DistortionDrive));
-        state->setKickEnvelopePoints(GeonkickApi::EnvelopeType::DistortionVolume,
-                                     getKickEnvelopePoints(GeonkickApi::EnvelopeType::DistortionVolume));
+        state->setKickEnvelopePoints(DspProxy::EnvelopeType::Amplitude,
+                                     getKickEnvelopePoints(DspProxy::EnvelopeType::Amplitude));
+	state->setKickEnvelopeApplyType(DspProxy::EnvelopeType::FilterCutOff,
+                                     getKickEnvelopeApplyType(DspProxy::EnvelopeType::FilterCutOff));
+        state->setKickEnvelopePoints(DspProxy::EnvelopeType::FilterCutOff,
+                                     getKickEnvelopePoints(DspProxy::EnvelopeType::FilterCutOff));
+	state->setKickEnvelopePoints(DspProxy::EnvelopeType::FilterQFactor,
+                                     getKickEnvelopePoints(DspProxy::EnvelopeType::FilterQFactor));
+	state->setKickEnvelopePoints(DspProxy::EnvelopeType::DistortionDrive,
+                                     getKickEnvelopePoints(DspProxy::EnvelopeType::DistortionDrive));
+        state->setKickEnvelopePoints(DspProxy::EnvelopeType::DistortionVolume,
+                                     getKickEnvelopePoints(DspProxy::EnvelopeType::DistortionVolume));
 
 
         for (size_t i = 0; i < nLayers; i++) {
@@ -371,7 +371,7 @@ std::unique_ptr<PercussionState> GeonkickApi::getPercussionState() const
         return state;
 }
 
-void GeonkickApi::getOscillatorState(GeonkickApi::Layer layer,
+void DspProxy::getOscillatorState(DspProxy::Layer layer,
                                      OscillatorType osc,
                                      const std::unique_ptr<PercussionState> &state) const
 {
@@ -392,22 +392,22 @@ void GeonkickApi::getOscillatorState(GeonkickApi::Layer layer,
         state->setOscillatorFilterType(index, getOscillatorFilterType(index));
         state->setOscillatorFilterCutOffFreq(index, getOscillatorFilterCutOffFreq(index));
         state->setOscillatorFilterFactor(index, getOscillatorFilterFactor(index));
-        auto points = oscillatorEvelopePoints(index, GeonkickApi::EnvelopeType::Amplitude);
-        state->setOscillatorEnvelopePoints(index, points, GeonkickApi::EnvelopeType::Amplitude);
-        auto applyType = getOscillatorEnvelopeApplyType(index, GeonkickApi::EnvelopeType::Frequency);
-        state->setOscillatorEnvelopeApplyType(index, GeonkickApi::EnvelopeType::Frequency, applyType);
-        points = oscillatorEvelopePoints(index, GeonkickApi::EnvelopeType::Frequency);
-        state->setOscillatorEnvelopePoints(index, points, GeonkickApi::EnvelopeType::Frequency);
-        points = oscillatorEvelopePoints(index, GeonkickApi::EnvelopeType::PitchShift);
-        state->setOscillatorEnvelopePoints(index, points, GeonkickApi::EnvelopeType::PitchShift);
-        points = oscillatorEvelopePoints(index, GeonkickApi::EnvelopeType::NoiseDensity);
-        state->setOscillatorEnvelopePoints(index, points, GeonkickApi::EnvelopeType::NoiseDensity);
-        applyType = getOscillatorEnvelopeApplyType(index, GeonkickApi::EnvelopeType::FilterCutOff);
-        state->setOscillatorEnvelopeApplyType(index, GeonkickApi::EnvelopeType::FilterCutOff, applyType);
-        points = oscillatorEvelopePoints(index, GeonkickApi::EnvelopeType::FilterCutOff);
-        state->setOscillatorEnvelopePoints(index, points, GeonkickApi::EnvelopeType::FilterCutOff);
-	points = oscillatorEvelopePoints(index, GeonkickApi::EnvelopeType::FilterQFactor);
-        state->setOscillatorEnvelopePoints(index, points, GeonkickApi::EnvelopeType::FilterQFactor);
+        auto points = oscillatorEvelopePoints(index, DspProxy::EnvelopeType::Amplitude);
+        state->setOscillatorEnvelopePoints(index, points, DspProxy::EnvelopeType::Amplitude);
+        auto applyType = getOscillatorEnvelopeApplyType(index, DspProxy::EnvelopeType::Frequency);
+        state->setOscillatorEnvelopeApplyType(index, DspProxy::EnvelopeType::Frequency, applyType);
+        points = oscillatorEvelopePoints(index, DspProxy::EnvelopeType::Frequency);
+        state->setOscillatorEnvelopePoints(index, points, DspProxy::EnvelopeType::Frequency);
+        points = oscillatorEvelopePoints(index, DspProxy::EnvelopeType::PitchShift);
+        state->setOscillatorEnvelopePoints(index, points, DspProxy::EnvelopeType::PitchShift);
+        points = oscillatorEvelopePoints(index, DspProxy::EnvelopeType::NoiseDensity);
+        state->setOscillatorEnvelopePoints(index, points, DspProxy::EnvelopeType::NoiseDensity);
+        applyType = getOscillatorEnvelopeApplyType(index, DspProxy::EnvelopeType::FilterCutOff);
+        state->setOscillatorEnvelopeApplyType(index, DspProxy::EnvelopeType::FilterCutOff, applyType);
+        points = oscillatorEvelopePoints(index, DspProxy::EnvelopeType::FilterCutOff);
+        state->setOscillatorEnvelopePoints(index, points, DspProxy::EnvelopeType::FilterCutOff);
+	points = oscillatorEvelopePoints(index, DspProxy::EnvelopeType::FilterQFactor);
+        state->setOscillatorEnvelopePoints(index, points, DspProxy::EnvelopeType::FilterQFactor);
         state->setOscillatorAsFm(index, isOscillatorAsFm(index));
 
         // Distortion
@@ -422,7 +422,7 @@ void GeonkickApi::getOscillatorState(GeonkickApi::Layer layer,
         currentLayer = temp;
 }
 
-void GeonkickApi::setOscillatorState(GeonkickApi::Layer layer,
+void DspProxy::setOscillatorState(DspProxy::Layer layer,
                                      OscillatorType oscillator,
                                      const std::unique_ptr<PercussionState> &state)
 {
@@ -477,7 +477,7 @@ void GeonkickApi::setOscillatorState(GeonkickApi::Layer layer,
         currentLayer = temp;
 }
 
-std::unique_ptr<KitState> GeonkickApi::getKitState() const
+std::unique_ptr<KitState> DspProxy::getKitState() const
 {
         auto kit = std::make_unique<KitState>();
         kit->setName(getKitName());
@@ -494,14 +494,14 @@ std::unique_ptr<KitState> GeonkickApi::getKitState() const
         return kit;
 }
 
-bool GeonkickApi::setKitState(const std::string &data)
+bool DspProxy::setKitState(const std::string &data)
 {
         auto state = std::make_unique<KitState>();
         state->fromJson(data);
         return setKitState(state);
 }
 
-bool GeonkickApi::setKitState(const std::unique_ptr<KitState> &state)
+bool DspProxy::setKitState(const std::unique_ptr<KitState> &state)
 {
         if (state->percussions().empty()) {
                 GEONKICK_LOG_ERROR("wrong kit state");
@@ -527,17 +527,17 @@ bool GeonkickApi::setKitState(const std::unique_ptr<KitState> &state)
         return true;
 }
 
-size_t GeonkickApi::oscillatorsPerLayer(void) const
+size_t DspProxy::oscillatorsPerLayer(void) const
 {
         return GKICK_OSC_GROUP_SIZE;
 }
 
-std::vector<EnvelopePoint> GeonkickApi::oscillatorEvelopePoints(int oscillatorIndex,  EnvelopeType envelope) const
+std::vector<EnvelopePoint> DspProxy::oscillatorEvelopePoints(int oscillatorIndex,  EnvelopeType envelope) const
 {
         struct gkick_envelope_point_info *buf = NULL;
         std::vector<EnvelopePoint> points;
         size_t npoints = 0;
-        geonkick_osc_envelope_get_points(geonkickApi,
+        geonkick_osc_envelope_get_points(geonkickDsp,
                                          getOscIndex(oscillatorIndex),
                                          static_cast<int>(envelope),
                                          &buf,
@@ -553,18 +553,18 @@ std::vector<EnvelopePoint> GeonkickApi::oscillatorEvelopePoints(int oscillatorIn
         return points;
 }
 
-GeonkickApi::EnvelopeApplyType GeonkickApi::getOscillatorEnvelopeApplyType(int index,
+DspProxy::EnvelopeApplyType DspProxy::getOscillatorEnvelopeApplyType(int index,
 									   EnvelopeType envelope) const
 {
 	enum gkick_envelope_apply_type applyType;
-	geonkick_osc_envelope_get_apply_type(geonkickApi,
+	geonkick_osc_envelope_get_apply_type(geonkickDsp,
 					     static_cast<size_t>(getOscIndex(index)),
 					     static_cast<size_t>(envelope),
 					     &applyType);
 	return static_cast<EnvelopeApplyType>(applyType);
 }
 
-void GeonkickApi::setOscillatorEvelopePoints(int index,
+void DspProxy::setOscillatorEvelopePoints(int index,
                                              EnvelopeType envelope,
                                              const std::vector<EnvelopePoint> &points)
 {
@@ -578,45 +578,45 @@ void GeonkickApi::setOscillatorEvelopePoints(int index,
                 data[i].control_point = points[i].isControlPoint();
         }
 
-        geonkick_osc_envelope_set_points(geonkickApi,
+        geonkick_osc_envelope_set_points(geonkickDsp,
                                          getOscIndex(index),
                                          static_cast<int>(envelope),
                                          reinterpret_cast<const struct gkick_envelope_point_info *>(data.data()),
                                          points.size());
 }
 
-void GeonkickApi::setOscillatorEnvelopeApplyType(int index,
+void DspProxy::setOscillatorEnvelopeApplyType(int index,
 						 EnvelopeType envelope,
 						 EnvelopeApplyType applyType)
 {
-	geonkick_osc_envelope_set_apply_type(geonkickApi,
+	geonkick_osc_envelope_set_apply_type(geonkickDsp,
 					     getOscIndex(index),
 					     static_cast<int>(envelope),
 					     static_cast<enum gkick_envelope_apply_type>(applyType));
 }
 
-void GeonkickApi::addOscillatorEnvelopePoint(int oscillatorIndex,
+void DspProxy::addOscillatorEnvelopePoint(int oscillatorIndex,
                                              EnvelopeType envelope,
                                              const EnvelopePoint &point)
 {
         struct gkick_envelope_point_info info{static_cast<float>(point.x()),
                                               static_cast<float>(point.y()),
                                               point.isControlPoint()};
-        geonkick_osc_envelope_add_point(geonkickApi,
+        geonkick_osc_envelope_add_point(geonkickDsp,
                                         getOscIndex(oscillatorIndex),
                                         static_cast<int>(envelope),
                                         &info);
 }
 
-void GeonkickApi::removeOscillatorEvelopePoint(int oscillatorIndex, EnvelopeType envelope, int pointIndex)
+void DspProxy::removeOscillatorEvelopePoint(int oscillatorIndex, EnvelopeType envelope, int pointIndex)
 {
-        geonkick_osc_envelope_remove_point(geonkickApi,
+        geonkick_osc_envelope_remove_point(geonkickDsp,
                                            getOscIndex(oscillatorIndex),
                                            static_cast<int>(envelope),
                                            pointIndex);
 }
 
-void GeonkickApi::updateOscillatorEvelopePoint(int oscillatorIndex,
+void DspProxy::updateOscillatorEvelopePoint(int oscillatorIndex,
                                                EnvelopeType envelope,
                                                int pointIndex,
                                                const EnvelopePoint &point)
@@ -624,94 +624,94 @@ void GeonkickApi::updateOscillatorEvelopePoint(int oscillatorIndex,
         struct gkick_envelope_point_info info{static_cast<float>(point.x()),
                                               static_cast<float>(point.y()),
                                               point.isControlPoint()};
-        geonkick_osc_envelope_update_point(geonkickApi, getOscIndex(oscillatorIndex),
+        geonkick_osc_envelope_update_point(geonkickDsp, getOscIndex(oscillatorIndex),
                                            static_cast<int>(envelope),
                                            pointIndex,
                                            &info);
 }
 
 
-void GeonkickApi::setOscillatorFunction(int oscillatorIndex, FunctionType function)
+void DspProxy::setOscillatorFunction(int oscillatorIndex, FunctionType function)
 {
-        geonkick_set_osc_function(geonkickApi,
+        geonkick_set_osc_function(geonkickDsp,
                                   getOscIndex(oscillatorIndex),
                                   static_cast<enum geonkick_osc_func_type>(function));
 }
 
-void GeonkickApi::setOscillatorPhase(int oscillatorIndex, gkick_real phase)
+void DspProxy::setOscillatorPhase(int oscillatorIndex, gkick_real phase)
 {
-        geonkick_set_osc_phase(geonkickApi,
+        geonkick_set_osc_phase(geonkickDsp,
                                getOscIndex(oscillatorIndex),
                                phase);
 }
 
-gkick_real GeonkickApi::oscillatorPhase(int oscillatorIndex) const
+gkick_real DspProxy::oscillatorPhase(int oscillatorIndex) const
 {
         gkick_real phase = 0;
-        geonkick_get_osc_phase(geonkickApi,
+        geonkick_get_osc_phase(geonkickDsp,
                                getOscIndex(oscillatorIndex),
                                &phase);
         return phase;
 }
 
-void GeonkickApi::setOscillatorSeed(int oscillatorIndex, int seed)
+void DspProxy::setOscillatorSeed(int oscillatorIndex, int seed)
 {
-        geonkick_set_osc_seed(geonkickApi,
+        geonkick_set_osc_seed(geonkickDsp,
                               getOscIndex(oscillatorIndex),
                               seed);
 }
 
-int GeonkickApi::oscillatorSeed(int oscillatorIndex) const
+int DspProxy::oscillatorSeed(int oscillatorIndex) const
 {
         unsigned int seed = 0;
-        geonkick_get_osc_seed(geonkickApi,
+        geonkick_get_osc_seed(geonkickDsp,
                               getOscIndex(oscillatorIndex),
                               &seed);
         return seed;
 }
 
-GeonkickApi::FunctionType GeonkickApi::oscillatorFunction(int oscillatorIndex) const
+DspProxy::FunctionType DspProxy::oscillatorFunction(int oscillatorIndex) const
 {
 
         enum geonkick_osc_func_type function;
-        geonkick_get_osc_function(geonkickApi,
+        geonkick_get_osc_function(geonkickDsp,
                                   getOscIndex(oscillatorIndex),
                                   &function);
         return static_cast<FunctionType>(function);
 }
 
-bool GeonkickApi::setKickLength(double length)
+bool DspProxy::setKickLength(double length)
 {
-        auto res = geonkick_set_length(geonkickApi, length / 1000);
+        auto res = geonkick_set_length(geonkickDsp, length / 1000);
         return res == GEONKICK_OK;
 }
 
-double GeonkickApi::kickLength(void) const
+double DspProxy::kickLength(void) const
 {
         gkick_real length = 0;
-        geonkick_get_length(geonkickApi, &length);
+        geonkick_get_length(geonkickDsp, &length);
         return 1000 * length;
 }
 
-bool GeonkickApi::setKickAmplitude(double amplitude)
+bool DspProxy::setKickAmplitude(double amplitude)
 {
-        auto res = geonkick_kick_set_amplitude(geonkickApi, amplitude);
+        auto res = geonkick_kick_set_amplitude(geonkickDsp, amplitude);
         return res == GEONKICK_OK;
 }
 
-double GeonkickApi::kickAmplitude() const
+double DspProxy::kickAmplitude() const
 {
         gkick_real amplitude = 0;
-        geonkick_kick_get_amplitude(geonkickApi, &amplitude);
+        geonkick_kick_get_amplitude(geonkickDsp, &amplitude);
         return static_cast<double>(amplitude);
 }
 
-std::vector<EnvelopePoint> GeonkickApi::getKickEnvelopePoints(EnvelopeType envelope) const
+std::vector<EnvelopePoint> DspProxy::getKickEnvelopePoints(EnvelopeType envelope) const
 {
         struct gkick_envelope_point_info *buf;
         std::vector<EnvelopePoint> points;
         size_t npoints = 0;
-        geonkick_kick_envelope_get_points(geonkickApi,
+        geonkick_kick_envelope_get_points(geonkickDsp,
                                           static_cast<enum geonkick_envelope_type>(envelope),
                                           &buf,
                                           &npoints);
@@ -728,16 +728,16 @@ std::vector<EnvelopePoint> GeonkickApi::getKickEnvelopePoints(EnvelopeType envel
         return points;
 }
 
-GeonkickApi::EnvelopeApplyType GeonkickApi::getKickEnvelopeApplyType(EnvelopeType envelope) const
+DspProxy::EnvelopeApplyType DspProxy::getKickEnvelopeApplyType(EnvelopeType envelope) const
 {
 	enum gkick_envelope_apply_type applyType;
-	geonkick_kick_env_get_apply_type(geonkickApi,
+	geonkick_kick_env_get_apply_type(geonkickDsp,
 					 static_cast<enum geonkick_envelope_type>(envelope),
 					 &applyType);
 	return static_cast<EnvelopeApplyType>(applyType);
 }
 
-void GeonkickApi::setKickEnvelopePoints(EnvelopeType envelope,
+void DspProxy::setKickEnvelopePoints(EnvelopeType envelope,
                                         const std::vector<EnvelopePoint> &points)
 {
         std::vector<struct gkick_envelope_point_info> data(points.size(), {0});
@@ -747,105 +747,105 @@ void GeonkickApi::setKickEnvelopePoints(EnvelopeType envelope,
                 data[i].control_point = points[i].isControlPoint();
         }
 
-        geonkick_kick_envelope_set_points(geonkickApi,
+        geonkick_kick_envelope_set_points(geonkickDsp,
                                           static_cast<enum geonkick_envelope_type>(envelope),
                                           reinterpret_cast<const struct gkick_envelope_point_info*>(data.data()),
                                           points.size());
 }
 
-void GeonkickApi::setKickEnvelopeApplyType(EnvelopeType envelope, EnvelopeApplyType applyType)
+void DspProxy::setKickEnvelopeApplyType(EnvelopeType envelope, EnvelopeApplyType applyType)
 {
-        geonkick_kick_env_set_apply_type(geonkickApi,
+        geonkick_kick_env_set_apply_type(geonkickDsp,
 					 static_cast<enum geonkick_envelope_type>(envelope),
 					 static_cast<enum gkick_envelope_apply_type>(applyType));
 }
 
-bool GeonkickApi::enableKickFilter(bool b)
+bool DspProxy::enableKickFilter(bool b)
 {
-        auto res = geonkick_kick_filter_enable(geonkickApi, b);
+        auto res = geonkick_kick_filter_enable(geonkickDsp, b);
         return res == GEONKICK_OK;
 }
 
-bool GeonkickApi::isKickFilterEnabled() const
+bool DspProxy::isKickFilterEnabled() const
 {
         int enabled = 0;
-        geonkick_kick_filter_is_enabled(geonkickApi, &enabled);
+        geonkick_kick_filter_is_enabled(geonkickDsp, &enabled);
         return enabled;
 }
 
-bool GeonkickApi::setKickFilterType(FilterType type)
+bool DspProxy::setKickFilterType(FilterType type)
 {
-        auto res = geonkick_set_kick_filter_type(geonkickApi,
+        auto res = geonkick_set_kick_filter_type(geonkickDsp,
                                                  static_cast<enum gkick_filter_type>(type));
         return res == GEONKICK_OK;
 }
 
-GeonkickApi::FilterType GeonkickApi::kickFilterType() const
+DspProxy::FilterType DspProxy::kickFilterType() const
 {
         enum gkick_filter_type type;
-        geonkick_get_kick_filter_type(geonkickApi, &type);
+        geonkick_get_kick_filter_type(geonkickDsp, &type);
         return static_cast<FilterType>(type);
 }
 
-bool GeonkickApi::setKickFilterFrequency(double frequency)
+bool DspProxy::setKickFilterFrequency(double frequency)
 {
-        auto res = geonkick_kick_set_filter_frequency(geonkickApi, frequency);
+        auto res = geonkick_kick_set_filter_frequency(geonkickDsp, frequency);
         return res == GEONKICK_OK;
 }
 
-double GeonkickApi::kickFilterFrequency(void) const
+double DspProxy::kickFilterFrequency(void) const
 {
         gkick_real frequency;
-        geonkick_kick_get_filter_frequency(geonkickApi, &frequency);
+        geonkick_kick_get_filter_frequency(geonkickDsp, &frequency);
         return static_cast<double>(frequency);
 }
 
-bool GeonkickApi::setKickFilterQFactor(double factor)
+bool DspProxy::setKickFilterQFactor(double factor)
 {
-        auto res = geonkick_kick_set_filter_factor(geonkickApi, factor);
+        auto res = geonkick_kick_set_filter_factor(geonkickDsp, factor);
         return res == GEONKICK_OK;
 }
 
-double GeonkickApi::kickFilterQFactor() const
+double DspProxy::kickFilterQFactor() const
 {
         gkick_real factor = 0;
-        geonkick_kick_get_filter_factor(geonkickApi, &factor);
+        geonkick_kick_get_filter_factor(geonkickDsp, &factor);
         return static_cast<double>(factor);
 }
 
-void GeonkickApi::addKickEnvelopePoint(EnvelopeType envelope, const EnvelopePoint &point)
+void DspProxy::addKickEnvelopePoint(EnvelopeType envelope, const EnvelopePoint &point)
 {
         struct gkick_envelope_point_info info{static_cast<float>(point.x()),
                                               static_cast<float>(point.y()),
                                               point.isControlPoint()};
-        geonkick_kick_add_env_point(geonkickApi,
+        geonkick_kick_add_env_point(geonkickDsp,
                                     static_cast<enum geonkick_envelope_type>(envelope),
                                     &info);
 }
 
-void GeonkickApi::updateKickEnvelopePoint(EnvelopeType envelope,
+void DspProxy::updateKickEnvelopePoint(EnvelopeType envelope,
                                           int index,
                                           const EnvelopePoint &point)
 {
         struct gkick_envelope_point_info info{static_cast<float>(point.x()),
                                               static_cast<float>(point.y()),
                                               point.isControlPoint()};
-        geonkick_kick_update_env_point(geonkickApi,
+        geonkick_kick_update_env_point(geonkickDsp,
                                        static_cast<enum geonkick_envelope_type>(envelope),
                                        index,
                                        &info);
 }
 
- void GeonkickApi::removeKickEnvelopePoint(EnvelopeType envelope, int pointIndex)
+ void DspProxy::removeKickEnvelopePoint(EnvelopeType envelope, int pointIndex)
 {
-        geonkick_kick_remove_env_point(geonkickApi,
+        geonkick_kick_remove_env_point(geonkickDsp,
                                        static_cast<enum geonkick_envelope_type>(envelope),
                                        pointIndex);
 }
 
-bool GeonkickApi::setOscillatorAmplitude(int oscillatorIndex, double amplitude)
+bool DspProxy::setOscillatorAmplitude(int oscillatorIndex, double amplitude)
 {
-        auto res = geonkick_set_osc_amplitude(geonkickApi,
+        auto res = geonkick_set_osc_amplitude(geonkickDsp,
                                               getOscIndex(oscillatorIndex),
                                               amplitude);
 	if (res != GEONKICK_OK)
@@ -854,58 +854,58 @@ bool GeonkickApi::setOscillatorAmplitude(int oscillatorIndex, double amplitude)
 	return true;
 }
 
-void GeonkickApi::setOscillatorAsFm(int oscillatorIndex, bool b)
+void DspProxy::setOscillatorAsFm(int oscillatorIndex, bool b)
 {
-        geonkick_osc_set_fm(geonkickApi,
+        geonkick_osc_set_fm(geonkickDsp,
                             getOscIndex(oscillatorIndex),
                             b);
 }
 
-void GeonkickApi::setOscillatorFmK(int oscillatorIndex, double k)
+void DspProxy::setOscillatorFmK(int oscillatorIndex, double k)
 {
-        geonkick_osc_set_fm_k(geonkickApi,
+        geonkick_osc_set_fm_k(geonkickDsp,
                               getOscIndex(oscillatorIndex),
                               k);
 }
 
-bool GeonkickApi::isOscillatorAsFm(int oscillatorIndex) const
+bool DspProxy::isOscillatorAsFm(int oscillatorIndex) const
 {
         bool fm = false;
-        geonkick_osc_is_fm(geonkickApi,
+        geonkick_osc_is_fm(geonkickDsp,
                            getOscIndex(oscillatorIndex),
                            &fm);
         return fm;
 }
 
-void GeonkickApi::enableOscillator(int oscillatorIndex, bool enable)
+void DspProxy::enableOscillator(int oscillatorIndex, bool enable)
 {
         if (enable)
-                geonkick_enable_oscillator(geonkickApi, getOscIndex(oscillatorIndex));
+                geonkick_enable_oscillator(geonkickDsp, getOscIndex(oscillatorIndex));
         else
-                geonkick_disable_oscillator(geonkickApi, getOscIndex(oscillatorIndex));
+                geonkick_disable_oscillator(geonkickDsp, getOscIndex(oscillatorIndex));
 }
 
-double GeonkickApi::oscillatorAmplitude(int oscillatorIndex) const
+double DspProxy::oscillatorAmplitude(int oscillatorIndex) const
 {
 	gkick_real value = 0;
-	if (geonkick_get_osc_amplitude(geonkickApi,
+	if (geonkick_get_osc_amplitude(geonkickDsp,
                                        getOscIndex(oscillatorIndex),
                                        &value) != GEONKICK_OK)
 		return 0;
 	return value;
 }
 
-bool GeonkickApi::setOscillatorFrequency(int oscillatorIndex, double frequency)
+bool DspProxy::setOscillatorFrequency(int oscillatorIndex, double frequency)
 {
-	return geonkick_set_osc_frequency(geonkickApi,
+	return geonkick_set_osc_frequency(geonkickDsp,
                                           getOscIndex(oscillatorIndex),
                                           frequency) != GEONKICK_OK;
 }
 
-double GeonkickApi::oscillatorFrequency(int oscillatorIndex) const
+double DspProxy::oscillatorFrequency(int oscillatorIndex) const
 {
 	gkick_real value = 0;
-	if (geonkick_get_osc_frequency(geonkickApi,
+	if (geonkick_get_osc_frequency(geonkickDsp,
                                        getOscIndex(oscillatorIndex),
                                        &value) != GEONKICK_OK) {
                 return 0;
@@ -913,17 +913,17 @@ double GeonkickApi::oscillatorFrequency(int oscillatorIndex) const
 	return value;
 }
 
-bool GeonkickApi::setOscillatorPitchShift(int oscillatorIndex, double semitones)
+bool DspProxy::setOscillatorPitchShift(int oscillatorIndex, double semitones)
 {
-	return geonkick_set_osc_pitch_shift(geonkickApi,
+	return geonkick_set_osc_pitch_shift(geonkickDsp,
                                             getOscIndex(oscillatorIndex),
                                             semitones) == GEONKICK_OK;
 }
 
-double GeonkickApi::oscillatorPitchShift(int oscillatorIndex) const
+double DspProxy::oscillatorPitchShift(int oscillatorIndex) const
 {
 	gkick_real semitones = 0;
-	if (geonkick_get_osc_pitch_shift(geonkickApi,
+	if (geonkick_get_osc_pitch_shift(geonkickDsp,
                                          getOscIndex(oscillatorIndex),
                                          &semitones) != GEONKICK_OK) {
                 return 0;
@@ -931,17 +931,17 @@ double GeonkickApi::oscillatorPitchShift(int oscillatorIndex) const
 	return semitones;
 }
 
-bool GeonkickApi::setOscillatorNoiseDensity(int oscillatorIndex, double density)
+bool DspProxy::setOscillatorNoiseDensity(int oscillatorIndex, double density)
 {
-	return geonkick_set_osc_noise_density(geonkickApi,
+	return geonkick_set_osc_noise_density(geonkickDsp,
                                               getOscIndex(oscillatorIndex),
                                               density) == GEONKICK_OK;
 }
 
-double GeonkickApi::oscillatorNoiseDensity(int oscillatorIndex) const
+double DspProxy::oscillatorNoiseDensity(int oscillatorIndex) const
 {
 	gkick_real density = 0;
-	if (geonkick_get_osc_noise_density(geonkickApi,
+	if (geonkick_get_osc_noise_density(geonkickDsp,
                                            getOscIndex(oscillatorIndex),
                                            &density) != GEONKICK_OK) {
                 return 0;
@@ -949,188 +949,188 @@ double GeonkickApi::oscillatorNoiseDensity(int oscillatorIndex) const
 	return density;
 }
 
-bool GeonkickApi::isOscillatorEnabled(int oscillatorIndex) const
+bool DspProxy::isOscillatorEnabled(int oscillatorIndex) const
 {
         int enabled = 0;
-        geonkick_is_oscillator_enabled(geonkickApi,
+        geonkick_is_oscillator_enabled(geonkickDsp,
                                        getOscIndex(oscillatorIndex),
                                        &enabled);
         return enabled;
 }
 
-double GeonkickApi::kickMaxLength(void) const
+double DspProxy::kickMaxLength(void) const
 {
         gkick_real len = 0;
-        geonkick_get_max_length(geonkickApi, &len);
+        geonkick_get_max_length(geonkickDsp, &len);
         return len * 1000;
 }
 
-bool GeonkickApi::enableOscillatorFilter(int oscillatorIndex, bool enable)
+bool DspProxy::enableOscillatorFilter(int oscillatorIndex, bool enable)
 {
-        auto res = geonkick_enbale_osc_filter(geonkickApi,
+        auto res = geonkick_enbale_osc_filter(geonkickDsp,
                                               getOscIndex(oscillatorIndex),
                                               enable);
         return res == GEONKICK_OK;
 }
 
-bool GeonkickApi::isOscillatorFilterEnabled(int oscillatorIndex) const
+bool DspProxy::isOscillatorFilterEnabled(int oscillatorIndex) const
 {
         int enabled = false;
-        geonkick_osc_filter_is_enabled(geonkickApi,
+        geonkick_osc_filter_is_enabled(geonkickDsp,
                                        getOscIndex(oscillatorIndex),
                                        &enabled);
         return enabled;
 }
 
-bool GeonkickApi::setOscillatorFilterType(int oscillatorIndex, FilterType filter)
+bool DspProxy::setOscillatorFilterType(int oscillatorIndex, FilterType filter)
 {
-        auto res = geonkick_set_osc_filter_type(geonkickApi,
+        auto res = geonkick_set_osc_filter_type(geonkickDsp,
                                                 getOscIndex(oscillatorIndex),
                                                 static_cast<enum gkick_filter_type>(filter));
         return res == GEONKICK_OK;
 }
 
-GeonkickApi::FilterType GeonkickApi::getOscillatorFilterType(int oscillatorIndex) const
+DspProxy::FilterType DspProxy::getOscillatorFilterType(int oscillatorIndex) const
 {
         enum gkick_filter_type type;
-        geonkick_get_osc_filter_type(geonkickApi,
+        geonkick_get_osc_filter_type(geonkickDsp,
                                      getOscIndex(oscillatorIndex),
                                      &type);
         return static_cast<FilterType>(type);
 }
 
-bool GeonkickApi::setOscillatorFilterCutOffFreq(int oscillatorIndex, double frequency)
+bool DspProxy::setOscillatorFilterCutOffFreq(int oscillatorIndex, double frequency)
 {
-        auto res = geonkick_set_osc_filter_cutoff_freq(geonkickApi,
+        auto res = geonkick_set_osc_filter_cutoff_freq(geonkickDsp,
                                                        getOscIndex(oscillatorIndex),
                                                        frequency);
         return res == GEONKICK_OK;
 }
 
-double GeonkickApi::getOscillatorFilterCutOffFreq(int oscillatorIndex) const
+double DspProxy::getOscillatorFilterCutOffFreq(int oscillatorIndex) const
 {
         gkick_real frequency = 0;
-        geonkick_get_osc_filter_cutoff_freq(geonkickApi,
+        geonkick_get_osc_filter_cutoff_freq(geonkickDsp,
                                             getOscIndex(oscillatorIndex),
                                             &frequency);
         return frequency;
 }
 
-bool GeonkickApi::setOscillatorFilterFactor(int oscillatorIndex, double factor)
+bool DspProxy::setOscillatorFilterFactor(int oscillatorIndex, double factor)
 {
-        auto res = geonkick_set_osc_filter_factor(geonkickApi,
+        auto res = geonkick_set_osc_filter_factor(geonkickDsp,
                                                   getOscIndex(oscillatorIndex),
                                                   factor);
         return res == GEONKICK_OK;
 }
 
-double GeonkickApi::getOscillatorFilterFactor(int oscillatorIndex) const
+double DspProxy::getOscillatorFilterFactor(int oscillatorIndex) const
 {
         gkick_real factor = 0;
-        geonkick_get_osc_filter_factor(geonkickApi,
+        geonkick_get_osc_filter_factor(geonkickDsp,
                                        getOscIndex(oscillatorIndex),
                                        &factor);
         return factor;
 }
 
-bool GeonkickApi::isOscDistortionEnabled(int oscillatorIndex) const
+bool DspProxy::isOscDistortionEnabled(int oscillatorIndex) const
 {
         bool enabled = false;
-        geonkick_osc_distortion_is_enabled(geonkickApi,
+        geonkick_osc_distortion_is_enabled(geonkickDsp,
                                            getOscIndex(oscillatorIndex),
                                            &enabled);
         return enabled;
 }
 
-bool GeonkickApi::oscEnableDistortion(int oscillatorIndex, bool b)
+bool DspProxy::oscEnableDistortion(int oscillatorIndex, bool b)
 {
-        auto res = geonkick_osc_distortion_enable(geonkickApi,
+        auto res = geonkick_osc_distortion_enable(geonkickDsp,
                                                   getOscIndex(oscillatorIndex),
                                                   b);
         return res == GEONKICK_OK;
 }
 
-GeonkickApi::DistortionType GeonkickApi::getOscDistortionType(int oscillatorIndex) const
+DspProxy::DistortionType DspProxy::getOscDistortionType(int oscillatorIndex) const
 {
         enum gkick_distortion_type distortionType = GEONKICK_DISTORTION_SOFT_CLIPPING_TANH;
-        geonkick_osc_distortion_get_type(geonkickApi,
+        geonkick_osc_distortion_get_type(geonkickDsp,
                                          getOscIndex(oscillatorIndex),
                                          &distortionType);
-        return static_cast<GeonkickApi::DistortionType>(distortionType);
+        return static_cast<DspProxy::DistortionType>(distortionType);
 }
 
-bool GeonkickApi::setOscDistortionType(int oscillatorIndex, DistortionType type)
+bool DspProxy::setOscDistortionType(int oscillatorIndex, DistortionType type)
 {
-        auto res = geonkick_osc_distortion_set_type(geonkickApi,
+        auto res = geonkick_osc_distortion_set_type(geonkickDsp,
                                                     getOscIndex(oscillatorIndex),
                                                     static_cast<enum gkick_distortion_type>(type));
         return res == GEONKICK_OK;
 }
 
-bool GeonkickApi::setOscDistortionInLimiter(int oscillatorIndex, double val)
+bool DspProxy::setOscDistortionInLimiter(int oscillatorIndex, double val)
 {
-        auto res = geonkick_osc_distortion_set_in_limiter(geonkickApi,
+        auto res = geonkick_osc_distortion_set_in_limiter(geonkickDsp,
                                                           getOscIndex(oscillatorIndex),
                                                           val);
         return res == GEONKICK_OK;
 }
 
-double GeonkickApi::getOscDistortionInLimiter(int oscillatorIndex) const
+double DspProxy::getOscDistortionInLimiter(int oscillatorIndex) const
 {
         float value = 0.0f;
-        geonkick_osc_distortion_get_in_limiter(geonkickApi,
+        geonkick_osc_distortion_get_in_limiter(geonkickDsp,
                                                getOscIndex(oscillatorIndex),
                                                &value);
         return value;
 }
 
-bool GeonkickApi::setOscDistortionOutLimiter(int oscillatorIndex, double val)
+bool DspProxy::setOscDistortionOutLimiter(int oscillatorIndex, double val)
 {
-        auto res = geonkick_osc_distortion_set_out_limiter(geonkickApi,
+        auto res = geonkick_osc_distortion_set_out_limiter(geonkickDsp,
                                                            getOscIndex(oscillatorIndex),
                                                            val);
         return res == GEONKICK_OK;
 }
 
-double GeonkickApi::getOscDistortionOutLimiter(int oscillatorIndex) const
+double DspProxy::getOscDistortionOutLimiter(int oscillatorIndex) const
 {
         float value = 0.0f;
-        geonkick_osc_distortion_get_out_limiter(geonkickApi,
+        geonkick_osc_distortion_get_out_limiter(geonkickDsp,
                                                 getOscIndex(oscillatorIndex),
                                                 &value);
         return value;
 }
 
-double GeonkickApi::getOscDistortionDrive(int oscillatorIndex) const
+double DspProxy::getOscDistortionDrive(int oscillatorIndex) const
 {
         float value = 0.0;
-        geonkick_osc_distortion_get_drive(geonkickApi,
+        geonkick_osc_distortion_get_drive(geonkickDsp,
                                           getOscIndex(oscillatorIndex),
                                           &value);
         return value;
 }
 
-bool GeonkickApi::setOscDistortionDrive(int oscillatorIndex, double val)
+bool DspProxy::setOscDistortionDrive(int oscillatorIndex, double val)
 {
-        auto res = geonkick_osc_distortion_set_drive(geonkickApi,
+        auto res = geonkick_osc_distortion_set_drive(geonkickDsp,
                                                      getOscIndex(oscillatorIndex),
                                                      val);
         return res == GEONKICK_OK;
 }
 
-double GeonkickApi::limiterValue() const
+double DspProxy::limiterValue() const
 {
         gkick_real val = 0;
-        geonkick_get_limiter_value(geonkickApi, &val);
+        geonkick_get_limiter_value(geonkickDsp, &val);
         return val;
 }
 
-void GeonkickApi::setLimiterValue(double value)
+void DspProxy::setLimiterValue(double value)
 {
-        geonkick_set_limiter_value(geonkickApi, value);
+        geonkick_set_limiter_value(geonkickDsp, value);
 }
 
-void GeonkickApi::kickUpdatedCallback(void *arg,
+void DspProxy::kickUpdatedCallback(void *arg,
                                       gkick_real *buff,
                                       size_t size,
                                       size_t id)
@@ -1138,28 +1138,28 @@ void GeonkickApi::kickUpdatedCallback(void *arg,
         GEONKICK_LOG_DEBUG("size[" << id << "] : " << size);
         std::vector<gkick_real> buffer(size, 0);
         std::memcpy(buffer.data(), buff, size * sizeof(gkick_real));
-        GeonkickApi *obj = static_cast<GeonkickApi*>(arg);
+        DspProxy *obj = static_cast<DspProxy*>(arg);
         if (obj)
                 obj->updateKickBuffer(std::move(buffer), id);
 }
 
-void GeonkickApi::limiterCallback(void *arg, size_t index, gkick_real val)
+void DspProxy::limiterCallback(void *arg, size_t index, gkick_real val)
 {
         if (index >= numberOfInstruments())
                 return;
 
-        auto obj = static_cast<GeonkickApi*>(arg);
+        auto obj = static_cast<DspProxy*>(arg);
         if (obj)
                 obj->setLimiterLevelerValue(index, val);
 }
 
-void GeonkickApi::setLimiterLevelerValue(size_t index, double val)
+void DspProxy::setLimiterLevelerValue(size_t index, double val)
 {
         if (index < limiterLevelers.size())
                 limiterLevelers[index] = val;
 }
 
-double GeonkickApi::getLimiterLevelerValue(size_t index) const
+double DspProxy::getLimiterLevelerValue(size_t index) const
 {
         if (index == static_cast<size_t>(-1))
                 index = currentPercussion();
@@ -1168,11 +1168,11 @@ double GeonkickApi::getLimiterLevelerValue(size_t index) const
         return 0;
 }
 
-void GeonkickApi::updateKickBuffer(const std::vector<gkick_real> &&buffer,
+void DspProxy::updateKickBuffer(const std::vector<gkick_real> &&buffer,
                                    size_t id)
 {
         GEONKICK_LOG_DEBUG("id: " << id);
-        std::lock_guard<std::mutex> lock(apiMutex);
+        std::lock_guard<std::mutex> lock(dspMutex);
         if (id < numberOfInstruments()) {
                 GEONKICK_LOG_DEBUG("kickBuffers[id] = buffer" << id);
                 kickBuffers[id] = buffer;
@@ -1185,203 +1185,203 @@ void GeonkickApi::updateKickBuffer(const std::vector<gkick_real> &&buffer,
         }
 }
 
-std::vector<gkick_real> GeonkickApi::getInstrumentBuffer(int id) const
+std::vector<gkick_real> DspProxy::getInstrumentBuffer(int id) const
 {
         {
-                std::lock_guard<std::mutex> lock(apiMutex);
+                std::lock_guard<std::mutex> lock(dspMutex);
                 if (static_cast<decltype(kickBuffers.size())>(id) < kickBuffers.size())
                         return kickBuffers[id];
         }
         return std::vector<gkick_real>();
 }
 
-std::vector<gkick_real> GeonkickApi::getKickBuffer() const
+std::vector<gkick_real> DspProxy::getKickBuffer() const
 {
-        std::lock_guard<std::mutex> lock(apiMutex);
+        std::lock_guard<std::mutex> lock(dspMutex);
         return kickBuffers[currentPercussion()];
 }
 
-int GeonkickApi::getSampleRate() const
+int DspProxy::getSampleRate() const
 {
         int sample_rate;
-        if (geonkick_get_sample_rate(geonkickApi, &sample_rate) != GEONKICK_OK)
+        if (geonkick_get_sample_rate(geonkickDsp, &sample_rate) != GEONKICK_OK)
                 sample_rate = 0;
 
         return sample_rate;
 }
 
 // This function is called only from the audio thread.
-void GeonkickApi::setKeyPressed(bool b, int note, int velocity)
+void DspProxy::setKeyPressed(bool b, int note, int velocity)
 {
-        geonkick_key_pressed(geonkickApi, b, note, velocity);
+        geonkick_key_pressed(geonkickDsp, b, note, velocity);
 }
 
-void GeonkickApi::playKick(int id)
+void DspProxy::playKick(int id)
 {
         if (id < 0)
                 id = currentPercussion();
-        geonkick_play(geonkickApi, id);
+        geonkick_play(geonkickDsp, id);
 }
 
-void GeonkickApi::playSamplePreview()
+void DspProxy::playSamplePreview()
 {
-        geonkick_play_sample_preview(geonkickApi);
+        geonkick_play_sample_preview(geonkickDsp);
 }
 
-void GeonkickApi::process(float** out, size_t offset, size_t size)
+void DspProxy::process(float** out, size_t offset, size_t size)
 {
-        geonkick_audio_process(geonkickApi, out, offset, size);
+        geonkick_audio_process(geonkickDsp, out, offset, size);
 }
 
-bool GeonkickApi::enableDistortion(bool enable)
+bool DspProxy::enableDistortion(bool enable)
 {
-        auto res = geonkick_distortion_enable(geonkickApi, enable);
+        auto res = geonkick_distortion_enable(geonkickDsp, enable);
         return res == GEONKICK_OK;
 }
 
-bool GeonkickApi::isDistortionEnabled() const
+bool DspProxy::isDistortionEnabled() const
 {
         bool enabled = false;
-        geonkick_distortion_is_enabled(geonkickApi, &enabled);
+        geonkick_distortion_is_enabled(geonkickDsp, &enabled);
         return enabled;
 }
 
-bool GeonkickApi::setDistortionType(GeonkickApi::DistortionType type)
+bool DspProxy::setDistortionType(DspProxy::DistortionType type)
 {
-        auto res = geonkick_distortion_set_type(geonkickApi, static_cast<enum gkick_distortion_type>(type));
+        auto res = geonkick_distortion_set_type(geonkickDsp, static_cast<enum gkick_distortion_type>(type));
         return res == GEONKICK_OK;
 }
 
-GeonkickApi::DistortionType GeonkickApi::getDistortionType() const
+DspProxy::DistortionType DspProxy::getDistortionType() const
 {
         enum gkick_distortion_type type = GEONKICK_DISTORTION_SOFT_CLIPPING_TANH;
-        geonkick_distortion_get_type(geonkickApi, &type);
-        return static_cast<GeonkickApi::DistortionType>(type);
+        geonkick_distortion_get_type(geonkickDsp, &type);
+        return static_cast<DspProxy::DistortionType>(type);
 }
 
-bool GeonkickApi::setDistortionInLimiter(double value)
+bool DspProxy::setDistortionInLimiter(double value)
 {
-        auto res = geonkick_distortion_set_in_limiter(geonkickApi, value);
+        auto res = geonkick_distortion_set_in_limiter(geonkickDsp, value);
         return res == GEONKICK_OK;
 }
 
-double GeonkickApi::getDistortionInLimiter() const
+double DspProxy::getDistortionInLimiter() const
 {
         float value = 0.0f;
-        geonkick_distortion_get_in_limiter(geonkickApi, &value);
+        geonkick_distortion_get_in_limiter(geonkickDsp, &value);
         return value;
 }
 
-bool GeonkickApi::setDistortionOutLimiter(double value)
+bool DspProxy::setDistortionOutLimiter(double value)
 {
-        auto res = geonkick_distortion_set_out_limiter(geonkickApi, value);
+        auto res = geonkick_distortion_set_out_limiter(geonkickDsp, value);
         return res == GEONKICK_OK;
 }
 
-double GeonkickApi::getDistortionOutLimiter(void) const
+double DspProxy::getDistortionOutLimiter(void) const
 {
         gkick_real value = 0;
-        geonkick_distortion_get_out_limiter(geonkickApi, &value);
+        geonkick_distortion_get_out_limiter(geonkickDsp, &value);
         return value;
 }
 
-bool GeonkickApi::setDistortionDrive(double drive)
+bool DspProxy::setDistortionDrive(double drive)
 {
-        auto res = geonkick_distortion_set_drive(geonkickApi, drive);
+        auto res = geonkick_distortion_set_drive(geonkickDsp, drive);
         return res == GEONKICK_OK;
 }
 
-double GeonkickApi::getDistortionDrive(void) const
+double DspProxy::getDistortionDrive(void) const
 {
         gkick_real drive = 0;
-        geonkick_distortion_get_drive(geonkickApi, &drive);
+        geonkick_distortion_get_drive(geonkickDsp, &drive);
         return drive;
 }
 
-void GeonkickApi::registerCallbacks(bool b)
+void DspProxy::registerCallbacks(bool b)
 {
         if (b) {
-                geonkick_set_kick_buffer_callback(geonkickApi,
-                                                  &GeonkickApi::kickUpdatedCallback,
+                geonkick_set_kick_buffer_callback(geonkickDsp,
+                                                  &DspProxy::kickUpdatedCallback,
                                                   this);
-                geonkick_set_kick_limiter_callback(geonkickApi,
-                                                   &GeonkickApi::limiterCallback,
+                geonkick_set_kick_limiter_callback(geonkickDsp,
+                                                   &DspProxy::limiterCallback,
                                                    this);
         } else {
-                geonkick_set_kick_buffer_callback(geonkickApi, NULL, NULL);
-                geonkick_set_kick_limiter_callback(geonkickApi, NULL, NULL);
+                geonkick_set_kick_buffer_callback(geonkickDsp, NULL, NULL);
+                geonkick_set_kick_limiter_callback(geonkickDsp, NULL, NULL);
         }
 }
 
-bool GeonkickApi::isJackEnabled() const
+bool DspProxy::isJackEnabled() const
 {
         return jackEnabled;
 }
 
-void GeonkickApi::setStandalone(bool b)
+void DspProxy::setStandalone(bool b)
 {
         standaloneInstance = b;
 }
 
-bool GeonkickApi::isStandalone() const
+bool DspProxy::isStandalone() const
 {
         return standaloneInstance;
 }
 
-void GeonkickApi::triggerSynthesis()
+void DspProxy::triggerSynthesis()
 {
-        geonkick_enable_synthesis(geonkickApi, true);
+        geonkick_enable_synthesis(geonkickDsp, true);
 }
 
-void GeonkickApi::setLayer(Layer layer)
+void DspProxy::setLayer(Layer layer)
 {
         currentLayer = layer;
 }
 
-GeonkickApi::Layer GeonkickApi::layer() const
+DspProxy::Layer DspProxy::layer() const
 {
         return currentLayer;
 }
 
-void GeonkickApi::setLayerAmplitude(Layer layer, double amplitude)
+void DspProxy::setLayerAmplitude(Layer layer, double amplitude)
 {
-        geonkick_group_set_amplitude(geonkickApi,
+        geonkick_group_set_amplitude(geonkickDsp,
                                      static_cast<size_t>(layer),
                                      amplitude);
 }
 
-double GeonkickApi::getLayerAmplitude(Layer layer) const
+double DspProxy::getLayerAmplitude(Layer layer) const
 {
         gkick_real amplitude = 0;
-        geonkick_group_get_amplitude(geonkickApi,
+        geonkick_group_get_amplitude(geonkickDsp,
                                      static_cast<size_t>(layer),
                                      &amplitude);
         return amplitude;
 }
 
-void GeonkickApi::enbaleLayer(Layer layer, bool enable)
+void DspProxy::enbaleLayer(Layer layer, bool enable)
 {
-        geonkick_enable_group(geonkickApi,
+        geonkick_enable_group(geonkickDsp,
                               static_cast<int>(layer),
                               enable);
 }
 
-bool GeonkickApi::isLayerEnabled(Layer layer) const
+bool DspProxy::isLayerEnabled(Layer layer) const
 {
         bool enabled = false;
-        geonkick_group_enabled(geonkickApi,
+        geonkick_group_enabled(geonkickDsp,
                                static_cast<int>(layer),
                                &enabled);
         return enabled;
 }
 
-int GeonkickApi::getOscIndex(int index) const
+int DspProxy::getOscIndex(int index) const
 {
         return index + GKICK_OSC_GROUP_SIZE * static_cast<int>(currentLayer);
 }
 
 std::filesystem::path
-GeonkickApi::currentWorkingPath(const std::string &key) const
+DspProxy::currentWorkingPath(const std::string &key) const
 {
         auto it = workingPaths.find(key);
         if (it != workingPaths.end())
@@ -1389,81 +1389,81 @@ GeonkickApi::currentWorkingPath(const std::string &key) const
         return getSettings("GEONKICK_CONFIG/HOME_PATH");
 }
 
-void GeonkickApi::setCurrentWorkingPath(const std::string &key,
+void DspProxy::setCurrentWorkingPath(const std::string &key,
                                         const std::filesystem::path &path)
 {
         workingPaths[key] = path;
 }
 
-bool GeonkickApi::setPercussionLimiter(size_t id, double val)
+bool DspProxy::setPercussionLimiter(size_t id, double val)
 {
-	return geonkick_percussion_set_limiter(geonkickApi, id, val) == GEONKICK_OK;
+	return geonkick_percussion_set_limiter(geonkickDsp, id, val) == GEONKICK_OK;
 }
 
-double GeonkickApi::percussionLimiter(size_t id) const
+double DspProxy::percussionLimiter(size_t id) const
 {
         gkick_real val = 0.0f;
-        geonkick_percussion_get_limiter(geonkickApi, id, &val);
+        geonkick_percussion_get_limiter(geonkickDsp, id, &val);
         return val;
 }
 
-bool GeonkickApi::mutePercussion(size_t id, bool b)
+bool DspProxy::mutePercussion(size_t id, bool b)
 {
-        return geonkick_percussion_mute(geonkickApi, id, b) == GEONKICK_OK;
+        return geonkick_percussion_mute(geonkickDsp, id, b) == GEONKICK_OK;
 }
 
-bool GeonkickApi::isPercussionMuted(size_t id) const
+bool DspProxy::isPercussionMuted(size_t id) const
 {
         bool muted = false;
-        geonkick_percussion_is_muted(geonkickApi, id, &muted);
+        geonkick_percussion_is_muted(geonkickDsp, id, &muted);
         return muted;
 }
 
-bool GeonkickApi::soloPercussion(size_t id, bool b)
+bool DspProxy::soloPercussion(size_t id, bool b)
 {
-        return geonkick_percussion_solo(geonkickApi, id, b) == GEONKICK_OK;
+        return geonkick_percussion_solo(geonkickDsp, id, b) == GEONKICK_OK;
 }
 
-bool GeonkickApi::isPercussionSolo(size_t id) const
+bool DspProxy::isPercussionSolo(size_t id) const
 {
         bool solo = false;
-        geonkick_percussion_is_solo(geonkickApi, id, &solo);
+        geonkick_percussion_is_solo(geonkickDsp, id, &solo);
         return solo;
 }
 
-bool GeonkickApi::enableNoteOff(size_t id, bool b)
+bool DspProxy::enableNoteOff(size_t id, bool b)
 {
-        return geonkick_percussion_enable_note_off(geonkickApi, id, b) == GEONKICK_OK;
+        return geonkick_percussion_enable_note_off(geonkickDsp, id, b) == GEONKICK_OK;
 }
 
-bool GeonkickApi::isNoteOffEnabled(size_t id) const
+bool DspProxy::isNoteOffEnabled(size_t id) const
 {
         bool enabled = false;
-        geonkick_percussion_note_off_enabled(geonkickApi, id, &enabled);
+        geonkick_percussion_note_off_enabled(geonkickDsp, id, &enabled);
         return enabled;
 }
 
-int GeonkickApi::getUnusedPercussion() const
+int DspProxy::getUnusedPercussion() const
 {
         int index;
-        geonkick_unused_percussion(geonkickApi, &index);
+        geonkick_unused_percussion(geonkickDsp, &index);
         return index;
 }
 
-bool GeonkickApi::enablePercussion(int index, bool enable)
+bool DspProxy::enablePercussion(int index, bool enable)
 {
-        auto res = geonkick_enable_percussion(geonkickApi, index, enable);
+        auto res = geonkick_enable_percussion(geonkickDsp, index, enable);
         return res == GEONKICK_OK;
 }
 
-bool GeonkickApi::isPercussionEnabled(int index) const
+bool DspProxy::isPercussionEnabled(int index) const
 {
         bool enabled = false;
-        geonkick_is_percussion_enabled(geonkickApi, index, &enabled);
+        geonkick_is_percussion_enabled(geonkickDsp, index, &enabled);
         return enabled;
 }
 
-size_t GeonkickApi::enabledPercussions() const
+size_t DspProxy::enabledPercussions() const
 {
         auto n = numberOfInstruments();
         size_t enabled  = 0;
@@ -1474,42 +1474,42 @@ size_t GeonkickApi::enabledPercussions() const
         return enabled;
 }
 
-bool GeonkickApi::setPercussionPlayingKey(int index, int key)
+bool DspProxy::setPercussionPlayingKey(int index, int key)
 {
-        auto res = geonkick_set_playing_key(geonkickApi,
+        auto res = geonkick_set_playing_key(geonkickDsp,
                                             index,
                                             key);
         GEONKICK_LOG_DEBUG("index " << index << " key:" << key);
         return res == GEONKICK_OK;
 }
 
-int GeonkickApi::getPercussionPlayingKey(int index) const
+int DspProxy::getPercussionPlayingKey(int index) const
 {
         signed char key = -1;
-        geonkick_get_playing_key(geonkickApi,
+        geonkick_get_playing_key(geonkickDsp,
                                  index,
                                  &key);
         return key;
 }
 
-int GeonkickApi::percussionsReferenceKey() const
+int DspProxy::percussionsReferenceKey() const
 {
         // MIDI key A4
         return 69;
 }
 
-bool GeonkickApi::setPercussionChannel(int index, size_t channel)
+bool DspProxy::setPercussionChannel(int index, size_t channel)
 {
-        auto res = geonkick_set_percussion_channel(geonkickApi,
+        auto res = geonkick_set_percussion_channel(geonkickDsp,
                                                    index,
                                                    channel);
         return res == GEONKICK_OK;
 }
 
-int GeonkickApi::getPercussionChannel(int index) const
+int DspProxy::getPercussionChannel(int index) const
 {
         size_t channel;
-        auto res = geonkick_get_percussion_channel(geonkickApi,
+        auto res = geonkick_get_percussion_channel(geonkickDsp,
                                                    index,
                                                    &channel);
         if (res != GEONKICK_OK)
@@ -1517,18 +1517,18 @@ int GeonkickApi::getPercussionChannel(int index) const
         return channel;
 }
 
-bool GeonkickApi::setPercussionMidiChannel(int index, size_t channel)
+bool DspProxy::setPercussionMidiChannel(int index, size_t channel)
 {
-        auto res = geonkick_set_midi_channel(geonkickApi,
+        auto res = geonkick_set_midi_channel(geonkickDsp,
                                              index,
                                              channel);
         return res == GEONKICK_OK;
 }
 
-int GeonkickApi::getPercussionMidiChannel(int index) const
+int DspProxy::getPercussionMidiChannel(int index) const
 {
         signed char channel;
-        auto res = geonkick_get_midi_channel(geonkickApi,
+        auto res = geonkick_get_midi_channel(geonkickDsp,
                                              index,
                                              &channel);
         if (res != GEONKICK_OK)
@@ -1536,37 +1536,37 @@ int GeonkickApi::getPercussionMidiChannel(int index) const
         return channel;
 }
 
-bool GeonkickApi::forceMidiChannel(size_t channel, bool force)
+bool DspProxy::forceMidiChannel(size_t channel, bool force)
 {
-        auto res = geonkick_force_midi_channel(geonkickApi, channel, force);
+        auto res = geonkick_force_midi_channel(geonkickDsp, channel, force);
         return res == GEONKICK_OK;
 }
 
-bool GeonkickApi::isMidiChannelForced() const
+bool DspProxy::isMidiChannelForced() const
 {
         bool forced = false;
-        geonkick_ged_forced_midi_channel(geonkickApi, nullptr, &forced);
+        geonkick_ged_forced_midi_channel(geonkickDsp, nullptr, &forced);
         return forced;
 }
 
-bool GeonkickApi::setPercussionName(int index, const std::string &name)
+bool DspProxy::setPercussionName(int index, const std::string &name)
 {
         if (name.empty())
                 return false;
 
-        auto res = geonkick_set_percussion_name(geonkickApi,
+        auto res = geonkick_set_percussion_name(geonkickDsp,
                                                 index,
                                                 name.c_str(),
                                                 name.size());
         return res == GEONKICK_OK;
 }
 
-std::string GeonkickApi::getPercussionName(int index) const
+std::string DspProxy::getPercussionName(int index) const
 {
         auto n = numberOfInstruments();
         if (index > -1 && index < static_cast<decltype(index)>(n)) {
                 char name[30];
-                geonkick_get_percussion_name(geonkickApi,
+                geonkick_get_percussion_name(geonkickDsp,
                                              index,
                                              name,
                                              sizeof(name));
@@ -1575,50 +1575,50 @@ std::string GeonkickApi::getPercussionName(int index) const
         return "";
 }
 
-void GeonkickApi::setSettings(const std::string &key, const std::string &value)
+void DspProxy::setSettings(const std::string &key, const std::string &value)
 {
         uiSettings->setSettings(key, value);
 }
 
-std::string GeonkickApi::getSettings(const std::string &key) const
+std::string DspProxy::getSettings(const std::string &key) const
 {
         return uiSettings->getSettings(key);
 }
 
-void GeonkickApi::tuneAudioOutput(int id, bool tune)
+void DspProxy::tuneAudioOutput(int id, bool tune)
 {
-        geonkick_tune_audio_output(geonkickApi,
+        geonkick_tune_audio_output(geonkickDsp,
                                    id,
                                    tune);
 }
 
-bool GeonkickApi::isAudioOutputTuned(int id) const
+bool DspProxy::isAudioOutputTuned(int id) const
 {
         bool tune = false;
-        geonkick_is_audio_output_tuned(geonkickApi,
+        geonkick_is_audio_output_tuned(geonkickDsp,
                                        id,
                                        &tune);
         return tune;
 }
 
-bool GeonkickApi::setCurrentPercussion(int index)
+bool DspProxy::setCurrentPercussion(int index)
 {
-        auto res = geonkick_set_current_percussion(geonkickApi, index);
+        auto res = geonkick_set_current_percussion(geonkickDsp, index);
         return res == GEONKICK_OK;
 }
 
-size_t GeonkickApi::currentPercussion() const
+size_t DspProxy::currentPercussion() const
 {
         size_t index = 0;
-        geonkick_get_current_percussion(geonkickApi, &index);
+        geonkick_get_current_percussion(geonkickDsp, &index);
         return index;
 }
 
-bool GeonkickApi::setOscillatorSample(const std::string &file,
+bool DspProxy::setOscillatorSample(const std::string &file,
                                       int oscillatorIndex)
 {
         int sRate = Geonkick::defaultSampleRate;
-        geonkick_get_sample_rate(geonkickApi, &sRate);
+        geonkick_get_sample_rate(geonkickDsp, &sRate);
         auto sampleData = loadSample(file,
                                      kickMaxLength() / 1000,
                                      sRate,
@@ -1630,21 +1630,21 @@ bool GeonkickApi::setOscillatorSample(const std::string &file,
         return false;
 }
 
-void GeonkickApi::setOscillatorSample(const std::vector<float> &sample,
+void DspProxy::setOscillatorSample(const std::vector<float> &sample,
                                       int oscillatorIndex)
 {
-        geonkick_set_osc_sample(geonkickApi,
+        geonkick_set_osc_sample(geonkickDsp,
                                 getOscIndex(oscillatorIndex),
                                 sample.data(),
                                 sample.size());
 }
 
 std::vector<float>
-GeonkickApi::getOscillatorSample(int oscillatorIndex) const
+DspProxy::getOscillatorSample(int oscillatorIndex) const
 {
         gkick_real *data = nullptr;
         size_t size = 0;
-        geonkick_get_osc_sample(geonkickApi,
+        geonkick_get_osc_sample(geonkickDsp,
                                 getOscIndex(oscillatorIndex),
                                 &data,
                                 &size);
@@ -1653,7 +1653,7 @@ GeonkickApi::getOscillatorSample(int oscillatorIndex) const
         return {};
 }
 
-std::vector<gkick_real> GeonkickApi::loadSample(const std::string &file,
+std::vector<gkick_real> DspProxy::loadSample(const std::string &file,
                                                 double length,
                                                 int sampleRate,
                                                 int channels)
@@ -1724,42 +1724,42 @@ std::vector<gkick_real> GeonkickApi::loadSample(const std::string &file,
         return data;
 }
 
-void GeonkickApi::setKitName(const std::string &name)
+void DspProxy::setKitName(const std::string &name)
 {
         kitName = name;
 }
 
-std::string GeonkickApi::getKitName() const
+std::string DspProxy::getKitName() const
 {
         return kitName;
 }
 
-void GeonkickApi::setKitAuthor(const std::string &author)
+void DspProxy::setKitAuthor(const std::string &author)
 {
         kitAuthor = author;
 }
 
-std::string GeonkickApi::getKitAuthor() const
+std::string DspProxy::getKitAuthor() const
 {
         return kitAuthor;
 }
 
-void GeonkickApi::setKitUrl(const std::string &url)
+void DspProxy::setKitUrl(const std::string &url)
 {
         kitUrl = url;
 }
 
-std::string GeonkickApi::getKitUrl() const
+std::string DspProxy::getKitUrl() const
 {
         return kitUrl;
 }
 
-void GeonkickApi::copyToClipboard()
+void DspProxy::copyToClipboard()
 {
         clipboardPercussion = getPercussionState();
 }
 
-void GeonkickApi::pasteFromClipboard()
+void DspProxy::pasteFromClipboard()
 {
         if (clipboardPercussion) {
                 auto state = std::make_unique<PercussionState>(*clipboardPercussion);
@@ -1775,7 +1775,7 @@ void GeonkickApi::pasteFromClipboard()
         }
 }
 
-void GeonkickApi::notifyUpdateGraph()
+void DspProxy::notifyUpdateGraph()
 {
         if (eventQueue) {
                 auto act = std::make_unique<RkAction>();
@@ -1784,7 +1784,7 @@ void GeonkickApi::notifyUpdateGraph()
         }
 }
 
-void GeonkickApi::notifyUpdateParameters()
+void DspProxy::notifyUpdateParameters()
 {
         if (eventQueue) {
                 auto act = std::make_unique<RkAction>();
@@ -1793,7 +1793,7 @@ void GeonkickApi::notifyUpdateParameters()
         }
 }
 
-void GeonkickApi::notifyUpdateGui()
+void DspProxy::notifyUpdateGui()
 {
         if (eventQueue) {
                 auto act = std::make_unique<RkAction>();
@@ -1805,7 +1805,7 @@ void GeonkickApi::notifyUpdateGui()
         }
 }
 
-void GeonkickApi::notifyPercussionUpdated(int id)
+void DspProxy::notifyPercussionUpdated(int id)
 {
         if (eventQueue) {
                 auto act = std::make_unique<RkAction>();
@@ -1817,7 +1817,7 @@ void GeonkickApi::notifyPercussionUpdated(int id)
         }
 }
 
-void GeonkickApi::notifyKitUpdated()
+void DspProxy::notifyKitUpdated()
 {
         if (eventQueue) {
                 auto act = std::make_unique<RkAction>();
@@ -1828,12 +1828,12 @@ void GeonkickApi::notifyKitUpdated()
         }
 }
 
-std::vector<int> GeonkickApi::ordredPercussionIds() const
+std::vector<int> DspProxy::ordredPercussionIds() const
 {
         return percussionIdList;
 }
 
-void GeonkickApi::removeOrderedPercussionId(int id)
+void DspProxy::removeOrderedPercussionId(int id)
 {
         for (auto it = percussionIdList.begin(); it != percussionIdList.end(); ++it) {
                 if (*it == id) {
@@ -1843,18 +1843,18 @@ void GeonkickApi::removeOrderedPercussionId(int id)
         }
 }
 
-void GeonkickApi::addOrderedPercussionId(int id)
+void DspProxy::addOrderedPercussionId(int id)
 {
         removeOrderedPercussionId(id);
         percussionIdList.push_back(id);
 }
 
-void GeonkickApi::clearOrderedPercussionIds()
+void DspProxy::clearOrderedPercussionIds()
 {
         percussionIdList.clear();
 }
 
-bool GeonkickApi::moveOrdrepedPercussionId(int index, int n)
+bool DspProxy::moveOrdrepedPercussionId(int index, int n)
 {
         if (index < 0)
                 return false;
@@ -1872,7 +1872,7 @@ bool GeonkickApi::moveOrdrepedPercussionId(int index, int n)
         return false;
 }
 
-void GeonkickApi::loadPresets()
+void DspProxy::loadPresets()
 {
         std::unordered_set<std::string> prestsPaths;
         auto presetsPathSufix = std::filesystem::path(GEONKICK_APP_NAME) / "presets";
@@ -1904,7 +1904,7 @@ void GeonkickApi::loadPresets()
         }
 }
 
-void GeonkickApi::loadPresetsFolders(const std::filesystem::path &path)
+void DspProxy::loadPresetsFolders(const std::filesystem::path &path)
 {
         try {
                 for (const auto &entry : std::filesystem::directory_iterator(path)) {
@@ -1919,7 +1919,7 @@ void GeonkickApi::loadPresetsFolders(const std::filesystem::path &path)
         }
 }
 
-void GeonkickApi::setupPaths()
+void DspProxy::setupPaths()
 {
 	DesktopPaths desktopPaths;
 	setSettings("GEONKICK_CONFIG/HOME_PATH", desktopPaths.getHomePath().string());
@@ -1945,24 +1945,24 @@ void GeonkickApi::setupPaths()
         }
 }
 
-PresetFolder* GeonkickApi::getPresetFolder(size_t index) const
+PresetFolder* DspProxy::getPresetFolder(size_t index) const
 {
         if (index < presetsFoldersList.size())
                 return presetsFoldersList[index].get();
         return nullptr;
 }
 
-size_t GeonkickApi::numberOfPresetFolders() const
+size_t DspProxy::numberOfPresetFolders() const
 {
         return presetsFoldersList.size();
 }
 
-UiSettings* GeonkickApi::getUiSettings() const
+UiSettings* DspProxy::getUiSettings() const
 {
         return uiSettings.get();
 }
 
-void GeonkickApi::setState(const std::string &data)
+void DspProxy::setState(const std::string &data)
 {
         rapidjson::Document document;
         document.Parse(data.c_str());
@@ -1980,7 +1980,7 @@ void GeonkickApi::setState(const std::string &data)
         }
 }
 
-std::string GeonkickApi::getState() const
+std::string DspProxy::getState() const
 {
         std::ostringstream jsonStream;
         jsonStream << "{\"UiSettings\": " << std::endl;
@@ -1991,39 +1991,39 @@ std::string GeonkickApi::getState() const
         return jsonStream.str();
 }
 
-std::vector<gkick_real> GeonkickApi::setPreviewSample(const std::string &file)
+std::vector<gkick_real> DspProxy::setPreviewSample(const std::string &file)
 {
         int sRate = Geonkick::defaultSampleRate;
-        geonkick_get_sample_rate(geonkickApi, &sRate);
+        geonkick_get_sample_rate(geonkickDsp, &sRate);
         std::vector<gkick_real> sampleData = loadSample(file,
                                                         kickMaxLength() / 1000,
                                                         sRate,
                                                         1);
         if (!sampleData.empty()) {
-                geonkick_set_preview_sample(geonkickApi, sampleData.data(), sampleData.size());
+                geonkick_set_preview_sample(geonkickDsp, sampleData.data(), sampleData.size());
                 return sampleData;
         }
         return std::vector<float>();
 }
 
-void GeonkickApi::setSamplePreviewLimiter(double val)
+void DspProxy::setSamplePreviewLimiter(double val)
 {
-        geonkick_set_sample_preview_limiter(geonkickApi, val);
+        geonkick_set_sample_preview_limiter(geonkickDsp, val);
 }
 
-double GeonkickApi::samplePreviewLimiter() const
+double DspProxy::samplePreviewLimiter() const
 {
         gkick_real val = 0;
-        geonkick_get_sample_preview_limiter(geonkickApi, &val);
+        geonkick_get_sample_preview_limiter(geonkickDsp, &val);
         return val;
 }
 
-double GeonkickApi::getScaleFactor() const
+double DspProxy::getScaleFactor() const
 {
         return scaleFactor;
 }
 
-void GeonkickApi::setScaleFactor(double factor)
+void DspProxy::setScaleFactor(double factor)
 {
         scaleFactor = factor;
         GeonkickConfig config;

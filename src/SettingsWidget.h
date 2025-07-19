@@ -27,7 +27,7 @@
 #include "geonkick_widget.h"
 #include "geonkick_button.h"
 
-class GeonkickApi;
+class DspProxy;
 class RkContainer;
 
 class SettingsCheckBox: public GeonkickButton {
@@ -37,7 +37,7 @@ public:
 
 class SettingsWidget: public GeonkickWidget {
  public:
-        SettingsWidget(GeonkickWidget *parent, GeonkickApi* api);
+        SettingsWidget(GeonkickWidget *parent, DspProxy* dsp);
 
  protected:
         void createMidiChannelSettings(RkContainer *container);
@@ -45,7 +45,7 @@ class SettingsWidget: public GeonkickWidget {
         void createShowSidebarSettings(RkContainer *container);
 
  private:
-        GeonkickApi *geonkickApi;
+        DspProxy *dspProxy;
 };
 
 #endif // GEONKICK_SETTINGS_WIDGET

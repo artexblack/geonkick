@@ -28,7 +28,7 @@
 #include "AbstractModel.h"
 #include "OscillatorModel.h"
 
-class GeonkickApi;
+class DspProxy;
 class GeonkickState;
 class KitModel;
 class FilterModel;

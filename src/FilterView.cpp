@@ -178,9 +178,9 @@ void FilterView::updateView()
 
 void FilterView::updateTypeButtons()
 {
-        lpFilterButton->setPressed(filterModel->type() == GeonkickApi::FilterType::LowPass);
-        hpFilterButton->setPressed(filterModel->type() == GeonkickApi::FilterType::HighPass);
-        bpFilterButton->setPressed(filterModel->type() == GeonkickApi::FilterType::BandPass);
+        lpFilterButton->setPressed(filterModel->type() == DspProxy::FilterType::LowPass);
+        hpFilterButton->setPressed(filterModel->type() == DspProxy::FilterType::HighPass);
+        bpFilterButton->setPressed(filterModel->type() == DspProxy::FilterType::BandPass);
 }
 
 void FilterView::bindModel()
@@ -188,9 +188,9 @@ void FilterView::bindModel()
         filterModel = static_cast<FilterModel*>(getModel());
         RK_ACT_BIND(cutOffKnob, valueUpdated, RK_ACT_ARGS(double val), filterModel, setCutOff(val));
         RK_ACT_BIND(resonanceKnob, valueUpdated, RK_ACT_ARGS(double val), filterModel, setResonance(val));
-        RK_ACT_BIND(lpFilterButton, toggled, RK_ACT_ARGS(bool b), this, onTypeChanged(GeonkickApi::FilterType::LowPass));
-        RK_ACT_BIND(bpFilterButton, toggled, RK_ACT_ARGS(bool b), this, onTypeChanged(GeonkickApi::FilterType::BandPass));
-        RK_ACT_BIND(hpFilterButton, toggled, RK_ACT_ARGS(bool b), this, onTypeChanged(GeonkickApi::FilterType::HighPass));
+        RK_ACT_BIND(lpFilterButton, toggled, RK_ACT_ARGS(bool b), this, onTypeChanged(DspProxy::FilterType::LowPass));
+        RK_ACT_BIND(bpFilterButton, toggled, RK_ACT_ARGS(bool b), this, onTypeChanged(DspProxy::FilterType::BandPass));
+        RK_ACT_BIND(hpFilterButton, toggled, RK_ACT_ARGS(bool b), this, onTypeChanged(DspProxy::FilterType::HighPass));
         RK_ACT_BIND(filterModel, modelUpdated, RK_ACT_ARGS(), this, updateView());
 }
 
@@ -204,7 +204,7 @@ void FilterView::unbindModel()
         hpFilterButton->unbindObject(getModel());
 }
 
-void FilterView::onTypeChanged(GeonkickApi::FilterType type)
+void FilterView::onTypeChanged(DspProxy::FilterType type)
 {
         filterModel->setType(type);
         updateTypeButtons();

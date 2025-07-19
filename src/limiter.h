@@ -30,13 +30,13 @@
 
 class GeonkickSlider;
 class GeonkickLevel;
-class GeonkickApi;
+class DspProxy;
 class RkTimer;
 
 class Limiter: public GeonkickWidget
 {
  public:
-        Limiter(GeonkickApi *api, GeonkickWidget *parent);
+        Limiter(DspProxy *dsp, GeonkickWidget *parent);
         int getFaderValue(void) const;
         int getMeterValue() const;
 
@@ -56,7 +56,7 @@ class Limiter: public GeonkickWidget
 
  private:
         void paintWidget(RkPaintEvent *event) final;
-        GeonkickApi *geonkickApi;
+        DspProxy *dspProxy;
         GeonkickSlider *faderSlider;
         int meterValue;
         RkTimer *meterTimer;

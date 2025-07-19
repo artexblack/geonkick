@@ -28,14 +28,14 @@
 #include "envelope.h"
 
 class GeonkickSlider;
-class GeonkickApi;
+class DspProxy;
 class GeonkickButton;
 class EnvelopeWidget;
 
 class DistortionGroupBox: public GeonkickGroupBox
 {
  public:
-        DistortionGroupBox(GeonkickApi *api, GeonkickWidget *parent);
+        DistortionGroupBox(DspProxy *dsp, GeonkickWidget *parent);
         ~DistortionGroupBox() = default;
 
         void updateGui();
@@ -43,7 +43,7 @@ class DistortionGroupBox: public GeonkickGroupBox
         void setDrive(int val);
         void setInLimiter(int val);
  private:
-        GeonkickApi *geonkickApi;
+        DspProxy *dspProxy;
         GeonkickSlider *volumeSlider;
         GeonkickSlider *inLimiterSlider;
         GeonkickSlider *driveSlider;

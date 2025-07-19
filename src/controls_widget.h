@@ -26,7 +26,7 @@
 
 #include "geonkick_widget.h"
 
-class GeonkickApi;
+class DspProxy;
 class Oscillator;
 class EnvelopeWidget;
 class GeonkickModel;

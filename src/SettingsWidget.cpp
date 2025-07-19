@@ -22,7 +22,7 @@
  */
 
 #include "SettingsWidget.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 #include "GeonkickConfig.h"
 
 #include "RkContainer.h"
@@ -56,9 +56,9 @@ SettingsCheckBox::SettingsCheckBox(GeonkickWidget *parent, const RkSize &size)
         show();
 }
 
-SettingsWidget::SettingsWidget(GeonkickWidget *parent, GeonkickApi* api)
+SettingsWidget::SettingsWidget(GeonkickWidget *parent, DspProxy* dsp)
         : GeonkickWidget(parent, Rk::WidgetFlags::Popup)
-        , geonkickApi{api}
+        , dspProxy{dsp}
 {
         setFixedSize({450, 250});
         setBackgroundColor({68, 68, 70});
@@ -112,7 +112,7 @@ void SettingsWidget::createMidiChannelSettings(RkContainer *container)
                      [=, this](bool b){
                              GeonkickConfig cfg;
                              cfg.setMidiChannelForced(b);
-                             geonkickApi->forceMidiChannel(cfg.getMidiChannel(),
+                             dspProxy->forceMidiChannel(cfg.getMidiChannel(),
                                                            cfg.isMidiChannelForced());
                              cfg.save();});
         horizontalContainer->addWidget(forceMidiCheckBox);
@@ -135,7 +135,7 @@ void SettingsWidget::createMidiChannelSettings(RkContainer *container)
         midiChannelSpinBox->downControl()->setTextColor({100, 100, 100});
         midiChannelSpinBox->setSize({50, 20});
         midiChannelSpinBox->addItem("Any");
-        for (size_t i = 0; i < geonkickApi->numberOfMidiChannels(); i++)
+        for (size_t i = 0; i < dspProxy->numberOfMidiChannels(); i++)
                 midiChannelSpinBox->addItem(std::to_string(i + 1));
         midiChannelSpinBox->setCurrentIndex(GeonkickConfig().getMidiChannel() + 1);
         RK_ACT_BINDL(midiChannelSpinBox,
@@ -144,7 +144,7 @@ void SettingsWidget::createMidiChannelSettings(RkContainer *container)
                      [=, this](int index){
                              GeonkickConfig cfg;
                              cfg.setMidiChannel(index - 1);
-                             geonkickApi->forceMidiChannel(index - 1,
+                             dspProxy->forceMidiChannel(index - 1,
                                                            cfg.isMidiChannelForced());
                              cfg.save(); });
         midiChannelSpinBox->show();

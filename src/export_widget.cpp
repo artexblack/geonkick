@@ -22,7 +22,7 @@
  */
 
 #include "export_widget.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 #include "geonkick_button.h"
 #include "FileBrowser.h"
 
@@ -51,9 +51,9 @@ RK_DECLARE_IMAGE_RC(mono_radio_button_active);
 RK_DECLARE_IMAGE_RC(stereo_radio_button);
 RK_DECLARE_IMAGE_RC(stereo_radio_button_active);
 
-ExportWidget::ExportWidget(GeonkickWidget *parent, GeonkickApi *api)
+ExportWidget::ExportWidget(GeonkickWidget *parent, DspProxy *dsp)
         : GeonkickWidget(parent, Rk::WidgetFlags::Popup)
-        , geonkickApi{api}
+        , dspProxy{dsp}
         , flac16Button{nullptr}
         , flac24Button{nullptr}
         , wav16Button{nullptr}
@@ -75,18 +75,18 @@ ExportWidget::ExportWidget(GeonkickWidget *parent, GeonkickApi *api)
         //                                         "Select Path - " + std::string(GEONKICK_NAME));
         /*fileDialog->setFilters({".flac", ".wav", ".ogg", ".FLAC", ".WAV", ".OGG"});
         fileDialog->setPosition(0, 40);
-        fileDialog->setHomeDirectory(geonkickApi->getSettings("GEONKICK_CONFIG/HOME_PATH"));
-        fileDialog->setCurrentDirectoy(geonkickApi->currentWorkingPath("ExportDialog/Location").string());
+        fileDialog->setHomeDirectory(dspProxy->getSettings("GEONKICK_CONFIG/HOME_PATH"));
+        fileDialog->setCurrentDirectoy(dspProxy->currentWorkingPath("ExportDialog/Location").string());
         RK_ACT_BIND(fileDialog, selectedFile,
                     RK_ACT_ARGS(const std::string &file), this,
                     exportInstrument(file));
                     RK_ACT_BIND(fileDialog, rejected, RK_ACT_ARGS(), this, close());*/
 
-        std::string format = geonkickApi->getSettings("ExportDialog/Format");
+        std::string format = dspProxy->getSettings("ExportDialog/Format");
         if (!format.empty())
                 selectedFormat = static_cast<ExportFormat>(std::stoi(format));
 
-        std::string channel = geonkickApi->getSettings("ExportDialog/Channel");
+        std::string channel = dspProxy->getSettings("ExportDialog/Channel");
         if (!channel.empty())
                 channelsType = static_cast<ChannelsType>(std::stoi(channel));
 
@@ -217,14 +217,14 @@ void ExportWidget::exportInstrument(const std::string &filePath)
 {
         SF_INFO sndinfo;
         memset(&sndinfo, 0, sizeof(sndinfo));
-        sndinfo.samplerate = geonkickApi->getSampleRate();
+        sndinfo.samplerate = dspProxy->getSampleRate();
         if (sndinfo.samplerate == 0)
                 return;
 
         sndinfo.channels = channelsType == ChannelsType::Mono ? 1 : 2;
         sndinfo.format   = exportFormat();
 
-        auto tempBuffer = geonkickApi->getKickBuffer();
+        auto tempBuffer = dspProxy->getKickBuffer();
         sndinfo.frames = tempBuffer.size();
         std::vector<gkick_real> kickBuffer;
         if (sndinfo.channels == 2) {
@@ -256,11 +256,11 @@ void ExportWidget::exportInstrument(const std::string &filePath)
 
         if (!exportedFilePath.empty()
             && exportedFilePath.has_parent_path()) {
-                geonkickApi->setCurrentWorkingPath("ExportDialog/Location",
+                dspProxy->setCurrentWorkingPath("ExportDialog/Location",
                                                    exportedFilePath.parent_path().string());
         }
-        geonkickApi->setSettings("ExportDialog/Format", std::to_string(static_cast<int>(selectedFormat)));
-        geonkickApi->setSettings("ExportDialog/Channel", std::to_string(static_cast<int>(channelsType)));
+        dspProxy->setSettings("ExportDialog/Format", std::to_string(static_cast<int>(selectedFormat)));
+        dspProxy->setSettings("ExportDialog/Channel", std::to_string(static_cast<int>(channelsType)));
         close();
 }
 

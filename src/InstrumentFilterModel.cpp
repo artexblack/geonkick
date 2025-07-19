@@ -23,57 +23,57 @@
 
 #include "InstrumentFilterModel.h"
 #include "percussion_model.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 #include "kit_model.h"
 
 InstrumentFilterModel::InstrumentFilterModel(PercussionModel *parent)
         : FilterModel(parent)
-        , geonkickApi{parent->parentModel()->api()}
+        , dspProxy{parent->parentModel()->getDspProxy()}
 {
 }
 
 void InstrumentFilterModel::enable(bool b)
 {
-        if (geonkickApi->enableKickFilter(b))
+        if (dspProxy->enableKickFilter(b))
                 action enabled(b);
 }
 
 bool InstrumentFilterModel::isEnabled() const
 {
-        return geonkickApi->isKickFilterEnabled();
+        return dspProxy->isKickFilterEnabled();
 }
 
 void InstrumentFilterModel::setCutOff(double val)
 {
-        if (geonkickApi->setKickFilterFrequency(val))
+        if (dspProxy->setKickFilterFrequency(val))
                 action cutOffChanged(val);
 }
 
 double InstrumentFilterModel::cutOff() const
 {
-        return geonkickApi->kickFilterFrequency();
+        return dspProxy->kickFilterFrequency();
 }
 
 void InstrumentFilterModel::setResonance(double val)
 {
-         if (geonkickApi->setKickFilterQFactor(val))
+         if (dspProxy->setKickFilterQFactor(val))
                  action resonanceChanged(val);
 }
 
 double InstrumentFilterModel::resonance() const
 {
-        return geonkickApi->kickFilterQFactor();
+        return dspProxy->kickFilterQFactor();
 }
 
 void InstrumentFilterModel::setType(FilterModel::FilterType type)
 {
-         if (geonkickApi->setKickFilterType(type))
+         if (dspProxy->setKickFilterType(type))
                  action typeChanged(type);
 }
 
 FilterModel::FilterType InstrumentFilterModel::type() const
 {
-        return geonkickApi->kickFilterType();
+        return dspProxy->kickFilterType();
 }
 
 void InstrumentFilterModel::setCutOffRange(const std::pair<double, double>& range)

@@ -41,7 +41,7 @@ __attribute__((visibility("default"))) bool ModuleExit (void);
 }
 #endif // __cplusplus
 
-class GeonkickApi;
+class DspProxy;
 
 using namespace Steinberg;
 
@@ -65,7 +65,7 @@ class GKickVstProcessor : public Vst::SingleComponentEffect {
 
   protected:
         std::string stateData;
-        std::unique_ptr<GeonkickApi> geonkickApi;
+        std::unique_ptr<DspProxy> dspProxy;
         std::vector<float*> channelsBuffers;
         int sampleRate;
 };

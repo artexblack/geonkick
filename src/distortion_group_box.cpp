@@ -24,7 +24,7 @@
 #include "distortion_group_box.h"
 #include "geonkick_slider.h"
 #include "geonkick_button.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 #include "envelope_widget.h"
 #include "ViewState.h"
 
@@ -44,9 +44,9 @@ RK_DECLARE_IMAGE_RC(env_button);
 RK_DECLARE_IMAGE_RC(env_button_hover);
 RK_DECLARE_IMAGE_RC(env_button_on);
 
-DistortionGroupBox::DistortionGroupBox(GeonkickApi *api, GeonkickWidget *parent)
+DistortionGroupBox::DistortionGroupBox(DspProxy *dsp, GeonkickWidget *parent)
         : GeonkickGroupBox(parent)
-        , geonkickApi{api}
+        , dspProxy{dsp}
         , volumeSlider{nullptr}
         , driveSlider{nullptr}
         , distortionCheckbox{nullptr}
@@ -57,7 +57,7 @@ DistortionGroupBox::DistortionGroupBox(GeonkickApi *api, GeonkickWidget *parent)
         distortionCheckbox = new GeonkickButton(this);
 	distortionCheckbox->setSize(69, 21);
 	distortionCheckbox->setCheckable(true);
-        RK_ACT_BIND(distortionCheckbox, toggled, RK_ACT_ARGS(bool b), geonkickApi, enableDistortion(b));
+        RK_ACT_BIND(distortionCheckbox, toggled, RK_ACT_ARGS(bool b), dspProxy, enableDistortion(b));
         distortionCheckbox->setImage(RkImage(distortionCheckbox->size(), RK_IMAGE_RC(distortion_enable)),
                                      RkButton::State::Unpressed);
         distortionCheckbox->setImage(RkImage(distortionCheckbox->size(), RK_IMAGE_RC(distortion_enable_active)),
@@ -150,28 +150,28 @@ void DistortionGroupBox::setInLimiter(int val)
 {
         double logVal = -60 * (1.0 - (static_cast<double>(val) / 100));
         double limit = pow(10, logVal / 20);
-        geonkickApi->setDistortionInLimiter(limit);
+        dspProxy->setDistortionInLimiter(limit);
 }
 
 void DistortionGroupBox::setVolume(int val)
 {
         double logVal = -60 * (1.0 - (static_cast<double>(val) / 100));
         double volume = pow(10, logVal / 20);
-        geonkickApi->setDistortionVolume(volume);
+        dspProxy->setDistortionVolume(volume);
 }
 
 void DistortionGroupBox::setDrive(int val)
 {
         double db =  36.0 * static_cast<double>(val) / 100.0;
-        geonkickApi->setDistortionDrive(pow(10, db / 20));
+        dspProxy->setDistortionDrive(pow(10, db / 20));
 }
 
 void DistortionGroupBox::updateGui()
 {
-        distortionCheckbox->setPressed(geonkickApi->isDistortionEnabled());
+        distortionCheckbox->setPressed(dspProxy->isDistortionEnabled());
 
         // In Limiter
-        double limit = geonkickApi->getDistortionInLimiter();
+        double limit = dspProxy->getDistortionInLimiter();
         double logVal;
         if (limit > 0)
                 logVal = 20 * log10(limit);
@@ -181,7 +181,7 @@ void DistortionGroupBox::updateGui()
 
 
         // Volume
-        double volume = geonkickApi->getDistortionVolume();
+        double volume = dspProxy->getDistortionVolume();
         if (volume > 0)
                 logVal = 20 * log10(volume);
         else
@@ -189,7 +189,7 @@ void DistortionGroupBox::updateGui()
         volumeSlider->onSetValue(100 * (60 - fabs(logVal)) / 60, 100 * (2.0 / 3));
 
         // Drive
-        auto distortion = geonkickApi->getDistortionDrive();
+        auto distortion = dspProxy->getDistortionDrive();
         if (distortion < std::numeric_limits<decltype(distortion)>::min())
                 distortion = 0;
         else

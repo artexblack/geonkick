@@ -27,20 +27,20 @@
 #include "geonkick_groupbox.h"
 
 class GeonkickSlider;
-class GeonkickApi;
+class DspProxy;
 class GeonkickButton;
 
 class LayersGroupBox: public GeonkickGroupBox
 {
  public:
-        LayersGroupBox(GeonkickApi *api, GeonkickWidget *parent);
+        LayersGroupBox(DspProxy *dsp, GeonkickWidget *parent);
         void updateGui();
 
  protected:
         void setLayerAmplitude(int layer, int val);
 
  private:
-        GeonkickApi *geonkickApi;
+        DspProxy *dspProxy;
         GeonkickSlider *layerSliders[3];
 };
 

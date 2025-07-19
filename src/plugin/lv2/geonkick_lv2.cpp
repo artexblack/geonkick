@@ -31,7 +31,7 @@
 #include <lv2/lv2plug.in/ns/ext/state/state.h>
 
 #include "MainWindow.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 #include "kit_state.h"
 #include "GeonkickConfig.h"
 
@@ -57,23 +57,23 @@ class GeonkickLv2Plugin : public RkObject
 {
   public:
         GeonkickLv2Plugin(int sampleRate)
-                : geonkickApi{std::make_unique<GeonkickApi>(sampleRate, GeonkickApi::InstanceType::Lv2)}
+                : dspProxy{std::make_unique<DspProxy>(sampleRate, DspProxy::InstanceType::Lv2)}
                 , midiIn{nullptr}
                 , notifyHostChannel{nullptr}
                 , atomInfo{0}
                 , kickIsUpdated{false}
         {
-                RK_ACT_BIND(geonkickApi.get(), kickUpdated, RK_ACT_ARGS(), this, kickUpdated());
-                RK_ACT_BIND(geonkickApi.get(), stateChanged, RK_ACT_ARGS(), this, kickUpdated());
+                RK_ACT_BIND(dspProxy.get(), kickUpdated, RK_ACT_ARGS(), this, kickUpdated());
+                RK_ACT_BIND(dspProxy.get(), stateChanged, RK_ACT_ARGS(), this, kickUpdated());
         }
 
         bool init()
         {
-                if (!geonkickApi->init()) {
+                if (!dspProxy->init()) {
                         GEONKICK_LOG_ERROR("can't init DSP");
                         return false;
                 }
-                outputChannels = std::vector<float*>(2 * geonkickApi->numberOfChannels(), nullptr);
+                outputChannels = std::vector<float*>(2 * dspProxy->numberOfChannels(), nullptr);
                 return true;
         }
 
@@ -148,24 +148,24 @@ class GeonkickLv2Plugin : public RkObject
                 RK_UNUSED(flags);
                 if (data.find("UiSettings") == std::string::npos) {
                         GEONKICK_LOG_INFO("old plugin state version");
-                        geonkickApi->setKitState(data);
-                        geonkickApi->notifyUpdateGui();
-                        geonkickApi->notifyKitUpdated();
+                        dspProxy->setKitState(data);
+                        dspProxy->notifyUpdateGui();
+                        dspProxy->notifyKitUpdated();
                 } else {
-                        geonkickApi->setState(data);
-                        geonkickApi->notifyUpdateGui();
-                        geonkickApi->notifyKitUpdated();
+                        dspProxy->setState(data);
+                        dspProxy->notifyUpdateGui();
+                        dspProxy->notifyKitUpdated();
                 }
         }
 
         std::string getStateData()
         {
-                return geonkickApi->getState();
+                return dspProxy->getState();
         }
 
-        GeonkickApi* getApi() const
+        DspProxy* getApi() const
         {
-                return geonkickApi.get();
+                return dspProxy.get();
         }
 
         bool isNote(const uint8_t* buffer) const
@@ -189,7 +189,7 @@ class GeonkickLv2Plugin : public RkObject
                         size_t size = eventFrame - currentFrame;
 
                         if (size > 0 && size <= nsamples) {
-                                geonkickApi->process(outputChannels.data(), offset, size);
+                                dspProxy->process(outputChannels.data(), offset, size);
                                 offset += size;
                         }
 
@@ -197,10 +197,10 @@ class GeonkickLv2Plugin : public RkObject
                         switch (lv2_midi_message_type(msg))
                         {
                                 case LV2_MIDI_MSG_NOTE_ON:
-                                        geonkickApi->setKeyPressed(true, msg[1], msg[2]);
+                                        dspProxy->setKeyPressed(true, msg[1], msg[2]);
                                         break;
                                 case LV2_MIDI_MSG_NOTE_OFF:
-                                        geonkickApi->setKeyPressed(false, msg[1], msg[2]);
+                                        dspProxy->setKeyPressed(false, msg[1], msg[2]);
                                         break;
                                 default:
                                         break;
@@ -210,7 +210,7 @@ class GeonkickLv2Plugin : public RkObject
                 }
 
                 if (currentFrame < nsamples)
-                        geonkickApi->process(outputChannels.data(), offset, nsamples - currentFrame);
+                        dspProxy->process(outputChannels.data(), offset, nsamples - currentFrame);
 
                 if (isKickUpdated()) {
                         notifyHost();
@@ -258,7 +258,7 @@ protected:
         }
 
 private:
-        std::unique_ptr<GeonkickApi> geonkickApi;
+        std::unique_ptr<DspProxy> dspProxy;
         LV2_Atom_Sequence *midiIn;
         LV2_Atom_Sequence *notifyHostChannel;
         std::vector<float*> outputChannels;

@@ -23,67 +23,67 @@
 
 #include "general_envelope.h"
 
-GeneralEnvelope::GeneralEnvelope(GeonkickApi *api, const RkRect &area)
+GeneralEnvelope::GeneralEnvelope(DspProxy *dsp, const RkRect &area)
         : Envelope(area)
-        , geonkickApi{api}
+        , dspProxy{dsp}
 {
         removeSupportedType(Envelope::Type::Frequency);
         removeSupportedType(Envelope::Type::PitchShift);
-        RK_ACT_BIND(geonkickApi, kickLengthUpdated, RK_ACT_ARGS(double val), this, envelopeUpdated());
-        RK_ACT_BIND(geonkickApi, kickAmplitudeUpdated, RK_ACT_ARGS(double val), this, envelopeUpdated());
+        RK_ACT_BIND(dspProxy, kickLengthUpdated, RK_ACT_ARGS(double val), this, envelopeUpdated());
+        RK_ACT_BIND(dspProxy, kickAmplitudeUpdated, RK_ACT_ARGS(double val), this, envelopeUpdated());
         setType(Envelope::Type::Amplitude);
-        setPoints(geonkickApi->getKickEnvelopePoints(type()));
+        setPoints(dspProxy->getKickEnvelopePoints(type()));
 }
 
 void GeneralEnvelope::pointAddedEvent(const EnvelopePoint &point)
 {
-        geonkickApi->addKickEnvelopePoint(type(), point);
+        dspProxy->addKickEnvelopePoint(type(), point);
 }
 
 void GeneralEnvelope::pointUpdatedEvent(unsigned int index, const EnvelopePoint &point)
 {
-        geonkickApi->updateKickEnvelopePoint(type(), index, point);
+        dspProxy->updateKickEnvelopePoint(type(), index, point);
 }
 
 void GeneralEnvelope::pointRemovedEvent(unsigned int index)
 {
-        geonkickApi->removeKickEnvelopePoint(type(), index);
+        dspProxy->removeKickEnvelopePoint(type(), index);
 }
 
 double GeneralEnvelope::envelopeLength(void) const
 {
-        return geonkickApi->kickLength();
+        return dspProxy->kickLength();
 }
 
 void GeneralEnvelope::setEnvelopeLengh(double len)
 {
-        geonkickApi->setKickLength(len);
+        dspProxy->setKickLength(len);
 }
 
 double GeneralEnvelope::envelopeAmplitude(void) const
 {
         if (type() == Envelope::Type::Amplitude)
-                return geonkickApi->kickAmplitude();
+                return dspProxy->kickAmplitude();
         else if (type() == Envelope::Type::FilterCutOff)
-                return geonkickApi->kickFilterFrequency();
+                return dspProxy->kickFilterFrequency();
 	else if (type() == Envelope::Type::FilterQFactor)
-                return geonkickApi->kickFilterQFactor();
+                return dspProxy->kickFilterQFactor();
 	else if (type() == Envelope::Type::DistortionDrive)
-		return geonkickApi->getDistortionDrive() / pow(10, 36.0 / 20);
+		return dspProxy->getDistortionDrive() / pow(10, 36.0 / 20);
         else if (type() == Envelope::Type::DistortionVolume)
-		return geonkickApi->getDistortionOutLimiter();
+		return dspProxy->getDistortionOutLimiter();
 
         return 0;
 }
 
 void GeneralEnvelope::updateEnvelope()
 {
-	auto applyType = geonkickApi->getKickEnvelopeApplyType(type());
+	auto applyType = dspProxy->getKickEnvelopeApplyType(type());
 	setApplyType(applyType);
 	updatePoints();
 }
 
 void GeneralEnvelope::updatePoints()
 {
-        setPoints(geonkickApi->getKickEnvelopePoints(type()));
+        setPoints(dspProxy->getKickEnvelopePoints(type()));
 }

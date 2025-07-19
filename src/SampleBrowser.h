@@ -25,7 +25,7 @@
 #define GEONKICK_SAMPLE_BROWSER_H
 
 #include "geonkick_widget.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 
 class FileBrowser;
 class BufferView;
@@ -41,7 +41,7 @@ class SampleBrowser: public GeonkickWidget {
 
   protected:
         void createBottomMenu(RkContainer* container);
-        void setOscillator(GeonkickApi::OscillatorType osc);
+        void setOscillator(DspProxy::OscillatorType osc);
         void loadSample(const fs::path &file);
         void doExport(const fs::path &filePath) const;
 

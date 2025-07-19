@@ -25,7 +25,7 @@
 #define GEONKICK_TOP_BAR_H
 
 #include "geonkick_widget.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 
 class RkLabel;
 class GeonkickButton;
@@ -44,8 +44,8 @@ class TopBar : public GeonkickWidget
         RK_DECL_ACT(openAbout, openAbout(), RK_ARG_TYPE(), RK_ARG_VAL());
         RK_DECL_ACT(resetToDefault, resetToDefault(), RK_ARG_TYPE(), RK_ARG_VAL());
         RK_DECL_ACT(layerSelected,
-                    layerSelected(GeonkickApi::Layer layer, bool b),
-                    RK_ARG_TYPE(GeonkickApi::Layer, bool),
+                    layerSelected(DspProxy::Layer layer, bool b),
+                    RK_ARG_TYPE(DspProxy::Layer, bool),
                     RK_ARG_VAL(layer, b));
         void updateGui();
 

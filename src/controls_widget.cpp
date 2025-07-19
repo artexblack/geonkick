@@ -26,7 +26,7 @@
 #include "oscillator_group_box.h"
 #include "general_group_box.h"
 #include "layers_group_box.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 #ifndef GEONKICK_SINGLE
 #include "KitTabs.h"
 #endif // GEONKICK_SINGLE
@@ -81,7 +81,7 @@ ControlsWidget::ControlsWidget(GeonkickWidget *parent,
                     setModel(kitModel->currentPercussion()));
         globalWidget->show();
 
-        auto layersWidget = new LayersGroupBox(geonkickModel->api(), this);
+        auto layersWidget = new LayersGroupBox(geonkickModel->getDspProxy(), this);
         layersWidget->setPosition(3 * (8 + 223), 270);
         RK_ACT_BIND(this, updateGui, RK_ACT_ARGS(), layersWidget, updateGui());
         layersWidget->show();

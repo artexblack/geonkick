@@ -24,7 +24,7 @@
 #ifndef GEONKICK_STATE_H
 #define GEONKICK_STATE_H
 
-#include "geonkick_api.h"
+#include "DspProxy.h"
 
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
@@ -33,7 +33,7 @@
 #include <unordered_map>
 
 struct DistortionInfo {
-        using DistortionType = GeonkickApi::DistortionType;
+        using DistortionType = DspProxy::DistortionType;
         bool toJson(std::ostringstream &jsonStream) const;
         bool fromObject(const auto& obj);
         bool enabled = false;
@@ -47,11 +47,11 @@ struct DistortionInfo {
 
 struct OscillatorInfo {
         OscillatorInfo()
-                : type{GeonkickApi::OscillatorType::Oscillator1}
+                : type{DspProxy::OscillatorType::Oscillator1}
                 , isEnabled{false}
                 , isFm{false}
                 , fmK{10.0}
-                , function{GeonkickApi::FunctionType::Sine}
+                , function{DspProxy::FunctionType::Sine}
                 , phase{0}
                 , seed{0}
                 , amplitude{0.8}
@@ -59,18 +59,18 @@ struct OscillatorInfo {
                 , pitchShift{0}
                 , noiseDensity{1.0}
                 , isFilterEnabled{false}
-                , filterType{GeonkickApi::FilterType::LowPass}
+                , filterType{DspProxy::FilterType::LowPass}
                 , filterFrequency{200}
                 , filterFactor{1.0}
-	        , frequencyEnvelopeApplyType{GeonkickApi::EnvelopeApplyType::Logarithmic}
-	        , cutOffEnvelopeApplyType{GeonkickApi::EnvelopeApplyType::Logarithmic}
+	        , frequencyEnvelopeApplyType{DspProxy::EnvelopeApplyType::Logarithmic}
+	        , cutOffEnvelopeApplyType{DspProxy::EnvelopeApplyType::Logarithmic}
                 , noiseDensityEnvelope{{0, 1}, {1, 1}} {}
-        GeonkickApi::OscillatorType type;
+        DspProxy::OscillatorType type;
         std::vector<float> sample;
         bool isEnabled;
         bool isFm;
         double fmK;
-        GeonkickApi::FunctionType function;
+        DspProxy::FunctionType function;
         double phase;
         int seed;
         double amplitude;
@@ -78,14 +78,14 @@ struct OscillatorInfo {
         double pitchShift;
         double noiseDensity;
         bool isFilterEnabled;
-        GeonkickApi::FilterType filterType;
+        DspProxy::FilterType filterType;
         double filterFrequency;
         double filterFactor;
         DistortionInfo distortion;
         std::vector<EnvelopePoint> amplitudeEnvelope;
-        GeonkickApi::EnvelopeApplyType frequencyEnvelopeApplyType;
+        DspProxy::EnvelopeApplyType frequencyEnvelopeApplyType;
         std::vector<EnvelopePoint> frequencyEnvelope;
-        GeonkickApi::EnvelopeApplyType cutOffEnvelopeApplyType;
+        DspProxy::EnvelopeApplyType cutOffEnvelopeApplyType;
         std::vector<EnvelopePoint> filterCutOffEnvelope;
         std::vector<EnvelopePoint> filterQFactorEnvelope;
         std::vector<EnvelopePoint> pitchShiftEnvelope;
@@ -124,11 +124,11 @@ class PercussionState
         void enableKickFilter(bool b);
         void setKickFilterFrequency(double val);
         void setKickFilterQFactor(double val);
-        void setKickFilterType(GeonkickApi::FilterType type);
-        void setKickEnvelopePoints(GeonkickApi::EnvelopeType envelope,
+        void setKickFilterType(DspProxy::FilterType type);
+        void setKickEnvelopePoints(DspProxy::EnvelopeType envelope,
                                    const std::vector<EnvelopePoint> &points);
-	void setKickEnvelopeApplyType(GeonkickApi::EnvelopeType envelope,
-				      GeonkickApi::EnvelopeApplyType applyType);
+	void setKickEnvelopeApplyType(DspProxy::EnvelopeType envelope,
+				      DspProxy::EnvelopeApplyType applyType);
 
         double getLimiterValue() const;
         double getKickLength() const;
@@ -136,11 +136,11 @@ class PercussionState
         bool   isKickFilterEnabled() const;
         double getKickFilterFrequency() const;
         double getKickFilterQFactor() const;
-        GeonkickApi::FilterType getKickFilterType() const;
-        std::vector<EnvelopePoint> getKickEnvelopePoints(GeonkickApi::EnvelopeType envelope) const;
-	GeonkickApi::EnvelopeApplyType getKickEnvelopeApplyType(GeonkickApi::EnvelopeType envelope) const;
+        DspProxy::FilterType getKickFilterType() const;
+        std::vector<EnvelopePoint> getKickEnvelopePoints(DspProxy::EnvelopeType envelope) const;
+	DspProxy::EnvelopeApplyType getKickEnvelopeApplyType(DspProxy::EnvelopeType envelope) const;
         void setOscillatorEnabled(int index, bool b);
-        void setOscillatorFunction(int index, GeonkickApi::FunctionType type);
+        void setOscillatorFunction(int index, DspProxy::FunctionType type);
         void setOscillatorPhase(int index, double phase);
         void setOscillatorSeed(int index, int seed);
         void setOscillatorAmplitue(int index, double val);
@@ -148,22 +148,22 @@ class PercussionState
         void setOscillatorPitchShift(int index, double val);
         void setOscillatorNoiseDensity(int index, double val);
         void setOscillatorFilterEnabled(int index, bool b);
-        void setOscillatorFilterType(int index, GeonkickApi::FilterType type);
+        void setOscillatorFilterType(int index, DspProxy::FilterType type);
         void setOscillatorFilterCutOffFreq(int index, double val);
         void setOscillatorFilterFactor(int index, double val);
 	void setOscillatorEnvelopeApplyType(int index,
-					    GeonkickApi::EnvelopeType envelopeType,
-					    GeonkickApi::EnvelopeApplyType applyType);
-	GeonkickApi::EnvelopeApplyType getOscillatorEnvelopeApplyType(int index,
-								      GeonkickApi::EnvelopeType envelope) const;
+					    DspProxy::EnvelopeType envelopeType,
+					    DspProxy::EnvelopeApplyType applyType);
+	DspProxy::EnvelopeApplyType getOscillatorEnvelopeApplyType(int index,
+								      DspProxy::EnvelopeType envelope) const;
         void setOscillatorEnvelopePoints(int index,
                                          const std::vector<EnvelopePoint> &points,
-                                         GeonkickApi::EnvelopeType envelope);
+                                         DspProxy::EnvelopeType envelope);
         bool isOscillatorAsFm(int index) const;
         void setOscillatorAsFm(int index, bool b);
         double getOscillatorFmK(int index) const;
         bool isOscillatorEnabled(int index) const;
-        GeonkickApi::FunctionType oscillatorFunction(int index) const;
+        DspProxy::FunctionType oscillatorFunction(int index) const;
         double oscillatorAmplitue(int index) const;
         double oscillatorPhase(int index) const;
         int oscillatorSeed(int index) const;
@@ -171,10 +171,10 @@ class PercussionState
         double oscillatorPitchShift(int index) const;
         double oscillatorNoiseDensity(int index) const;
         bool isOscillatorFilterEnabled(int index) const;
-        GeonkickApi::FilterType oscillatorFilterType(int index) const;
+        DspProxy::FilterType oscillatorFilterType(int index) const;
         double oscillatorFilterCutOffFreq(int index) const;
         double oscillatorFilterFactor(int index) const;
-        std::vector<EnvelopePoint> oscillatorEnvelopePoints(int index, GeonkickApi::EnvelopeType type) const;
+        std::vector<EnvelopePoint> oscillatorEnvelopePoints(int index, DspProxy::EnvelopeType type) const;
         void setOscillatorSample(int oscillatorIndex,
                                  const std::vector<float> &sample);
         std::vector<float> getOscillatorSample(int oscillatorIndex) const;
@@ -199,11 +199,11 @@ class PercussionState
         double getDistortionOutLimiter() const;
         double getDistortionDrive() const;
         std::string toJson() const;
-        void setLayerEnabled(GeonkickApi::Layer layer, bool b);
-        bool isLayerEnabled(GeonkickApi::Layer layer) const;
-        void setCurrentLayer(GeonkickApi::Layer layer);
-        void setLayerAmplitude(GeonkickApi::Layer layer, double amplitude);
-        double getLayerAmplitude(GeonkickApi::Layer layer) const;
+        void setLayerEnabled(DspProxy::Layer layer, bool b);
+        bool isLayerEnabled(DspProxy::Layer layer) const;
+        void setCurrentLayer(DspProxy::Layer layer);
+        void setLayerAmplitude(DspProxy::Layer layer, double amplitude);
+        double getLayerAmplitude(DspProxy::Layer layer) const;
         void tuneOutput(bool tune);
         bool isOutputTuned() const;
         static std::vector<float> fromBase64F(const std::string &str);
@@ -218,10 +218,10 @@ class PercussionState
                                    const std::string &envName,
                                    double amplitude,
                                    const std::vector<EnvelopePoint> &envelope,
-				   GeonkickApi::EnvelopeApplyType applyType = GeonkickApi::EnvelopeApplyType::Linear);
+				   DspProxy::EnvelopeApplyType applyType = DspProxy::EnvelopeApplyType::Linear);
         void oscJson(std::ostringstream &jsonStream) const;
         void kickJson(std::ostringstream &jsonStream) const;
-	GeonkickApi::EnvelopeApplyType getApplyTypeFromObj(const rapidjson::Value &obj) const;
+	DspProxy::EnvelopeApplyType getApplyTypeFromObj(const rapidjson::Value &obj) const;
         void setOscillatorFmK(int index, double k);
 
 private:
@@ -245,8 +245,8 @@ private:
         bool   kickFilterEnabled;
         double kickFilterFrequency;
         double kickFilterQFactor;
-        GeonkickApi::FilterType kickFilterType;
-	GeonkickApi::EnvelopeApplyType kickCutOffEnvelopeApplyType;
+        DspProxy::FilterType kickFilterType;
+	DspProxy::EnvelopeApplyType kickCutOffEnvelopeApplyType;
         std::vector<EnvelopePoint> kickFilterCutOffEnvelope;
 	std::vector<EnvelopePoint> kickFilterQFactorEnvelope;
         std::vector<EnvelopePoint> kickEnvelopePoints;
@@ -254,7 +254,7 @@ private:
         DistortionInfo instrumentDistortion;
         std::vector<bool> layers;
         std::vector<double> layersAmplitude;
-        GeonkickApi::Layer currentLayer;
+        DspProxy::Layer currentLayer;
         bool tunedOutput;
 };
 

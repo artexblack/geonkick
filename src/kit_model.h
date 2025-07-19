@@ -28,7 +28,7 @@
 #include "ExportAbstract.h"
 #include "OscillatorModel.h"
 
-class GeonkickApi;
+class DspProxy;
 class GeonkickState;
 class PercussionModel;
 class GeonkickModel;
@@ -91,7 +91,7 @@ class KitModel : public RkObject {
         bool soloPercussion(PercussionIndex index, bool b);
         bool isPercussionSolo(PercussionIndex index) const;
         void updatePercussion(PercussionIndex index);
-        GeonkickApi* api() const;
+        DspProxy* getDspProxy() const;
         bool doExport(const std::string &file, const ExportInfo &info) const;
         bool enableNoteOff(PercussionIndex index, bool b);
         bool isNoteOffEnabled(PercussionIndex index) const;
@@ -138,7 +138,7 @@ class KitModel : public RkObject {
 
  private:
         GeonkickModel *geonkickModel;
-        GeonkickApi *geonkickApi;
+        DspProxy *dspProxy;
         std::vector<PercussionModel*> percussionsList;
         std::vector<std::string> midiKeys;
 };

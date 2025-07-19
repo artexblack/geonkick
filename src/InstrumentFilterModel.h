@@ -27,7 +27,7 @@
 #include "FilterModel.h"
 
 class PercussionModel;
-class GeonkickApi;
+class DspProxy;
 
 class InstrumentFilterModel: public FilterModel
 {
@@ -48,7 +48,7 @@ class InstrumentFilterModel: public FilterModel
         Envelope::Category envelopeCategory() const override;
 
  private:
-        GeonkickApi *geonkickApi;
+        DspProxy *dspProxy;
 };
 
 #endif // INSTRUEMNT_FILTER_MODEL_H

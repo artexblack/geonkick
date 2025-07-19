@@ -22,23 +22,23 @@
  */
 
 #include "kick_graph.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 #include "globals.h"
 #include "envelope.h"
 
 #include <RkEventQueue.h>
 #include <RkAction.h>
 
-KickGraph::KickGraph(RkObject *parent, GeonkickApi *api, const RkSize &size)
+KickGraph::KickGraph(RkObject *parent, DspProxy *dsp, const RkSize &size)
         : RkObject(parent)
-        , geonkickApi{api}
+        , dspProxy{dsp}
         , graphThread{nullptr}
         , graphSize{size}
         , isRunning{true}
         , redrawGraph{true}
         , currentEnvelope{nullptr}
 {
-        RK_ACT_BIND(geonkickApi, kickUpdated, RK_ACT_ARGS(), this, updateGraphBuffer());
+        RK_ACT_BIND(dspProxy, kickUpdated, RK_ACT_ARGS(), this, updateGraphBuffer());
         graphThread = std::make_unique<std::thread>(&KickGraph::drawKickGraph, this);
 }
 
@@ -77,9 +77,9 @@ void KickGraph::updateGraphBuffer()
 {
         {
                 std::unique_lock<std::mutex> lock(graphMutex);
-                kickBuffer = geonkickApi->getKickBuffer();
+                kickBuffer = dspProxy->getKickBuffer();
                 if (kickBuffer.empty())
-                        geonkickApi->triggerSynthesis();
+                        dspProxy->triggerSynthesis();
                 updateGraph(false);
         }
         threadConditionVar.notify_one();
@@ -113,7 +113,7 @@ void KickGraph::drawKickGraph()
                 graphPoints.reserve(instrumentBuffer.size());
                 const auto buffSize = static_cast<double>(instrumentBuffer.size()) / zoomFactor;
                 const gkick_real k = static_cast<gkick_real>(graphSize.width()) / buffSize;
-                const size_t indexOffset = (instrumentBuffer.size() / geonkickApi->kickLength()) * timeOrigin;
+                const size_t indexOffset = (instrumentBuffer.size() / dspProxy->kickLength()) * timeOrigin;
                 const auto instrumentGraphSize = graphSize;
                 redrawGraph = false;
                 lock.unlock();

@@ -34,7 +34,7 @@
 class UiSettings {
  public:
         using View = ViewState::View;
-        using Oscillator = GeonkickApi::OscillatorType;
+        using Oscillator = DspProxy::OscillatorType;
 
         UiSettings();
         void fromJsonObject(const rapidjson::Value &obj);

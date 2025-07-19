@@ -27,7 +27,7 @@
 #include "DistortionModel.h"
 
 class PercussionModel;
-class GeonkickApi;
+class DspProxy;
 
 class InstrumentDistortionModel: public DistortionModel
 {
@@ -46,7 +46,7 @@ class InstrumentDistortionModel: public DistortionModel
         Envelope::Category envelopeCategory() const;
 
  private:
-        GeonkickApi *geonkickApi;
+        DspProxy *dspProxy;
 };
 
 #endif // INSTRUEMNT_DISTORTION_MODEL_H

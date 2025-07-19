@@ -24,7 +24,7 @@
 #ifndef GEONKICK_ENVELOPE_H
 #define GEONKICK_ENVELOPE_H
 
-#include "geonkick_api.h"
+#include "DspProxy.h"
 #include "EnvelopePoint.h"
 
 #include <RkPainter.h>
@@ -36,18 +36,18 @@
 class Envelope : public RkObject
 {
  public:
-	using ApplyType = GeonkickApi::EnvelopeApplyType;
+	using ApplyType = DspProxy::EnvelopeApplyType;
 
         enum class DrawLayer {
                 Axies,
                 Envelope
         };
 
-        using Type = GeonkickApi::EnvelopeType;
+        using Type = DspProxy::EnvelopeType;
         enum class Category:int {
-                Oscillator1 = static_cast<int>(GeonkickApi::OscillatorType::Oscillator1),
-                Oscillator2 = static_cast<int>(GeonkickApi::OscillatorType::Oscillator2),
-                Oscillator3 = static_cast<int>(GeonkickApi::OscillatorType::Oscillator3),
+                Oscillator1 = static_cast<int>(DspProxy::OscillatorType::Oscillator1),
+                Oscillator2 = static_cast<int>(DspProxy::OscillatorType::Oscillator2),
+                Oscillator3 = static_cast<int>(DspProxy::OscillatorType::Oscillator3),
                 InstrumentGlobal
         };
 

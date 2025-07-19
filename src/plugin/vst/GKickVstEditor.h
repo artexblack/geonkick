@@ -38,7 +38,7 @@ using namespace Linux;
 #endif // GEONKICK_OS_GNU
 
 class MainWindow;
-class GeonkickApi;
+class DspProxy;
 class RkMain;
 
 #ifdef GEONKICK_OS_GNU
@@ -62,7 +62,7 @@ class GKickVstTimer: public ITimerHandler {
 
 class GKickVstEditor : public Vst::EditorView {
  public:
-        GKickVstEditor(Vst::EditController *controller, GeonkickApi *api);
+        GKickVstEditor(Vst::EditController *controller, DspProxy *dsp);
         tresult PLUGIN_API isPlatformTypeSupported(Steinberg::FIDString type) override;
         tresult PLUGIN_API attached(void* parent, FIDString type) override;
         tresult PLUGIN_API removed() override;
@@ -78,7 +78,7 @@ class GKickVstEditor : public Vst::EditorView {
  private:
         std::unique_ptr<RkMain> guiApp;
         MainWindow *mainWindow;
-        GeonkickApi *geonkickApi;
+        DspProxy *dspProxy;
 #ifdef GEONKICK_OS_GNU
         std::unique_ptr<GKickVstTimer> loopTimer;
 #endif // GEONKICK_OS_GNU

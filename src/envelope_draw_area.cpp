@@ -30,9 +30,9 @@
 #include <RkEvent.h>
 #include <RkAction.h>
 
-EnvelopeWidgetDrawingArea::EnvelopeWidgetDrawingArea(GeonkickWidget *parent, GeonkickApi *api)
+EnvelopeWidgetDrawingArea::EnvelopeWidgetDrawingArea(GeonkickWidget *parent, DspProxy *dsp)
           : GeonkickWidget(parent)
-          , geonkickApi{api}
+          , dspProxy{dsp}
           , currentEnvelope{nullptr}
           , hideEnvelope{false}
           , kickGraphImage{nullptr}
@@ -44,7 +44,7 @@ EnvelopeWidgetDrawingArea::EnvelopeWidgetDrawingArea(GeonkickWidget *parent, Geo
         int padding = 50;
         drawingArea = RkRect(1.1 * padding, padding / 2, width() - 1.5 * padding, height() - 1.2 * padding);
         setBackgroundColor(40, 40, 40);
-        kickGraphics = new KickGraph(this, geonkickApi, drawingArea.size());
+        kickGraphics = new KickGraph(this, dspProxy, drawingArea.size());
         RK_ACT_BIND(kickGraphics,
                     graphUpdated,
                     RK_ACT_ARGS(std::shared_ptr<RkImage> graphImage),
@@ -106,7 +106,7 @@ std::string EnvelopeWidgetDrawingArea::getEnvStateText() const
 {
         std::string str;
 #ifndef GEONKICK_LIMITED_VERSION
-        str = "L" + std::to_string(static_cast<int>(geonkickApi->layer()) + 1) + " / ";
+        str = "L" + std::to_string(static_cast<int>(dspProxy->layer()) + 1) + " / ";
 #endif // GEONKICK_SINGLE_VERSION
         switch(currentEnvelope->category()) {
         case Envelope::Category::Oscillator1:

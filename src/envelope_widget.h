@@ -25,7 +25,7 @@
 #define GEONKICK_ENVELOPE_WIDGET_H
 
 #include "geonkick_widget.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 #include "envelope.h"
 
 class RkContainer;
@@ -56,7 +56,7 @@ protected:
 #ifndef GEONKICK_LIMITED_VERSION
         void createLayersButtons(GeonkickWidget *buttomAreaWidget);
 #endif // GEONKICK_LIMITED_VERSION
-        void setLayer(GeonkickApi::Layer layer);
+        void setLayer(DspProxy::Layer layer);
 #ifndef GEONKICK_LIMITED_VERSION
         void createButtomMenu();
 #endif // GEONKICK_LIMITED_VERSION
@@ -72,7 +72,7 @@ private:
         GeonkickButton *layer3Button;
 #endif // GEONKICK_LIMITED_VERSION
         GeonkickModel *geonkickModel;
-        GeonkickApi *geonkickApi;
+        DspProxy *dspProxy;
         const std::vector<OscillatorModel*>& oscillators;
 };
 

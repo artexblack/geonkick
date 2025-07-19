@@ -32,58 +32,58 @@ OscillatorDistortionModel::OscillatorDistortionModel(OscillatorModel *parent)
 
 void OscillatorDistortionModel::enable(bool b)
 {
-        if (oscillatorModel->api()->oscEnableDistortion(oscillatorModel->index(), b))
+        if (oscillatorModel->getDspProxy()->oscEnableDistortion(oscillatorModel->index(), b))
                 action enabled(b);
 }
 
 bool OscillatorDistortionModel::isEnabled() const
 {
-        return oscillatorModel->api()->isOscDistortionEnabled(oscillatorModel->index());
+        return oscillatorModel->getDspProxy()->isOscDistortionEnabled(oscillatorModel->index());
 }
 
 void OscillatorDistortionModel::setDistortionType(DistortionType type)
 {
-        if (oscillatorModel->api()->setOscDistortionType(oscillatorModel->index(), type))
+        if (oscillatorModel->getDspProxy()->setOscDistortionType(oscillatorModel->index(), type))
                 action distortionTypeChanged(type);
 }
 
 DistortionModel::DistortionType
 OscillatorDistortionModel::getDistortionType() const
 {
-        return  oscillatorModel->api()->getOscDistortionType(oscillatorModel->index());
+        return  oscillatorModel->getDspProxy()->getOscDistortionType(oscillatorModel->index());
 }
 
 void OscillatorDistortionModel::setInLimiter(double value)
 {
-        if (oscillatorModel->api()->setOscDistortionInLimiter(oscillatorModel->index(), value))
+        if (oscillatorModel->getDspProxy()->setOscDistortionInLimiter(oscillatorModel->index(), value))
                 action inLimiterChanged(value);
 }
 
 double OscillatorDistortionModel::getInLimiter() const
 {
-        return  oscillatorModel->api()->getOscDistortionInLimiter(oscillatorModel->index());
+        return  oscillatorModel->getDspProxy()->getOscDistortionInLimiter(oscillatorModel->index());
 }
 
 void OscillatorDistortionModel::setOutLimiter(double value)
 {
-        if (oscillatorModel->api()->setOscDistortionOutLimiter(oscillatorModel->index(), value))
+        if (oscillatorModel->getDspProxy()->setOscDistortionOutLimiter(oscillatorModel->index(), value))
                 action outLimiterChanged(value);
 }
 
 double OscillatorDistortionModel::getOutLimiter() const
 {
-        return  oscillatorModel->api()->getOscDistortionOutLimiter(oscillatorModel->index());
+        return  oscillatorModel->getDspProxy()->getOscDistortionOutLimiter(oscillatorModel->index());
 }
 
 void OscillatorDistortionModel::setDrive(double drive)
 {
-                if (oscillatorModel->api()->setOscDistortionDrive(oscillatorModel->index(), drive))
+                if (oscillatorModel->getDspProxy()->setOscDistortionDrive(oscillatorModel->index(), drive))
                 action driveChanged(drive);
 }
 
 double OscillatorDistortionModel::getDrive() const
 {
-        return  oscillatorModel->api()->getOscDistortionDrive(oscillatorModel->index());
+        return  oscillatorModel->getDspProxy()->getOscDistortionDrive(oscillatorModel->index());
 }
 
 Envelope::Category OscillatorDistortionModel::envelopeCategory() const

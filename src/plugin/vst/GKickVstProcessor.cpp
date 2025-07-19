@@ -30,7 +30,7 @@
 #include "pluginterfaces/vst/ivstparameterchanges.h"
 #include "pluginterfaces/vst/ivstevents.h"
 
-#include "geonkick_api.h"
+#include "DspProxy.h"
 #include "kit_state.h"
 #include "percussion_state.h"
 
@@ -47,7 +47,7 @@ bool ModuleExit (void)
 #endif // GEONKICK_OS_WINDOWS
 
 GKickVstProcessor::GKickVstProcessor()
-        : geonkickApi{nullptr}
+        : dspProxy{nullptr}
 	, sampleRate{Geonkick::defaultSampleRate}
 {
 }
@@ -69,7 +69,7 @@ GKickVstProcessor::initialize(FUnknown* context)
         if (res != kResultTrue)
                 return res;
 
-        auto nChannels = GeonkickApi::numberOfChannels();
+        auto nChannels = DspProxy::numberOfChannels();
         GEONKICK_LOG_DEBUG("nChannels : " << nChannels);
         for (decltype(nChannels) i = 0; i < nChannels; i++) {
                 std::wstring outStr;
@@ -91,7 +91,7 @@ GKickVstProcessor::setBusArrangements(Vst::SpeakerArrangement* inputs,
                                       int32 numOuts)
 {
         GEONKICK_LOG_DEBUG("numIns : " << numIns << ", numOuts: " << numOuts);
-        auto n = GeonkickApi::numberOfChannels();
+        auto n = DspProxy::numberOfChannels();
         if (numIns == 0 && numOuts == static_cast<decltype(numOuts)>(n))
                 return Vst::SingleComponentEffect::setBusArrangements(inputs, numIns, outputs, numOuts);
         return kResultFalse;
@@ -104,18 +104,18 @@ GKickVstProcessor::setupProcessing(Vst::ProcessSetup& setup)
         if (res != kResultTrue)
                 return res;
 
-        if (!geonkickApi || sampleRate != setup.sampleRate) {
+        if (!dspProxy || sampleRate != setup.sampleRate) {
                 sampleRate = setup.sampleRate;
-                geonkickApi = std::make_unique<GeonkickApi>(sampleRate,
-                                                            GeonkickApi::InstanceType::Vst3);
-                if (!geonkickApi->init()) {
-                        geonkickApi = nullptr;
+                dspProxy = std::make_unique<DspProxy>(sampleRate,
+                                                            DspProxy::InstanceType::Vst3);
+                if (!dspProxy->init()) {
+                        dspProxy = nullptr;
                         GEONKICK_LOG_ERROR("can't init Geonkick API");
                         return kResultFalse;
                 }
 
 		if (!stateData.empty())
-		  geonkickApi->setKitState(stateData);
+		  dspProxy->setKitState(stateData);
         }
         return kResultTrue;
 }
@@ -132,7 +132,7 @@ GKickVstProcessor::process(Vst::ProcessData& data)
         if (data.numSamples < 1)
                 return kResultOk;
 
-        size_t nChannels = std::min(geonkickApi->numberOfChannels(),
+        size_t nChannels = std::min(dspProxy->numberOfChannels(),
                                     static_cast<decltype(nChannels)>(data.numOutputs));
         for (decltype(nChannels) ch = 0; ch < nChannels; ch++) {
                 channelsBuffers.data()[2 * ch]     = data.outputs[ch].channelBuffers32[0];
@@ -153,19 +153,19 @@ GKickVstProcessor::process(Vst::ProcessData& data)
                 size_t size = eventFrame - currentFrame;
 
                 if (size > 0) {
-                        geonkickApi->process(channelsBuffers.data(), offset, size);
+                        dspProxy->process(channelsBuffers.data(), offset, size);
                         offset += size;
                 }
 
                 switch (event.type) {
                 case Vst::Event::kNoteOnEvent:
-                        geonkickApi->setKeyPressed(true,
+                        dspProxy->setKeyPressed(true,
                                                    event.noteOn.pitch,
                                                    127 * event.noteOn.velocity);
                         break;
 
                 case Vst::Event::kNoteOffEvent:
-                        geonkickApi->setKeyPressed(false,
+                        dspProxy->setKeyPressed(false,
                                                    event.noteOff.pitch,
                                                    127 * event.noteOff.velocity);
                         break;
@@ -180,7 +180,7 @@ GKickVstProcessor::process(Vst::ProcessData& data)
         }
 
         if (static_cast<decltype(data.numSamples)>(currentFrame) < data.numSamples)
-                geonkickApi->process(channelsBuffers.data(), offset, data.numSamples - currentFrame);
+                dspProxy->process(channelsBuffers.data(), offset, data.numSamples - currentFrame);
 
         return kResultOk;
 }
@@ -222,12 +222,12 @@ GKickVstProcessor::setState(IBStream* state)
                 return kResultFalse;
         }
 
-	if (!geonkickApi) {
+	if (!dspProxy) {
 	  stateData = std::move(data);
 	} else {
-	  geonkickApi->setKitState(data);
-	  geonkickApi->notifyUpdateGui();
-	  geonkickApi->notifyKitUpdated();
+	  dspProxy->setKitState(data);
+	  dspProxy->notifyUpdateGui();
+	  dspProxy->notifyKitUpdated();
 	}
         return kResultOk;
 }
@@ -235,11 +235,11 @@ GKickVstProcessor::setState(IBStream* state)
 tresult PLUGIN_API
 GKickVstProcessor::getState(IBStream* state)
 {
-        if (state == nullptr || geonkickApi == nullptr)
+        if (state == nullptr || dspProxy == nullptr)
                 return kResultTrue;
 
         int32 nBytes = 0;
-        auto data = geonkickApi->getKitState()->toJson();
+        auto data = dspProxy->getKitState()->toJson();
         if (state->write(data.data(), data.size(), &nBytes) == kResultFalse) {
                 GEONKICK_LOG_ERROR("error on saving the state");
                 return kResultFalse;
@@ -255,8 +255,8 @@ GKickVstProcessor::getState(IBStream* state)
 IPlugView* PLUGIN_API
 GKickVstProcessor::createView(FIDString name)
 {
-        if (geonkickApi && name && std::string(name) == std::string("editor"))
-                return static_cast<IPlugView*>(new GKickVstEditor(this, geonkickApi.get()));
+        if (dspProxy && name && std::string(name) == std::string("editor"))
+                return static_cast<IPlugView*>(new GKickVstEditor(this, dspProxy.get()));
         return nullptr;
 }
 
