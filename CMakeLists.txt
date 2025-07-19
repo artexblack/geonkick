@@ -152,7 +152,7 @@ set(GKICK_COMMON_HEADERS
   ${GKICK_COMMON_DIR}/EnvelopePoint.h
   ${GKICK_COMMON_DIR}/envelope.h
   ${GKICK_COMMON_DIR}/BufferView.h
-  ${GKICK_COMMON_DIR}/kick_graph.h
+  ${GKICK_COMMON_DIR}/InstrumentWaveform.h
   ${GKICK_COMMON_DIR}/envelope_widget.h
   ${GKICK_COMMON_DIR}/knob.h
   ${GKICK_COMMON_DIR}/OscillatorModel.h
@@ -228,7 +228,7 @@ set(GKICK_COMMON_SOURCES
   ${GKICK_COMMON_DIR}/EnvelopePoint.cpp
   ${GKICK_COMMON_DIR}/envelope.cpp
   ${GKICK_COMMON_DIR}/BufferView.cpp
-  ${GKICK_COMMON_DIR}/kick_graph.cpp
+  ${GKICK_COMMON_DIR}/InstrumentWaveform.cpp
   ${GKICK_COMMON_DIR}/envelope_widget.cpp
   ${GKICK_COMMON_DIR}/knob.cpp
   ${GKICK_COMMON_DIR}/OscillatorModel.cpp

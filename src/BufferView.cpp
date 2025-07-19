@@ -30,7 +30,7 @@ BufferView::BufferView(GeonkickWidget* parent, const std::vector<float> &data)
         : GeonkickWidget(parent)
         , bufferData{data}
         , updateGraph{true}
-        , graphImage{nullptr}
+        , waveformImage{nullptr}
 {
         setBackgroundColor(50, 50, 50);
         setBorderColor(40, 40, 40);
@@ -54,16 +54,16 @@ void BufferView::paintWidget(RkPaintEvent *event)
         RK_UNUSED(event);
         if (updateGraph)
                 drawGraph();
-        if (graphImage && !graphImage->isNull()) {
+        if (waveformImage && !waveformImage->isNull()) {
                 RkPainter painter(this);
-                painter.drawImage(*graphImage.get(), 0, 0);
+                painter.drawImage(*waveformImage.get(), 0, 0);
         }
 }
 
 void BufferView::drawGraph()
 {
-        graphImage = std::make_unique<RkImage>(size());
-        RkPainter painter(graphImage.get());
+        waveformImage = std::make_unique<RkImage>(size());
+        RkPainter painter(waveformImage.get());
         painter.fillRect(RkRect({0, 0}, size()), background());
         if (bufferData.empty())
                 return;

@@ -1,6 +1,6 @@
 /**
  * File name: geonkick.h
- * Project: GeonKick (A kick synthesizer)
+ * Project: GeonKick (A percussiove synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *

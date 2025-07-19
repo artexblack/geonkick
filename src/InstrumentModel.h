@@ -21,8 +21,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef PERCUSSION_MODEL_H
-#define PERCUSSION_MODEL_H
+#ifndef INSTRUMENT_MODEL_H
+#define INSTRUMENT_MODEL_H
 
 #include "globals.h"
 #include "AbstractModel.h"
@@ -149,4 +149,4 @@ class PercussionModel : public AbstractModel {
         DistortionModel *distortionModel;
 };
 
-#endif // PERCUSSION_MODEL_H
+#endif // INSTRUMENT_MODEL_H

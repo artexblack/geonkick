@@ -1,6 +1,6 @@
 /**
  * File name: MainWindow.h
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussiove synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *

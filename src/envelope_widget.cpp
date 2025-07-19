@@ -1,6 +1,6 @@
 /**
  * File name: envelope_widget.cpp
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussiove synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *
@@ -142,10 +142,10 @@ void EnvelopeWidget::createZoomInfoLabel()
                     zoomInfoLabel, setText("1:" + info));
 }
 
-void EnvelopeWidget::updateKickGraph(std::shared_ptr<RkImage> graphImage)
+void EnvelopeWidget::updateInstrumentWaveform(std::shared_ptr<RkImage> waveformImage)
 {
-        if (graphImage && !graphImage->isNull())
-                drawArea->updateKickGraph(graphImage);
+        if (waveformImage && !waveformImage->isNull())
+                drawArea->updateInstrumentWaveform(waveformImage);
 }
 
 Envelope* EnvelopeWidget::getEnvelope(Envelope::Category category)

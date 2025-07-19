@@ -1,6 +1,6 @@
 /**
  * File name: ViewState.h
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussiove synthesizer)
  *
  * Copyright (C) 2020 Iurie Nistor 
  *

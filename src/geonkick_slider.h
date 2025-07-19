@@ -1,6 +1,6 @@
 /**
  * File name: geonkick_slider.h
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussiove synthesizer)
  *
  * Copyright (C) 2018 Iurie Nistor
  *

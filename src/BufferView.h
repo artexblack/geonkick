@@ -44,7 +44,7 @@ class BufferView : public GeonkickWidget {
   private:
      std::vector<float> bufferData;
      bool updateGraph;
-     std::unique_ptr<RkImage> graphImage;
+     std::unique_ptr<RkImage> waveformImage;
 };
 
 #endif // GEONKICK_BUFFER_VIEW

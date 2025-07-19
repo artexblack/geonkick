@@ -1,6 +1,6 @@
 /**
  * File name: oscillator_envelope.h
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussiove synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *

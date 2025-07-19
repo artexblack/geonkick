@@ -1,6 +1,6 @@
 /**
  * File name: VstIds.h
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussiove synthesizer)
  *
  * Copyright (C) 2019 Iurie Nistor 
  *

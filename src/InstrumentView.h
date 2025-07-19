@@ -21,8 +21,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef PERCUSSION_VIEW_H
-#define PERCUSSION_VIEW_H
+#ifndef INSTRUMENT_VIEW_H
+#define INSTRUMENT_VIEW_H
 
 #include "geonkick_widget.h"
 #include "geonkick_slider.h"

@@ -1,6 +1,6 @@
 /**
  * File name: envelope_widget.h
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussiove synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *
@@ -52,7 +52,7 @@ public:
 
 protected:
         Envelope* getEnvelope(Envelope::Category category);
-        void updateKickGraph(std::shared_ptr<RkImage> graphImage);
+        void updateInstrumentWaveform(std::shared_ptr<RkImage> waveformImage);
 #ifndef GEONKICK_LIMITED_VERSION
         void createLayersButtons(GeonkickWidget *buttomAreaWidget);
 #endif // GEONKICK_LIMITED_VERSION

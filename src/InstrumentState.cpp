@@ -1,6 +1,6 @@
 /**
  * File name: instrument_state.cpp
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussiove synthesizer)
  *
  * Copyright (C) 2018 Iuri Nistor
  *
