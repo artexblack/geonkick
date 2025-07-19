@@ -1,6 +1,6 @@
 /**
  * File name: kit_widget.h
- * Project: Geonkick (A percussion synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2020 Iurie Nistor 
  *
@@ -56,8 +56,8 @@ class KitWidget: public GeonkickWidget
  private:
         KitModel *kitModel;
         RkButton *addButton;
-        RkContainer *percussionsContainer;
-        std::vector<KitPercussionView*> percussionViewList;
+        RkContainer *instrumentsContainer;
+        std::vector<KitPercussionView*> instrumentViewList;
         RkTimer *levelersTimer;
 };
 

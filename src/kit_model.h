@@ -1,6 +1,6 @@
 /**
  * File name: kit_model.h
- * Project: Geonkick (A percussion synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2020 Iurie Nistor
  *
@@ -55,23 +55,23 @@ class KitModel : public RkObject {
         PercussionIndex selectedPercussion() const;
         PercussionModel* currentPercussion() const;
         size_t numberOfChannels() const;
-        int percussionChannel(PercussionIndex index) const;
+        int instrumentChannel(PercussionIndex index) const;
         bool setPercussionChannel(PercussionIndex index, int channel);
         size_t numberOfMidiChannels() const;
-        int percussionMidiChannel(PercussionIndex index) const;
+        int instrumentMidiChannel(PercussionIndex index) const;
         bool setPercussionMidiChannel(PercussionIndex index, int channel);
         bool setPercussionKey(PercussionIndex index, KeyIndex key);
-        KeyIndex percussionKey(PercussionIndex index) const;
+        KeyIndex instrumentKey(PercussionIndex index) const;
         bool setPercussionName(PercussionIndex index, const std::string &name);
-        std::string percussionName(PercussionIndex index) const;
+        std::string instrumentName(PercussionIndex index) const;
         void addNewPercussion();
         void copyPercussion(PercussionIndex index);
         void removePercussion(PercussionIndex index);
         void moveSelectedPercussion(bool down = true);
-        int percussionKeyIndex(PercussionIndex index) const;
+        int instrumentKeyIndex(PercussionIndex index) const;
         size_t keysNumber() const;
         std::string keyName(KeyIndex index) const;
-        size_t percussionNumber() const;
+        size_t instrumentNumber() const;
         size_t maxPercussionNumber() const;
         double getInstrumentMaxLength(PercussionIndex index) const;
         bool setInstrumentLength(PercussionIndex index, double val);
@@ -81,11 +81,11 @@ class KitModel : public RkObject {
         void playPercussion(PercussionIndex index);
         std::filesystem::path workingPath(const std::string &key) const;
         std::filesystem::path getHomePath() const;
-        const std::vector<PercussionModel*>& percussionModels() const;
+        const std::vector<PercussionModel*>& instrumentModels() const;
         PercussionIndex getIndex(int id) const;
         bool setPercussionLimiter(PercussionIndex index, int value);
-        int percussionLimiter(PercussionIndex index) const;
-        int percussionLeveler(PercussionIndex index) const;
+        int instrumentLimiter(PercussionIndex index) const;
+        int instrumentLeveler(PercussionIndex index) const;
         bool mutePercussion(PercussionIndex index, bool b);
         bool isPercussionMuted(PercussionIndex index) const;
         bool soloPercussion(PercussionIndex index, bool b);
@@ -103,20 +103,20 @@ class KitModel : public RkObject {
                     modelUpdated(),
                     RK_ARG_TYPE(),
                     RK_ARG_VAL());
-        RK_DECL_ACT(percussionAdded,
-                    percussionAdded(PercussionModel* model),
+        RK_DECL_ACT(instrumentAdded,
+                    instrumentAdded(PercussionModel* model),
                     RK_ARG_TYPE(PercussionModel*),
                     RK_ARG_VAL(model));
-        RK_DECL_ACT(percussionRemoved,
-                    percussionRemoved(PercussionIndex index),
+        RK_DECL_ACT(instrumentRemoved,
+                    instrumentRemoved(PercussionIndex index),
                     RK_ARG_TYPE(PercussionIndex),
                     RK_ARG_VAL(index));
-        RK_DECL_ACT(percussionSelected,
-                    percussionSelected(PercussionModel* model),
+        RK_DECL_ACT(instrumentSelected,
+                    instrumentSelected(PercussionModel* model),
                     RK_ARG_TYPE(PercussionModel*),
                     RK_ARG_VAL(model));
-        RK_DECL_ACT(percussionUpdated,
-                    percussionUpdated(PercussionModel* model),
+        RK_DECL_ACT(instrumentUpdated,
+                    instrumentUpdated(PercussionModel* model),
                     RK_ARG_TYPE(PercussionModel*),
                     RK_ARG_VAL(model));
         RK_DECL_ACT(limiterUpdated,
@@ -131,7 +131,7 @@ class KitModel : public RkObject {
         RkString author() const;
         RkString license() const;
         std::vector<float> instrumentData(PercussionIndex index) const;
-        int percussionId(int index) const;
+        int instrumentId(int index) const;
 
  protected:
         void loadModelData();
@@ -139,7 +139,7 @@ class KitModel : public RkObject {
  private:
         GeonkickModel *geonkickModel;
         DspProxy *dspProxy;
-        std::vector<PercussionModel*> percussionsList;
+        std::vector<PercussionModel*> instrumentsList;
         std::vector<std::string> midiKeys;
 };
 

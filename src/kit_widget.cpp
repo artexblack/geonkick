@@ -1,6 +1,6 @@
 /**
  * File name: kit_widget.cpp
- * Project: Geonkick (A percussion synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2020 Iurie Nistor 
  *
@@ -24,8 +24,8 @@
 #include "kit_widget.h"
 #include "kit_model.h"
 #include "geonkick_slider.h"
-#include "percussion_view.h"
-#include "percussion_model.h"
+#include "InstrumentView.h"
+#include "InstrumentModel.h"
 
 #include <RkEvent.h>
 #include <RkImage.h>
@@ -41,17 +41,17 @@ KitWidget::KitWidget(GeonkickWidget *parent, KitModel *model)
 	: GeonkickWidget(parent)
         , kitModel{model}
         , addButton{nullptr}
-        , percussionsContainer{new RkContainer(this, Rk::Orientation::Vertical)}
+        , instrumentsContainer{new RkContainer(this, Rk::Orientation::Vertical)}
         , levelersTimer{new RkTimer(this, 30)}
 {
         RK_ACT_BIND(levelersTimer, timeout, RK_ACT_ARGS(), this, onUpdateLevelers());
-        percussionsContainer->setHiddenTakesPlace();
+        instrumentsContainer->setHiddenTakesPlace();
         setSize(parent->size());
 
         RK_ACT_BIND(kitModel, modelUpdated, RK_ACT_ARGS(), this, updateView());
-        RK_ACT_BIND(kitModel, percussionAdded, RK_ACT_ARGS(PercussionModel *model),
+        RK_ACT_BIND(kitModel, instrumentAdded, RK_ACT_ARGS(PercussionModel *model),
                     this, addPercussion(model));
-        RK_ACT_BIND(kitModel, percussionRemoved, RK_ACT_ARGS(PercussionIndex index),
+        RK_ACT_BIND(kitModel, instrumentRemoved, RK_ACT_ARGS(PercussionIndex index),
                     this, removePercussion(index));
 
         addShortcut(Rk::Key::Key_Up);
@@ -67,7 +67,7 @@ KitWidget::KitWidget(GeonkickWidget *parent, KitModel *model)
 
         auto topContainer = new RkContainer(this);
         topContainer->setSpacing(5);
-        percussionsContainer->setHiddenTakesPlace();
+        instrumentsContainer->setHiddenTakesPlace();
         topContainer->setSize({width(), 25});
 
         addButton = new RkButton(this);
@@ -79,7 +79,7 @@ KitWidget::KitWidget(GeonkickWidget *parent, KitModel *model)
         topContainer->addWidget(addButton);
         addButton->show();
 
-        percussionsContainer->setHeight(kitContainer->height() - topContainer->height());
+        instrumentsContainer->setHeight(kitContainer->height() - topContainer->height());
 
         auto kitChannelsView = new KitChannelsView(this, kitModel);
         kitChannelsView->show();
@@ -98,7 +98,7 @@ KitWidget::KitWidget(GeonkickWidget *parent, KitModel *model)
         label->show();
         topContainer->addWidget(label);
         kitContainer->addContainer(topContainer);
-        kitContainer->addContainer(percussionsContainer);
+        kitContainer->addContainer(instrumentsContainer);
 
         updateView();
         levelersTimer->start();
@@ -106,40 +106,40 @@ KitWidget::KitWidget(GeonkickWidget *parent, KitModel *model)
 
 void KitWidget::updateView()
 {
-        percussionsContainer->clear();
-        for (auto &percussionView: percussionViewList)
-                delete percussionView;
-        percussionViewList.clear();
+        instrumentsContainer->clear();
+        for (auto &instrumentView: instrumentViewList)
+                delete instrumentView;
+        instrumentViewList.clear();
 
-        auto &models = kitModel->percussionModels();
+        auto &models = kitModel->instrumentModels();
         for (const auto &m: models)
                 addPercussion(m);
 }
 
 void KitWidget::addPercussion(PercussionModel *model)
 {
-        auto percussionView = new KitPercussionView(this, model);
-        percussionsContainer->addWidget(percussionView, Rk::Alignment::AlignTop);
-        percussionViewList.push_back(percussionView);
-        percussionView->show();
+        auto instrumentView = new KitPercussionView(this, model);
+        instrumentsContainer->addWidget(instrumentView, Rk::Alignment::AlignTop);
+        instrumentViewList.push_back(instrumentView);
+        instrumentView->show();
 }
 
 void KitWidget::updatePercussion(PercussionIndex index, PercussionModel *model)
 {
-        auto percussionView = dynamic_cast<KitPercussionView*>(percussionsContainer->at(index));
-        if (percussionView)
-                percussionView->setModel(model);
+        auto instrumentView = dynamic_cast<KitPercussionView*>(instrumentsContainer->at(index));
+        if (instrumentView)
+                instrumentView->setModel(model);
 }
 
 void KitWidget::removePercussion(PercussionIndex index)
 {
         size_t containerIndex = 0;
-        for (auto it = percussionViewList.begin(); it != percussionViewList.end(); ++it) {
+        for (auto it = instrumentViewList.begin(); it != instrumentViewList.end(); ++it) {
                 if ((*it)->getModel()->index() == index) {
-                        percussionsContainer->removeAt(containerIndex);
+                        instrumentsContainer->removeAt(containerIndex);
                         delete *it;
-                        percussionViewList.erase(it);
-                        percussionsContainer->update();
+                        instrumentViewList.erase(it);
+                        instrumentsContainer->update();
                         break;
                 }
                 containerIndex++;
@@ -211,7 +211,7 @@ KitModel* KitWidget::getModel() const
 
 void KitWidget::onUpdateLevelers()
 {
-        for (const auto &per: percussionViewList)
+        for (const auto &per: instrumentViewList)
                 per->updateLeveler();
 }
 

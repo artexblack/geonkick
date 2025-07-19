@@ -23,7 +23,7 @@
 
 
 #include "general_group_box.h"
-#include "percussion_model.h"
+#include "InstrumentModel.h"
 #include "knob.h"
 #include "geonkick_button.h"
 #include "FilterView.h"

@@ -1,6 +1,6 @@
 /**
  * File name: GKickVstProcessor.h
- * Project: Geonkick (A percussion synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2019 Iurie Nistor 
  *
@@ -32,7 +32,7 @@
 
 #include "DspProxy.h"
 #include "kit_state.h"
-#include "percussion_state.h"
+#include "InstrumentState.h"
 
 #ifndef GEONKICK_OS_WINDOWS
 bool ModuleEntry (void*)

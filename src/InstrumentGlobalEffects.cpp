@@ -22,7 +22,7 @@
  */
 
 #include "InstrumentGlobalEffects.h"
-#include "percussion_model.h"
+#include "InstrumentModel.h"
 #include "FilterModel.h"
 #include "FilterView.h"
 #include "DistortionModel.h"

@@ -25,7 +25,7 @@
 #include "DesktopPaths.h"
 #include "OscillatorModel.h"
 #include "globals.h"
-#include "percussion_state.h"
+#include "InstrumentState.h"
 #include "kit_state.h"
 #include "preset.h"
 #include "preset_folder.h"
@@ -121,8 +121,8 @@ bool DspProxy::init()
         enablePercussion(0, true);
         addOrderedPercussionId(0);
 
-        // Set the first the percussion by default to be controllable.
-	geonkick_set_current_percussion(geonkickDsp, 0);
+        // Set the first the instrument by default to be controllable.
+	geonkick_set_current_instrument(geonkickDsp, 0);
 	geonkick_enable_synthesis(geonkickDsp, true);
         return true;
 }
@@ -244,9 +244,9 @@ void DspProxy::setPercussionState(const std::unique_ptr<PercussionState> &state)
                 return;
 
         geonkick_enable_synthesis(geonkickDsp, false);
-        geonkick_enable_percussion(geonkickDsp, state->getId(), state->isEnabled());
+        geonkick_enable_instrument(geonkickDsp, state->getId(), state->isEnabled());
         auto currentId = currentPercussion();
-        geonkick_set_current_percussion(geonkickDsp, state->getId());
+        geonkick_set_current_instrument(geonkickDsp, state->getId());
         setPercussionName(state->getId(), state->getName());
         setPercussionPlayingKey(state->getId(), state->getPlayingKey());
         setPercussionChannel(state->getId(), state->getChannel());
@@ -291,7 +291,7 @@ void DspProxy::setPercussionState(const std::unique_ptr<PercussionState> &state)
         setDistortionOutLimiter(state->getDistortionOutLimiter());
         setDistortionDrive(state->getDistortionDrive());
 
-        geonkick_set_current_percussion(geonkickDsp, currentId);
+        geonkick_set_current_instrument(geonkickDsp, currentId);
         geonkick_enable_synthesis(geonkickDsp, true);
 }
 
@@ -308,13 +308,13 @@ std::unique_ptr<PercussionState> DspProxy::getPercussionState(size_t id) const
                 return getPercussionState();
         } else {
                 auto tmpId = currentPercussion();
-                auto res = geonkick_set_current_percussion(geonkickDsp, id);
+                auto res = geonkick_set_current_instrument(geonkickDsp, id);
                 if (res != GEONKICK_OK) {
-                        geonkick_set_current_percussion(geonkickDsp, tmpId);
+                        geonkick_set_current_instrument(geonkickDsp, tmpId);
                         return getPercussionState();
                 }
                 auto state = getPercussionState();
-                geonkick_set_current_percussion(geonkickDsp, tmpId);
+                geonkick_set_current_instrument(geonkickDsp, tmpId);
                 return state;
         }
 }
@@ -503,7 +503,7 @@ bool DspProxy::setKitState(const std::string &data)
 
 bool DspProxy::setKitState(const std::unique_ptr<KitState> &state)
 {
-        if (state->percussions().empty()) {
+        if (state->instruments().empty()) {
                 GEONKICK_LOG_ERROR("wrong kit state");
                 return false;
         }
@@ -515,13 +515,13 @@ bool DspProxy::setKitState(const std::unique_ptr<KitState> &state)
         setKitAuthor(state->getAuthor());
         setKitUrl(state->getUrl());
         clearOrderedPercussionIds();
-        for (const auto &per: state->percussions()) {
+        for (const auto &per: state->instruments()) {
                 setPercussionState(per);
                 addOrderedPercussionId(per->getId());
         }
 
-        if (!percussionIdList.empty())
-                setCurrentPercussion(percussionIdList.front());
+        if (!instrumentIdList.empty())
+                setCurrentPercussion(instrumentIdList.front());
         else
                  setCurrentPercussion(0);
         return true;
@@ -1397,69 +1397,69 @@ void DspProxy::setCurrentWorkingPath(const std::string &key,
 
 bool DspProxy::setPercussionLimiter(size_t id, double val)
 {
-	return geonkick_percussion_set_limiter(geonkickDsp, id, val) == GEONKICK_OK;
+	return geonkick_instrument_set_limiter(geonkickDsp, id, val) == GEONKICK_OK;
 }
 
-double DspProxy::percussionLimiter(size_t id) const
+double DspProxy::instrumentLimiter(size_t id) const
 {
         gkick_real val = 0.0f;
-        geonkick_percussion_get_limiter(geonkickDsp, id, &val);
+        geonkick_instrument_get_limiter(geonkickDsp, id, &val);
         return val;
 }
 
 bool DspProxy::mutePercussion(size_t id, bool b)
 {
-        return geonkick_percussion_mute(geonkickDsp, id, b) == GEONKICK_OK;
+        return geonkick_instrument_mute(geonkickDsp, id, b) == GEONKICK_OK;
 }
 
 bool DspProxy::isPercussionMuted(size_t id) const
 {
         bool muted = false;
-        geonkick_percussion_is_muted(geonkickDsp, id, &muted);
+        geonkick_instrument_is_muted(geonkickDsp, id, &muted);
         return muted;
 }
 
 bool DspProxy::soloPercussion(size_t id, bool b)
 {
-        return geonkick_percussion_solo(geonkickDsp, id, b) == GEONKICK_OK;
+        return geonkick_instrument_solo(geonkickDsp, id, b) == GEONKICK_OK;
 }
 
 bool DspProxy::isPercussionSolo(size_t id) const
 {
         bool solo = false;
-        geonkick_percussion_is_solo(geonkickDsp, id, &solo);
+        geonkick_instrument_is_solo(geonkickDsp, id, &solo);
         return solo;
 }
 
 bool DspProxy::enableNoteOff(size_t id, bool b)
 {
-        return geonkick_percussion_enable_note_off(geonkickDsp, id, b) == GEONKICK_OK;
+        return geonkick_instrument_enable_note_off(geonkickDsp, id, b) == GEONKICK_OK;
 }
 
 bool DspProxy::isNoteOffEnabled(size_t id) const
 {
         bool enabled = false;
-        geonkick_percussion_note_off_enabled(geonkickDsp, id, &enabled);
+        geonkick_instrument_note_off_enabled(geonkickDsp, id, &enabled);
         return enabled;
 }
 
 int DspProxy::getUnusedPercussion() const
 {
         int index;
-        geonkick_unused_percussion(geonkickDsp, &index);
+        geonkick_unused_instrument(geonkickDsp, &index);
         return index;
 }
 
 bool DspProxy::enablePercussion(int index, bool enable)
 {
-        auto res = geonkick_enable_percussion(geonkickDsp, index, enable);
+        auto res = geonkick_enable_instrument(geonkickDsp, index, enable);
         return res == GEONKICK_OK;
 }
 
 bool DspProxy::isPercussionEnabled(int index) const
 {
         bool enabled = false;
-        geonkick_is_percussion_enabled(geonkickDsp, index, &enabled);
+        geonkick_is_instrument_enabled(geonkickDsp, index, &enabled);
         return enabled;
 }
 
@@ -1492,7 +1492,7 @@ int DspProxy::getPercussionPlayingKey(int index) const
         return key;
 }
 
-int DspProxy::percussionsReferenceKey() const
+int DspProxy::instrumentsReferenceKey() const
 {
         // MIDI key A4
         return 69;
@@ -1500,7 +1500,7 @@ int DspProxy::percussionsReferenceKey() const
 
 bool DspProxy::setPercussionChannel(int index, size_t channel)
 {
-        auto res = geonkick_set_percussion_channel(geonkickDsp,
+        auto res = geonkick_set_instrument_channel(geonkickDsp,
                                                    index,
                                                    channel);
         return res == GEONKICK_OK;
@@ -1509,7 +1509,7 @@ bool DspProxy::setPercussionChannel(int index, size_t channel)
 int DspProxy::getPercussionChannel(int index) const
 {
         size_t channel;
-        auto res = geonkick_get_percussion_channel(geonkickDsp,
+        auto res = geonkick_get_instrument_channel(geonkickDsp,
                                                    index,
                                                    &channel);
         if (res != GEONKICK_OK)
@@ -1554,7 +1554,7 @@ bool DspProxy::setPercussionName(int index, const std::string &name)
         if (name.empty())
                 return false;
 
-        auto res = geonkick_set_percussion_name(geonkickDsp,
+        auto res = geonkick_set_instrument_name(geonkickDsp,
                                                 index,
                                                 name.c_str(),
                                                 name.size());
@@ -1566,7 +1566,7 @@ std::string DspProxy::getPercussionName(int index) const
         auto n = numberOfInstruments();
         if (index > -1 && index < static_cast<decltype(index)>(n)) {
                 char name[30];
-                geonkick_get_percussion_name(geonkickDsp,
+                geonkick_get_instrument_name(geonkickDsp,
                                              index,
                                              name,
                                              sizeof(name));
@@ -1603,14 +1603,14 @@ bool DspProxy::isAudioOutputTuned(int id) const
 
 bool DspProxy::setCurrentPercussion(int index)
 {
-        auto res = geonkick_set_current_percussion(geonkickDsp, index);
+        auto res = geonkick_set_current_instrument(geonkickDsp, index);
         return res == GEONKICK_OK;
 }
 
 size_t DspProxy::currentPercussion() const
 {
         size_t index = 0;
-        geonkick_get_current_percussion(geonkickDsp, &index);
+        geonkick_get_current_instrument(geonkickDsp, &index);
         return index;
 }
 
@@ -1810,8 +1810,8 @@ void DspProxy::notifyPercussionUpdated(int id)
         if (eventQueue) {
                 auto act = std::make_unique<RkAction>();
                 act->setCallback([this, id](void){
-                                GEONKICK_LOG_DEBUG("update percussion :" << id);
-                                action percussionUpdated(id);
+                                GEONKICK_LOG_DEBUG("update instrument :" << id);
+                                action instrumentUpdated(id);
                         });
                 eventQueue->postAction(std::move(act));
         }
@@ -1830,14 +1830,14 @@ void DspProxy::notifyKitUpdated()
 
 std::vector<int> DspProxy::ordredPercussionIds() const
 {
-        return percussionIdList;
+        return instrumentIdList;
 }
 
 void DspProxy::removeOrderedPercussionId(int id)
 {
-        for (auto it = percussionIdList.begin(); it != percussionIdList.end(); ++it) {
+        for (auto it = instrumentIdList.begin(); it != instrumentIdList.end(); ++it) {
                 if (*it == id) {
-                        percussionIdList.erase(it);
+                        instrumentIdList.erase(it);
                         break;
                 }
         }
@@ -1846,12 +1846,12 @@ void DspProxy::removeOrderedPercussionId(int id)
 void DspProxy::addOrderedPercussionId(int id)
 {
         removeOrderedPercussionId(id);
-        percussionIdList.push_back(id);
+        instrumentIdList.push_back(id);
 }
 
 void DspProxy::clearOrderedPercussionIds()
 {
-        percussionIdList.clear();
+        instrumentIdList.clear();
 }
 
 bool DspProxy::moveOrdrepedPercussionId(int index, int n)
@@ -1859,12 +1859,12 @@ bool DspProxy::moveOrdrepedPercussionId(int index, int n)
         if (index < 0)
                 return false;
 
-        auto size = percussionIdList.size();
-        for (decltype(percussionIdList.size()) i = 0; i < size; i++) {
-                if (percussionIdList[i] == index) {
+        auto size = instrumentIdList.size();
+        for (decltype(instrumentIdList.size()) i = 0; i < size; i++) {
+                if (instrumentIdList[i] == index) {
                         auto newId = static_cast<decltype(n)>(i) + n;
                         if (newId > -1 && static_cast<decltype(size)>(newId) < size) {
-                                std::swap(percussionIdList[i], percussionIdList[newId]);
+                                std::swap(instrumentIdList[i], instrumentIdList[newId]);
                                 return true;
                         }
                 }

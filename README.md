@@ -1,6 +1,6 @@
 # Geonkick
 
-**Geonkick** - a [free software](https://www.gnu.org/philosophy/free-sw.en.html) percussion synthesizer.
+**Geonkick** - a [free software](https://www.gnu.org/philosophy/free-sw.en.html) percussive synthesizer.
 
 **Website:** [https://geonkick.org](https://geonkick.org)
 
@@ -51,7 +51,7 @@ Source code repository:
      - limiter
      - distortion (hard-clip, tan, arctan, log, exp, polynomial)
      - distortion drive envelope
-     - tune percussion option (relative to key A4)
+     - tune instrument relative to key A4
 * Key velocity sensitive for instrument total output amplitude
 * Jack support
 * Export

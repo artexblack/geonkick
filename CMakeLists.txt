@@ -138,9 +138,9 @@ set(GKICK_COMMON_HEADERS
   ${GKICK_COMMON_DIR}/Sidebar.h
   ${GKICK_COMMON_DIR}/control_area.h
   ${GKICK_COMMON_DIR}/controls_widget.h
-  ${GKICK_COMMON_DIR}/percussion_model.h
+  ${GKICK_COMMON_DIR}/InstrumentModel.h
   ${GKICK_COMMON_DIR}/kit_model.h
-  ${GKICK_COMMON_DIR}/percussion_view.h
+  ${GKICK_COMMON_DIR}/InstrumentView.h
   ${GKICK_COMMON_DIR}/kit_widget.h
   ${GKICK_COMMON_DIR}/KitTabs.h
   ${GKICK_COMMON_DIR}/envelope_draw_area.h
@@ -157,7 +157,7 @@ set(GKICK_COMMON_HEADERS
   ${GKICK_COMMON_DIR}/knob.h
   ${GKICK_COMMON_DIR}/OscillatorModel.h
   ${GKICK_COMMON_DIR}/DspProxy.h
-  ${GKICK_COMMON_DIR}/percussion_state.h
+  ${GKICK_COMMON_DIR}/InstrumentState.h
   ${GKICK_COMMON_DIR}/kit_state.h
   ${GKICK_COMMON_DIR}/oscillator_envelope.h
   ${GKICK_COMMON_DIR}/OscillatorFunctionView.h
@@ -214,9 +214,9 @@ set(GKICK_COMMON_SOURCES
   ${GKICK_COMMON_DIR}/Sidebar.cpp
   ${GKICK_COMMON_DIR}/control_area.cpp
   ${GKICK_COMMON_DIR}/controls_widget.cpp
-  ${GKICK_COMMON_DIR}/percussion_model.cpp
+  ${GKICK_COMMON_DIR}/InstrumentModel.cpp
   ${GKICK_COMMON_DIR}/kit_model.cpp
-  ${GKICK_COMMON_DIR}/percussion_view.cpp
+  ${GKICK_COMMON_DIR}/InstrumentView.cpp
   ${GKICK_COMMON_DIR}/kit_widget.cpp
   ${GKICK_COMMON_DIR}/KitTabs.cpp
   ${GKICK_COMMON_DIR}/envelope_draw_area.cpp
@@ -233,7 +233,7 @@ set(GKICK_COMMON_SOURCES
   ${GKICK_COMMON_DIR}/knob.cpp
   ${GKICK_COMMON_DIR}/OscillatorModel.cpp
   ${GKICK_COMMON_DIR}/DspProxy.cpp
-  ${GKICK_COMMON_DIR}/percussion_state.cpp
+  ${GKICK_COMMON_DIR}/InstrumentState.cpp
   ${GKICK_COMMON_DIR}/kit_state.cpp
   ${GKICK_COMMON_DIR}/oscillator_envelope.cpp
   ${GKICK_COMMON_DIR}/OscillatorFunctionView.cpp

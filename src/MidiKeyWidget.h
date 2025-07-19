@@ -25,7 +25,7 @@
 #define GEONKICK_MIDIKEY_WIDGET_H
 
 #include "geonkick_widget.h"
-#include "percussion_model.h"
+#include "InstrumentModel.h"
 
 #include <RkPainter.h>
 
@@ -96,7 +96,7 @@ class MidiKeyWidget: public GeonkickWidget
         std::string midiKeyToString(GeonkickTypes::MidiKey key);
 
  private:
-        PercussionModel *percussionModel;
+        PercussionModel *instrumentModel;
         RkSize cellSize;
         int widgetPadding;
         int midiRows;

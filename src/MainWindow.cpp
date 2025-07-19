@@ -34,7 +34,7 @@
 #include "limiter.h"
 #include "export_widget.h"
 #include "DspProxy.h"
-#include "percussion_state.h"
+#include "InstrumentState.h"
 #include "ViewState.h"
 #include "UiSettings.h"
 #include "GeonkickConfig.h"
@@ -239,7 +239,7 @@ void MainWindow::openPreset(const std::string &fileName)
                 state->setName(filePath.stem().string());
         state->setId(dspProxy->currentPercussion());
         dspProxy->setPercussionState(state);
-        action dspProxy->percussionUpdated(state->getId());
+        action dspProxy->instrumentUpdated(state->getId());
         file.close();
         dspProxy->setCurrentWorkingPath("OpenPreset",
                                            filePath.has_parent_path() ? filePath.parent_path().string() : filePath.string());

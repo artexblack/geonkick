@@ -1,5 +1,5 @@
 /**
- * File name: percussion_state.cpp
+ * File name: instrument_state.cpp
  * Project: Geonkick (A kick synthesizer)
  *
  * Copyright (C) 2018 Iuri Nistor
@@ -21,7 +21,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "percussion_state.h"
+#include "InstrumentState.h"
 #include "Base64EncoderDecoder.h"
 
 #include <iomanip>
@@ -102,8 +102,8 @@ PercussionState::PercussionState()
         , outputChannel{0}
         , outputMidiChannel{GeonkickTypes::geonkickAnyMidiChannel}
         , kickEnabled{true}
-        , percussionMuted{false}
-        , percussionSolo{false}
+        , instrumentMuted{false}
+        , instrumentSolo{false}
         , noteOffEnabled{false}
         , limiterValue{0}
         , kickLength{50}
@@ -248,22 +248,22 @@ void PercussionState::setMidiChannel(signed char channel)
 
 void PercussionState::setMute(bool b)
 {
-        percussionMuted = b;
+        instrumentMuted = b;
 }
 
 bool PercussionState::isMuted() const
 {
-        return percussionMuted;
+        return instrumentMuted;
 }
 
 void PercussionState::setSolo(bool b)
 {
-        percussionSolo = b;
+        instrumentSolo = b;
 }
 
 bool PercussionState::isSolo() const
 {
-        return percussionSolo;
+        return instrumentSolo;
 }
 
 size_t PercussionState::getChannel() const

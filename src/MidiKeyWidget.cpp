@@ -29,7 +29,7 @@ MidiKeyWidget::MidiKeyWidget(GeonkickWidget *parent,
                              PercussionModel *model,
                              Rk::WidgetFlags flag)
         : GeonkickWidget(parent, flag)
-        , percussionModel{model}
+        , instrumentModel{model}
         , cellSize{51, 32}
         , widgetPadding{8}
         , midiRows{8}
@@ -60,8 +60,8 @@ MidiKeyWidget::MidiKeyWidget(GeonkickWidget *parent,
                         drawCell(painter, key++, row, col);
         }
         setBackgroundImage(img);
-        selectedCell = getCell(percussionModel->key());
-        RK_ACT_BIND(percussionModel, keyUpdated,
+        selectedCell = getCell(instrumentModel->key());
+        RK_ACT_BIND(instrumentModel, keyUpdated,
                     RK_ACT_ARGS(PercussionModel::KeyIndex key),
                     this,
                     onUpdateKey(key));
@@ -197,7 +197,7 @@ void MidiKeyWidget::mouseButtonPressEvent(RkMouseEvent *event)
 		if (auto cell = getCell(event->x(), event->y());
 		    cell.isValid() && cell != selectedCell) {
 			selectedCell = cell;
-			percussionModel->setKey(selectedCell.key());
+			instrumentModel->setKey(selectedCell.key());
 		}
 	}
 }

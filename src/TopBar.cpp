@@ -28,7 +28,7 @@
 #include "ViewState.h"
 #include "GeonkickModel.h"
 #include "kit_model.h"
-#include "percussion_model.h"
+#include "InstrumentModel.h"
 #include "MidiKeyWidget.h"
 #include "PresetNavigator.h"
 #include "SettingsWidget.h"
@@ -294,7 +294,7 @@ TopBar::TopBar(GeonkickWidget *parent, GeonkickModel *model)
                     RK_ACT_ARGS(),
                     this, updateGui());
         RK_ACT_BINDL(geonkickModel->getKitModel(),
-                     percussionUpdated,
+                     instrumentUpdated,
                      RK_ACT_ARGS(PercussionModel* model),
                      [=, this](PercussionModel* model) {
                              if (model->isSelected())
@@ -422,14 +422,14 @@ void TopBar::updateGui()
         setPresetName(geonkickModel->getKitModel()->currentPercussion()->name());
         auto kitModel = geonkickModel->getKitModel();
         midiKeyButton->setText(MidiKeyWidget::midiKeyToNote(kitModel->currentPercussion()->key()));
-        auto percussionModel = geonkickModel->getKitModel()->currentPercussion();
-        auto nMidiChannels = percussionModel->numberOfMidiChannels();
+        auto instrumentModel = geonkickModel->getKitModel()->currentPercussion();
+        auto nMidiChannels = instrumentModel->numberOfMidiChannels();
         midiChannelSpinBox->clear();
         midiChannelSpinBox->addItem("Any");
         for (size_t i = 0; i < nMidiChannels; i++)
                 midiChannelSpinBox->addItem(std::to_string(i + 1));
-        midiChannelSpinBox->setCurrentIndex(percussionModel->midiChannel() + 1);
-        noteOffButton->setPressed(percussionModel->isNoteOffEnabled());
+        midiChannelSpinBox->setCurrentIndex(instrumentModel->midiChannel() + 1);
+        noteOffButton->setPressed(instrumentModel->isNoteOffEnabled());
 }
 
 void TopBar::showMidiPopup()

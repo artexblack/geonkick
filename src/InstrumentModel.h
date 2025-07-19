@@ -1,6 +1,6 @@
 /**
- * File name: percussion_model.h
- * Project: Geonkick (A percussion synthesizer)
+ * File name: InstrumentModel.h
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2020 Iurie Nistor
  *
@@ -144,7 +144,7 @@ class PercussionModel : public AbstractModel {
 
  private:
         KitModel* kitModel;
-        int percussionId;
+        int instrumentId;
         FilterModel *filterModel;
         DistortionModel *distortionModel;
 };

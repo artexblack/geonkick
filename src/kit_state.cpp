@@ -21,7 +21,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "percussion_state.h"
+#include "InstrumentState.h"
 #include "kit_state.h"
 
 
@@ -116,14 +116,14 @@ std::string KitState::getUrl() const
         return kitUrl;
 }
 
-const std::vector<std::unique_ptr<PercussionState>>& KitState::percussions() const
+const std::vector<std::unique_ptr<PercussionState>>& KitState::instruments() const
 {
-        return percussionsList;
+        return instrumentsList;
 }
 
  bool KitState::fromJson(const std::string &jsonData, bool oldPreset)
 {
-        percussionsList.clear();
+        instrumentsList.clear();
         rapidjson::Document document;
         document.Parse(jsonData.c_str());
         if (!document.IsObject())
@@ -157,20 +157,20 @@ const std::vector<std::unique_ptr<PercussionState>>& KitState::percussions() con
                         setUrl(m.value.GetString());
                 if ((m.name == "percussions" // For backward compatibility
                      || m.name == "instruments") && m.value.IsArray()) {
-                        isOk = parsePercussions(m.value);
+                        isOk = parseInstruments(m.value);
                 }
         }
 
         return isOk;
 }
 
-bool KitState::parsePercussions(const rapidjson::Value &percussionsArray)
+bool KitState::parseInstruments(const rapidjson::Value &instrumentsArray)
 {
-        if (percussionsArray.Empty())
+        if (instrumentsArray.Empty())
                 return false;
 
         size_t i = 0;
-        for (const auto &per: percussionsArray.GetArray()) {
+        for (const auto &per: instrumentsArray.GetArray()) {
                 auto state = std::make_unique<PercussionState>();
                 state->setId(i++);
                 if (!state->loadObject(per))
@@ -191,8 +191,8 @@ std::string KitState::toJson() const
         jsonStream <<  "\"instruments\": [" << std::endl;
 
         size_t i = 0;
-        for (const auto &per: percussionsList) {
-                if (i < percussionsList.size() - 1)
+        for (const auto &per: instrumentsList) {
+                if (i < instrumentsList.size() - 1)
                         jsonStream << per->toJson() << "," << std::endl;
                 else
                         jsonStream << per->toJson();
@@ -203,14 +203,14 @@ std::string KitState::toJson() const
         return jsonStream.str();
 }
 
-void KitState::addPercussion(std::unique_ptr<PercussionState> percussion)
+void KitState::addPercussion(std::unique_ptr<PercussionState> instrument)
 {
-        percussionsList.push_back(std::move(percussion));
+        instrumentsList.push_back(std::move(instrument));
 }
 
 const PercussionState* KitState::getPercussion(size_t id) const
 {
-        if (id < percussionsList.size())
-                return percussionsList[id].get();
+        if (id < instrumentsList.size())
+                return instrumentsList[id].get();
         return nullptr;
 }

@@ -1,6 +1,6 @@
 /**
  * File name: preset_browser_model.cpp
- * Project: Geonkick (A percussion synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2020 Iurie Nistor
  *
@@ -25,7 +25,7 @@
 #include "preset_folder.h"
 #include "preset.h"
 #include "DspProxy.h"
-#include "percussion_state.h"
+#include "InstrumentState.h"
 #include "kit_state.h"
 #include "GeonkickConfig.h"
 

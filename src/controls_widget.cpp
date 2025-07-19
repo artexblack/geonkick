@@ -32,7 +32,7 @@
 #endif // GEONKICK_SINGLE
 #include "GeonkickModel.h"
 #include "kit_model.h"
-#include "percussion_model.h"
+#include "InstrumentModel.h"
 #include "AppInfoWidget.h"
 
 ControlsWidget::ControlsWidget(GeonkickWidget *parent,
@@ -65,12 +65,12 @@ ControlsWidget::ControlsWidget(GeonkickWidget *parent,
         globalWidget->setPosition(3 * (8 + 223), 0);
         RK_ACT_BIND(this, updateGui, RK_ACT_ARGS(), globalWidget, updateView());
         RK_ACT_BIND(kitModel,
-                    percussionSelected,
+                    instrumentSelected,
                     RK_ACT_ARGS(PercussionModel *model),
                     globalWidget,
                     setModel(model));
         RK_ACT_BIND(kitModel,
-                    percussionUpdated,
+                    instrumentUpdated,
                     RK_ACT_ARGS(PercussionModel *model),
                     globalWidget,
                     setModel(model));

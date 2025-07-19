@@ -22,7 +22,7 @@
  */
 
 #include "InstrumentFilterModel.h"
-#include "percussion_model.h"
+#include "InstrumentModel.h"
 #include "DspProxy.h"
 #include "kit_model.h"
 

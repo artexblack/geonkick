@@ -1,6 +1,6 @@
  /**
  * File name: SampleBrowser.cpp
- * Project: Geonkick (A percussion synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2020 Iurie Nistor
  *
@@ -25,7 +25,7 @@
 #include "FileBrowser.h"
 #include "geonkick_button.h"
 #include "kit_model.h"
-#include "percussion_model.h"
+#include "InstrumentModel.h"
 #include "GeonkickConfig.h"
 
 #include <RkSpinBox.h>

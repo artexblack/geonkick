@@ -1,5 +1,5 @@
 /**
- * File name: percussion_state.h
+ * File name: InstrumentState.h
  * Project: Geonkick (A kick synthesizer)
  *
  * Copyright (C) 2018 Iurie Nistor
@@ -236,8 +236,8 @@ private:
         size_t outputChannel;
         signed char outputMidiChannel;
         bool kickEnabled;
-        bool percussionMuted;
-        bool percussionSolo;
+        bool instrumentMuted;
+        bool instrumentSolo;
         bool noteOffEnabled;
         double limiterValue;
         double kickLength;

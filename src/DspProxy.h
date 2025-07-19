@@ -279,7 +279,7 @@ class DspProxy : public RkObject {
   size_t enabledPercussions() const;
   bool setPercussionPlayingKey(int index, int key);
   int getPercussionPlayingKey(int index) const;
-  int percussionsReferenceKey() const;
+  int instrumentsReferenceKey() const;
   bool setPercussionChannel(int index, size_t channel);
   int getPercussionChannel(int index) const;
   bool setPercussionMidiChannel(int index, size_t channel);
@@ -288,7 +288,7 @@ class DspProxy : public RkObject {
   bool isMidiChannelForced() const;
   bool setPercussionName(int index, const std::string &name);
   bool setPercussionLimiter(size_t id, double val);
-  double percussionLimiter(size_t id) const;
+  double instrumentLimiter(size_t id) const;
   bool mutePercussion(size_t id, bool b);
   bool isPercussionMuted(size_t id) const;
   bool soloPercussion(size_t id, bool b);
@@ -329,8 +329,8 @@ class DspProxy : public RkObject {
               kitUpdated(),
               RK_ARG_TYPE(),
               RK_ARG_VAL());
-  RK_DECL_ACT(percussionUpdated,
-              percussionUpdated(int id),
+  RK_DECL_ACT(instrumentUpdated,
+              instrumentUpdated(int id),
               RK_ARG_TYPE(int),
               RK_ARG_VAL(id));
 
@@ -404,7 +404,7 @@ private:
    */
   std::unordered_map<std::string, std::filesystem::path> workingPaths;
   std::unordered_map<std::string, std::string> dspSettings;
-  std::vector<int> percussionIdList;
+  std::vector<int> instrumentIdList;
   std::vector<std::unique_ptr<PresetFolder>> presetsFoldersList;
   std::unique_ptr<UiSettings> uiSettings;
   int sampleRate;
