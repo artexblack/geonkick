@@ -20,6 +20,7 @@ else()
    option(GKICK_STANDALONE "Disable build for standalone" OFF)
 endif()
 
+set(REDKITE_INSTALL OFF CACHE BOOL "Disable Redkite install" FORCE)
 option(GEONKICK_LIMITED_VERSION "Enable geonkick limited version" OFF)
 option(GKICK_PLUGIN "Enable build for plugin" ON)
 option(GKICK_PRESETS "Enable presets" ON)
