@@ -23,7 +23,7 @@
 
 #include "EffectTabButton.h"
 
-#include <RkButton.h>
+#include "RkButton.h"
 
 RK_DECLARE_IMAGE_RC(effects_tab_enable_button);
 RK_DECLARE_IMAGE_RC(effects_tab_enable_button_active);

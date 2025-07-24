@@ -26,8 +26,8 @@
 
 #include "geonkick_widget.h"
 
-#include <RkWidget.h>
-#include <RkImage.h>
+#include "RkWidget.h"
+#include "RkImage.h"
 
 class RkMouseEvent;
 

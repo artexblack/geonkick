@@ -26,7 +26,7 @@
 
 #include "globals.h"
 
-#include <RkObject.h>
+#include "RkObject.h"
 
 class GeonkickApi;
 class Preset;

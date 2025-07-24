@@ -39,7 +39,7 @@
 #include "UiSettings.h"
 #include "GeonkickConfig.h"
 
-#include <RkEvent.h>
+#include "RkEvent.h"
 
 constexpr int MAIN_WINDOW_WIDTH  = 940;
 #ifdef GEONKICK_SINGLE

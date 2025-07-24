@@ -26,7 +26,7 @@
 
 #include "geonkick_widget.h"
 
-#include <RkLabel.h>
+#include "RkLabel.h"
 
 class PresetBrowserModel;
 

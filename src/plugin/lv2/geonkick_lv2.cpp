@@ -35,8 +35,8 @@
 #include "kit_state.h"
 #include "GeonkickConfig.h"
 
-#include <RkMain.h>
-#include <RkPlatform.h>
+#include "RkMain.h"
+#include "RkPlatform.h"
 
 #include <vector>
 #include <memory>

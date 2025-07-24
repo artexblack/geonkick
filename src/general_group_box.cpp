@@ -30,7 +30,7 @@
 #include "ViewState.h"
 #include "InstrumentGlobalEffects.h"
 
-#include <RkLabel.h>
+#include "RkLabel.h"
 
 RK_DECLARE_IMAGE_RC(global_hboxbk_ampl_env);
 RK_DECLARE_IMAGE_RC(hboxbk_filter);

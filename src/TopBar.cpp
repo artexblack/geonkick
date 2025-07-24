@@ -33,11 +33,11 @@
 #include "PresetNavigator.h"
 #include "SettingsWidget.h"
 
-#include <RkLabel.h>
-#include <RkButton.h>
-#include <RkContainer.h>
-#include <RkSpinBox.h>
-#include <RkLineEdit.h>
+#include "RkLabel.h"
+#include "RkButton.h"
+#include "RkContainer.h"
+#include "RkSpinBox.h"
+#include "RkLineEdit.h"
 
 RK_DECLARE_IMAGE_RC(separator);
 RK_DECLARE_IMAGE_RC(logo);

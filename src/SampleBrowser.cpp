@@ -28,9 +28,9 @@
 #include "percussion_model.h"
 #include "GeonkickConfig.h"
 
-#include <RkSpinBox.h>
-#include <RkLabel.h>
-#include <RkContainer.h>
+#include "RkSpinBox.h"
+#include "RkLabel.h"
+#include "RkContainer.h"
 
 RK_DECLARE_IMAGE_RC(osc1_load_sample);
 RK_DECLARE_IMAGE_RC(osc1_load_sample_hover);

@@ -26,8 +26,8 @@
 #include "geonkick_button.h"
 #include "ViewState.h"
 
-#include <RkSpinBox.h>
-#include <RkLabel.h>
+#include "RkSpinBox.h"
+#include "RkLabel.h"
 
 #include <numbers>
 

@@ -27,7 +27,7 @@
 #include "public.sdk/source/vst/vsteditcontroller.h"
 #include "pluginterfaces/gui/iplugview.h"
 
-#include <RkEvent.h>
+#include "RkEvent.h"
 
 #include <memory>
 

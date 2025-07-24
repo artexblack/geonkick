@@ -26,7 +26,7 @@
 
 #include "geonkick_api.h"
 
-#include <RkPainter.h>
+#include "RkPainter.h"
 
 #include <condition_variable>
 

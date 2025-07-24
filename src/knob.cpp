@@ -23,8 +23,8 @@
 
 #include "knob.h"
 
-#include <RkPainter.h>
-#include <RkEvent.h>
+#include "RkPainter.h"
+#include "RkEvent.h"
 
 #define GEONKICK_KNOB_MAX_DEGREE 270
 #define GEONKICK_KNOB_MIN_DEGREE 0

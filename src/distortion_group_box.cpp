@@ -28,7 +28,7 @@
 #include "envelope_widget.h"
 #include "ViewState.h"
 
-#include <RkLabel.h>
+#include "RkLabel.h"
 
 RK_DECLARE_IMAGE_RC(distortion_enable);
 RK_DECLARE_IMAGE_RC(distortion_enable_hover);

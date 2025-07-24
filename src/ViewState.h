@@ -28,7 +28,7 @@
 #include "geonkick_api.h"
 #include "envelope.h"
 
-#include <RkObject.h>
+#include "RkObject.h"
 
 class ViewState: public RkObject {
  public:

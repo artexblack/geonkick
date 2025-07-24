@@ -24,7 +24,7 @@
 #include "PathButton.h"
 #include "DesktopPaths.h"
 
-#include <RkPainter.h>
+#include "RkPainter.h"
 
 PathButton::PathButton(GeonkickWidget *parent,
                        const fs::path& path,

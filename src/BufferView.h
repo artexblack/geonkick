@@ -26,7 +26,7 @@ F *
 
 #include "geonkick_widget.h"
 
-#include <RkImage.h>
+#include "RkImage.h"
 
 class BufferView : public GeonkickWidget {
   public:

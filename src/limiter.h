@@ -26,7 +26,7 @@
 
 #include "geonkick_widget.h"
 
-#include <RkPainter.h>
+#include "RkPainter.h"
 
 class GeonkickSlider;
 class GeonkickLevel;

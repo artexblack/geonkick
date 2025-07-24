@@ -26,9 +26,9 @@
 #include "kick_graph.h"
 #include "EnvelopePointContextWidget.h"
 
-#include <RkPainter.h>
-#include <RkEvent.h>
-#include <RkAction.h>
+#include "RkPainter.h"
+#include "RkEvent.h"
+#include "RkAction.h"
 
 EnvelopeWidgetDrawingArea::EnvelopeWidgetDrawingArea(GeonkickWidget *parent, GeonkickApi *api)
           : GeonkickWidget(parent)

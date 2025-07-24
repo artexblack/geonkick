@@ -24,7 +24,7 @@
 #ifndef GEONKICK_ENVELOPE_POINT_H
 #define GEONKICK_ENVELOPE_POINT_H
 
-#include <RkRealPoint.h>
+#include "RkRealPoint.h"
 
 class EnvelopePoint: public RkRealPoint {
 public:

@@ -31,7 +31,7 @@
 #include "OscillatorFunctionView.h"
 #include "OscillatorEffects.h"
 
-#include <RkLabel.h>
+#include "RkLabel.h"
 
 RK_DECLARE_IMAGE_RC(controls_osc1_on);
 RK_DECLARE_IMAGE_RC(controls_osc1_hover);

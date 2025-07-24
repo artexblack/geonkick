@@ -28,13 +28,13 @@
 #include "MidiKeyWidget.h"
 #include "geonkick_button.h"
 
-#include <RkEvent.h>
-#include <RkPainter.h>
-#include <RkLineEdit.h>
-#include <RkButton.h>
-#include <RkContainer.h>
-#include <RkProgressBar.h>
-#include <RkSpinBox.h>
+#include "RkEvent.h"
+#include "RkPainter.h"
+#include "RkLineEdit.h"
+#include "RkButton.h"
+#include "RkContainer.h"
+#include "RkProgressBar.h"
+#include "RkSpinBox.h"
 
 RK_DECLARE_IMAGE_RC(mute);
 RK_DECLARE_IMAGE_RC(mute_hover);

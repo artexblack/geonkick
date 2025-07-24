@@ -27,8 +27,8 @@
 #include "geonkick_api.h"
 #include "EnvelopePoint.h"
 
-#include <RkPainter.h>
-#include <RkRealPoint.h>
+#include "RkPainter.h"
+#include "RkRealPoint.h"
 
 #include <memory>
 #include <unordered_set>

@@ -24,7 +24,7 @@
 #ifndef ABSTRACT_MODEL_H
 #define ABSTRACT_MODEL_H
 
-#include <RkObject.h>
+#include "RkObject.h"
 
 class AbstractModel: public RkObject
 {

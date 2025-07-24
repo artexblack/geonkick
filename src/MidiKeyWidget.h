@@ -27,7 +27,7 @@
 #include "geonkick_widget.h"
 #include "percussion_model.h"
 
-#include <RkPainter.h>
+#include "RkPainter.h"
 
 class KeyCell {
   public:
