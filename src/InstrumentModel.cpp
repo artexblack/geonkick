@@ -27,8 +27,8 @@
 #include "InstrumentDistortionModel.h"
 #include "preset.h"
 
-#include <RkAction.h>
-#include <RkEventQueue.h>
+#include "RkAction.h"
+#include "RkEventQueue.h"
 
 PercussionModel::PercussionModel(KitModel* parent, int id)
         : AbstractModel(parent)

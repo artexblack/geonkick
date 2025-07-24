@@ -26,7 +26,7 @@
 #include "geonkick_button.h"
 #include "DspProxy.h"
 
-#include <RkLabel.h>
+#include "RkLabel.h"
 
 RK_DECLARE_IMAGE_RC(layers_mixer);
 

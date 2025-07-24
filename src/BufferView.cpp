@@ -23,8 +23,8 @@ F *
 
 #include "BufferView.h"
 
-#include <RkPainter.h>
-#include <RkEvent.h>
+#include "RkPainter.h"
+#include "RkEvent.h"
 
 BufferView::BufferView(GeonkickWidget* parent, const std::vector<float> &data)
         : GeonkickWidget(parent)

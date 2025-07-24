@@ -27,13 +27,13 @@
 #include "InstrumentView.h"
 #include "InstrumentModel.h"
 
-#include <RkEvent.h>
-#include <RkImage.h>
-#include <RkLineEdit.h>
-#include <RkButton.h>
-#include <RkProgressBar.h>
-#include <RkContainer.h>
-#include <RkTimer.h>
+#include "RkEvent.h"
+#include "RkImage.h"
+#include "RkLineEdit.h"
+#include "RkButton.h"
+#include "RkProgressBar.h"
+#include "RkContainer.h"
+#include "RkTimer.h"
 
 RK_DECLARE_IMAGE_RC(add_per_button);
 

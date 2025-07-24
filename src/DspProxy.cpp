@@ -32,8 +32,8 @@
 #include "UiSettings.h"
 #include "GeonkickConfig.h"
 
-#include <RkEventQueue.h>
-#include <RkAction.h>
+#include "RkEventQueue.h"
+#include "RkAction.h"
 
 #include <sndfile.h>
 

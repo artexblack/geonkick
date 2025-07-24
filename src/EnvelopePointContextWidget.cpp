@@ -24,8 +24,8 @@
 #include "EnvelopePointContextWidget.h"
 #include "envelope.h"
 
-#include <RkEvent.h>
-#include <RkLineEdit.h>
+#include "RkEvent.h"
+#include "RkLineEdit.h"
 
 EnvelopePointContextWidget::EnvelopePointContextWidget(Envelope* envelope,
                                                        GeonkickWidget *parent,

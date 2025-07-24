@@ -23,7 +23,7 @@
 
 #include "MidiKeyWidget.h"
 
-#include <RkEvent.h>
+#include "RkEvent.h"
 
 MidiKeyWidget::MidiKeyWidget(GeonkickWidget *parent,
                              PercussionModel *model,

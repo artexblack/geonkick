@@ -24,7 +24,7 @@
 #include "MainWindow.h"
 #include "DspProxy.h"
 
-#include <RkMain.h>
+#include "RkMain.h"
 
 #ifdef GEONKICK_OS_GNU
 #include <sys/mman.h>

@@ -23,8 +23,8 @@
 
 #include "ViewState.h"
 
-#include <RkEventQueue.h>
-#include <RkAction.h>
+#include "RkEventQueue.h"
+#include "RkAction.h"
 
 ViewState::ViewState(RkObject *parent)
         : RkObject(parent)

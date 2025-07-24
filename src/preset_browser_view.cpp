@@ -27,11 +27,11 @@
 #include "preset_folder.h"
 #include "DspProxy.h"
 
-#include <RkPainter.h>
-#include <RkImage.h>
-#include <RkEvent.h>
-#include <RkButton.h>
-#include <RkContainer.h>
+#include "RkPainter.h"
+#include "RkImage.h"
+#include "RkEvent.h"
+#include "RkButton.h"
+#include "RkContainer.h"
 
 RK_DECLARE_IMAGE_RC(next_page);
 RK_DECLARE_IMAGE_RC(next_page_hover);

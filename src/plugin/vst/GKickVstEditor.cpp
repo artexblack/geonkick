@@ -25,8 +25,8 @@
 #include "MainWindow.h"
 #include "GKickVstEditor.h"
 
-#include <RkPlatform.h>
-#include <RkMain.h>
+#include "RkPlatform.h"
+#include "RkMain.h"
 
 #ifdef GEONKICK_OS_GNU
 GKickVstTimer::GKickVstTimer(RkMain *app)

@@ -26,9 +26,9 @@
 #include "InstrumentWaveform.h"
 #include "EnvelopePointContextWidget.h"
 
-#include <RkPainter.h>
-#include <RkEvent.h>
-#include <RkAction.h>
+#include "RkPainter.h"
+#include "RkEvent.h"
+#include "RkAction.h"
 
 EnvelopeWidgetDrawingArea::EnvelopeWidgetDrawingArea(GeonkickWidget *parent, DspProxy *dsp)
           : GeonkickWidget(parent)

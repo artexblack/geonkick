@@ -31,7 +31,7 @@
 #include "PathBookmarksModel.h"
 #include "FilesView.h"
 
-#include <RkContainer.h>
+#include "RkContainer.h"
 
 PresetBrowser::PresetBrowser(GeonkickWidget *parent, KitModel* model)
         : GeonkickWidget(parent)

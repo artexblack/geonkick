@@ -26,9 +26,9 @@
 #include "geonkick_slider.h"
 #include "PathBookmarksModel.h"
 
-#include <RkLineEdit.h>
-#include <RkEvent.h>
-#include <RkPainter.h>
+#include "RkLineEdit.h"
+#include "RkEvent.h"
+#include "RkPainter.h"
 
 RK_DECLARE_IMAGE_RC(scrollbar_button_up);
 RK_DECLARE_IMAGE_RC(scrollbar_button_down);

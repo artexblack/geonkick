@@ -26,8 +26,8 @@
 #include "globals.h"
 #include "envelope.h"
 
-#include <RkEventQueue.h>
-#include <RkAction.h>
+#include "RkEventQueue.h"
+#include "RkAction.h"
 
 InstrumentWaveform::InstrumentWaveform(RkObject *parent, DspProxy *dsp, const RkSize &size)
         : RkObject(parent)

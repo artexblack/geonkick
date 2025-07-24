@@ -30,11 +30,11 @@
 #include "PathHistory.h"
 #include "PathBookmarksView.h"
 
-#include <RkLabel.h>
-#include <RkEvent.h>
-#include <RkPainter.h>
-#include <RkList.h>
-#include <RkContainer.h>
+#include "RkLabel.h"
+#include "RkEvent.h"
+#include "RkPainter.h"
+#include "RkList.h"
+#include "RkContainer.h"
 
 RK_DECLARE_IMAGE_RC(file_history_button_back);
 RK_DECLARE_IMAGE_RC(file_history_button_back_pressed);

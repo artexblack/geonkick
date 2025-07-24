@@ -25,7 +25,7 @@
 #include "geonkick_slider.h"
 #include "DspProxy.h"
 
-#include <RkTimer.h>
+#include "RkTimer.h"
 
 RK_DECLARE_IMAGE_RC(meter_scale);
 

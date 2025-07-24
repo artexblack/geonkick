@@ -31,8 +31,8 @@
 #include "GeonkickModel.h"
 #include "preset.h"
 
-#include <RkAction.h>
-#include <RkEventQueue.h>
+#include "RkAction.h"
+#include "RkEventQueue.h"
 
 KitModel::KitModel(GeonkickModel *parent)
         : RkObject(parent)

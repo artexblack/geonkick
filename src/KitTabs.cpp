@@ -25,10 +25,10 @@
 #include "kit_model.h"
 #include "InstrumentModel.h"
 
-#include <RkContainer.h>
-#include <RkButton.h>
-#include <RkPainter.h>
-#include <RkImage.h>
+#include "RkContainer.h"
+#include "RkButton.h"
+#include "RkPainter.h"
+#include "RkImage.h"
 
 KitTabs::KitTabs(GeonkickWidget *parent, KitModel *model)
         : GeonkickWidget(parent)

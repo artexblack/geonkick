@@ -30,8 +30,8 @@
 #include "GeonkickModel.h"
 #include "OscillatorModel.h"
 
-#include <RkContainer.h>
-#include <RkLabel.h>
+#include "RkContainer.h"
+#include "RkLabel.h"
 
 RK_DECLARE_IMAGE_RC(separator);
 RK_DECLARE_IMAGE_RC(layer1_env);

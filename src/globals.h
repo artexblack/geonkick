@@ -52,7 +52,7 @@ namespace fs = std::filesystem;
     #define M_PI 3.14159265358979323846
 #endif
 
-#include <RkObject.h>
+#include "RkObject.h"
 
 #ifdef GKICK_LOG_DEBUG_LEVEL
 #define GEONKICK_LOG_INFO(msg) std::cout << "[" << GEONKICK_NAME << "] " \

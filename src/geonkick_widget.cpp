@@ -23,7 +23,7 @@
 
 #include "geonkick_widget.h"
 
-#include <RkPainter.h>
+#include "RkPainter.h"
 
 GeonkickWidget::GeonkickWidget(RkMain& app,
                                const RkNativeWindowInfo &info,

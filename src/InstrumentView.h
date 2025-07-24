@@ -27,7 +27,7 @@
 #include "geonkick_widget.h"
 #include "geonkick_slider.h"
 
-#include <RkLabel.h>
+#include "RkLabel.h"
 
 class PercussionLimiter : public GeonkickSlider {
   public:

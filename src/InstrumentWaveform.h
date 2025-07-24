@@ -26,7 +26,7 @@
 
 #include "DspProxy.h"
 
-#include <RkPainter.h>
+#include "RkPainter.h"
 
 #include <condition_variable>
 

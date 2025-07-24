@@ -23,8 +23,8 @@
 
 #include "geonkick_slider.h"
 
-#include <RkEvent.h>
-#include <RkPainter.h>
+#include "RkEvent.h"
+#include "RkPainter.h"
 
 GeonkickSlider::GeonkickSlider(GeonkickWidget *parent, Orientation orientation)
         : GeonkickWidget(parent)

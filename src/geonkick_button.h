@@ -26,8 +26,8 @@
 
 #include <geonkick_widget.h>
 
-#include <RkButton.h>
-#include <RkImage.h>
+#include "RkButton.h"
+#include "RkImage.h"
 
 class GeonkickButton: public RkButton
 {

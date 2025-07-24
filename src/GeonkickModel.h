@@ -27,7 +27,7 @@
 #include "globals.h"
 #include "DspProxy.h"
 
-#include <RkObject.h>
+#include "RkObject.h"
 
 class KitModel;
 class PresetBrowserModel;

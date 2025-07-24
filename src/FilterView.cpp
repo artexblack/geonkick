@@ -26,7 +26,7 @@
 #include "knob.h"
 #include "ViewState.h"
 
-#include <RkEvent.h>
+#include "RkEvent.h"
 
 RK_DECLARE_IMAGE_RC(knob);
 RK_DECLARE_IMAGE_RC(knob_bk_image);

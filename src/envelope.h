@@ -27,8 +27,8 @@
 #include "DspProxy.h"
 #include "EnvelopePoint.h"
 
-#include <RkPainter.h>
-#include <RkRealPoint.h>
+#include "RkPainter.h"
+#include "RkRealPoint.h"
 
 #include <memory>
 #include <unordered_set>

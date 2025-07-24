@@ -29,7 +29,7 @@
 #include "DistortionView.h"
 #include "EffectTabButton.h"
 
-#include <RkContainer.h>
+#include "RkContainer.h"
 
 RK_DECLARE_IMAGE_RC(osc_effects_bk);
 RK_DECLARE_IMAGE_RC(effects_tab_filter_button);

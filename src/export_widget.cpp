@@ -26,8 +26,8 @@
 #include "geonkick_button.h"
 #include "FileBrowser.h"
 
-#include <RkLabel.h>
-#include <RkContainer.h>
+#include "RkLabel.h"
+#include "RkContainer.h"
 
 #include <sndfile.h>
 
