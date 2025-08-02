@@ -108,6 +108,12 @@ struct gkick_audio_output
         /* Enable/disable note off */
         _Atomic bool note_off;
 
+        /* Velocity humanizer parameter */
+        atomic_float velocity_humanizer;
+
+        /* Temporal humanizer parameter */
+        atomic_float temporal_humanizer;
+
         pthread_mutex_t lock;
 };
 
@@ -179,5 +185,11 @@ void gkick_audio_output_enable_note_off(struct gkick_audio_output *audio_output,
 
 bool gkick_audio_output_note_off(struct gkick_audio_output *audio_output);
 
+void gkick_instrument_set_velocity_humanizer(struct gkick_audio_output *audio_output,
+                                             float value)
+float gkick_instrument_get_velocity_humanizer(struct gkick_audio_output *audio_output)
+void gkick_instrument_set_temporal_humanizer(struct gkick_audio_output *audio_output,
+                                             float value)
+float gkick_instrument_get_temporal_humanizer(struct gkick_audio_output *audio_output)
 
 #endif // GKICK_AUDO_OUTPUT_H

@@ -82,9 +82,9 @@ geonkick_usleep(unsigned long int usecods);
 int
 geonkick_rand(unsigned int *seed);
 
-#define min(a, b) ((a) < (b) ? (a) : (b))
+#define min(a, b) (((a) < (b)) ? (a) : (b))
 
-#define GKICK_CLAMP(value, min_v, max_v) \
-    ((value) < (min_v) ? (min_v) : ((value) > (max_v) ? (max_v) : (value)))
+#define GKICK_CLAMP(value, min_v, max_v)                                \
+    (((value) < (min_v)) ? (min_v) : (((value) > (max_v)) ? (max_v) : (value)))
 
 #endif // GEONKICK_INTERNAL_H

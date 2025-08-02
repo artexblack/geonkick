@@ -47,6 +47,8 @@ gkick_audio_output_create(struct gkick_audio_output **audio_output, int sample_r
         (*audio_output)->midi_channel = GEONKICK_ANY_MIDI_CHANNEL;
         (*audio_output)->sample_rate  = sample_rate;
         (*audio_output)->note_off     = false;
+        (*audio_output)->velocity_humanizer  = 0.0f;
+        (*audio_output)->velocity_temporal   = 0.0f;
 
         gkick_buffer_new(&(*audio_output)->updated_buffer,
                          (*audio_output)->sample_rate * GEONKICK_MAX_LENGTH);
@@ -102,6 +104,13 @@ void gkick_audio_output_free(struct gkick_audio_output **audio_output)
         }
 }
 
+
+
+static signed char get_humanized_velocity(signed char *velocity)
+{
+        
+}
+
 enum geonkick_error
 gkick_audio_output_key_pressed(struct gkick_audio_output *audio_output,
                                struct gkick_note_info *key)
@@ -111,6 +120,7 @@ gkick_audio_output_key_pressed(struct gkick_audio_output *audio_output,
 
         if (key->state == GKICK_KEY_STATE_PRESSED) {
                 audio_output->key   = *key;
+                audio_instrument_humanize(audio_output);
                 audio_output->play  = true;
                 audio_output->decay = -1;
                 gkick_audio_output_swap_buffers(audio_output);
@@ -337,4 +347,37 @@ void gkick_audio_output_enable_note_off(struct gkick_audio_output *audio_output,
 bool gkick_audio_output_note_off(struct gkick_audio_output *audio_output)
 {
         return audio_output->note_off;
+}
+
+void gkick_instrument_set_velocity_humanizer(struct gkick_audio_output *audio_output,
+                                             float value)
+{
+        audio_output->humanizer.velocity = value;
+}
+
+float gkick_instrument_get_velocity_humanizer(struct gkick_audio_output *audio_output)
+{
+        return audio_output->humanizer.velocity;
+}
+
+void gkick_instrument_set_temporal_humanizer(struct gkick_audio_output *audio_output,
+                                             float value)
+{
+        audio_output->humanizer.temporal = value;
+}
+
+float gkick_instrument_get_temporal_humanizer(struct gkick_audio_output *audio_output)
+{
+        return audio_output->humanizer.temporal;
+}
+
+void gkick_instrument_humanize(struct gkick_audio_output *audio_output)
+{
+        if (audio_output->humanizer.enabled_velocity) {
+                struct intrument_humanizer *humanizer = audio_output->velocity_humanizer;
+                humanizer
+                audio_output->key.velocity = (
+                                              humanizer->velocity_randomizer)
+                                                                                audio_output->key.velocity);
+        }
 }
