@@ -48,6 +48,21 @@ struct gkick_note_info {
         signed char velocity;
 };
 
+struct gkick_humanizer_params
+{
+        atomic_bool  velocity_enabled;
+        atomic_float velocity;
+        atomic_bool  temporal_enabled;
+        atomic_float temporal;
+};
+
+enum gkick_instrument_param {
+        GKICK_INSTR_PARAM_HUM_VEL_ENABLE,
+        GKICK_INSTR_PARAM_HUM_TEMP_ENABLE,
+        GKICK_INSTR_PARAM_HUM_VEL,
+        GKICK_INSTR_PARAM_HUM_TEMP
+};
+
 struct gkick_audio_output
 {
         int sample_rate;
@@ -108,13 +123,13 @@ struct gkick_audio_output
         /* Enable/disable note off */
         _Atomic bool note_off;
 
-        /* Velocity humanizer parameter */
-        atomic_float velocity_humanizer;
-
-        /* Temporal humanizer parameter */
-        atomic_float temporal_humanizer;
+        /* Contains the paramteres for humanizer. */
+        struct gkick_humanizer_params humanizer_params;
 
         pthread_mutex_t lock;
+
+        /* Velocity humanizer */
+        struct gkick_humanizer velocity_humanizer;
 };
 
 enum geonkick_error
@@ -125,6 +140,10 @@ void gkick_audio_output_free(struct gkick_audio_output **audio_output);
 struct gkick_buffer*
 gkick_audio_output_get_buffer(struct gkick_audio_output  *audio_output);
 
+/**
+ * This function must be called
+ * only from the audio thread.
+ */
 enum geonkick_error
 gkick_audio_output_key_pressed(struct gkick_audio_output *audio_output,
                                struct gkick_note_info *key);
@@ -144,10 +163,6 @@ gkick_audio_get_decay_val(struct gkick_audio_output *audio_output);
 
 gkick_real
 gkick_audio_output_tune_factor(int note_number);
-
-void gkick_audio_output_lock(struct gkick_audio_output *audio_output);
-
-void gkick_audio_output_unlock(struct gkick_audio_output *audio_output);
 
 void gkick_audio_output_swap_buffers(struct gkick_audio_output *audio_output);
 
@@ -185,11 +200,10 @@ void gkick_audio_output_enable_note_off(struct gkick_audio_output *audio_output,
 
 bool gkick_audio_output_note_off(struct gkick_audio_output *audio_output);
 
-void gkick_instrument_set_velocity_humanizer(struct gkick_audio_output *audio_output,
-                                             float value)
-float gkick_instrument_get_velocity_humanizer(struct gkick_audio_output *audio_output)
-void gkick_instrument_set_temporal_humanizer(struct gkick_audio_output *audio_output,
-                                             float value)
-float gkick_instrument_get_temporal_humanizer(struct gkick_audio_output *audio_output)
-
+void gkick_instrument_set_param(struct gkick_audio_output *audio_output,
+                                enum GKICK_INSTRUMENT_PARAM param,
+                                void *value);
+void gkick_instrument_get_param(const struct gkick_audio_output *audio_output,
+                                enum GKICK_INSTRUMENT_PARAM param,
+                                const void *value);
 #endif // GKICK_AUDO_OUTPUT_H

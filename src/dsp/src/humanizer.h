@@ -24,23 +24,33 @@
 #ifndef GKICK_HUMANIZER_H
 #define GKICK_HUMANIZER_H
 
+#include "qx_randomizer.h"
+
 struct gkick_humanizer {
-        atomic_bool velocity_enabled;
-        atomic_bool temporal_enabled;
-        atomic_float velocity_percent;
-        atomic_float temporal_percent;
-        struct gkick_randomizer velocity_randomizer;
-        struct gkick_randomizer temporal_randomizer;
+        bool velocity_enabled;
+        bool temporal_enabled;
+        float velocity_percent;
+        float temporal_percent;
+        struct qx_randomizer velocity_randomizer;
+        struct qx_randomizer temporal_randomizer;
 };
 
 void gkick_humanizer_init(struct gkick_humanizer *humanizer);
 void gkick_humanizer_enable_velocity(struct gkick_humanizer *humanizer,
                                      bool enable);
-bool gkick_humanizer_is_velocity_enabled(struct gkick_humanizer *humanizer);
+bool gkick_humanizer_is_velocity_enabled(const struct gkick_humanizer *humanizer);
+float gkick_humanizer_get_velocity_percent(const struct gkick_humanizer *humanizer);
+void gkick_humanizer_set_velocity_percent(struct gkick_humanizer *humanizer,
+                                          float percent);
+signed char gkick_humanizer_velocity(struct gkick_humanizer *humanizer,
+                                     signed char velocity)
 void gkick_humanizer_enable_temporal(struct gkick_humanizer *humanizer,
                                      bool enable);
-bool gkick_humanizer_is_temporal_enabled(struct gkick_humanizer *humanizer);
-
-bool gkick_humanize_velocity(struct gkick_humanizer *humanizer, signed char velocity);
+bool gkick_humanizer_is_temporal_enabled(const struct gkick_humanizer *humanizer);
+float gkick_humanizer_get_temporal_percent(const struct gkick_humanizer *humanizer);
+void gkick_humanizer_set_temporal_percent(struct gkick_humanizer *humanizer,
+                                          float percent);
+float gkick_humanizer_temporal(struct gkick_humanizer *humanizer,
+                               float temp);
 
 #endif // GKICK_HUMANIZER_H

@@ -27,8 +27,10 @@ void gkick_humanizer_init(struct gkick_humanizer *humanizer)
 {
         humanizer->velocity_enabled = false;
         humanizer->temporal_enabled = false;
-        gkick_randomizer_init(humanizer->velocity_randomizer);
-        gkick_randomizer_init(humanizer->temporal_randomizer);
+        qx_randomizer_init(humanizer->velocity_randomizer,
+                           -10.0f, 10.0f, 0.5f);
+        qx_randomizer_init(humanizer->temporal_randomizer,
+                           -10.0f, 10.0f, 0.5f);
 }
 
 void gkick_humanizer_enable_velocity(struct gkick_humanizer *humanizer,
@@ -42,6 +44,28 @@ bool gkick_humanizer_is_velocity_enabled(const struct gkick_humanizer *humanizer
         return humanizer->velocity_enabled;
 }
 
+void gkick_humanizer_set_velocity_percent(struct gkick_humanizer *humanizer,
+                                          float percent)
+{
+        humanizer->velocity_percent = percent;
+        qx_randomizer_set_range(humanizer->velocity_himanizer,
+                                -humanizer->velocity_percent / 100.0f,
+                                humanizer->velocity_percent / 100.0f);
+}
+
+float gkick_humanizer_get_velocity_percent(struct gkick_humanizer *humanizer)
+{
+        return humanizer->velocity_percent;
+}
+
+signed char gkick_humanizer_velocity(struct gkick_humanizer *humanizer,
+                                     signed char velocity)
+{
+        float r = qx_randomizer_get_float(humanizer->velocity_randomizer);
+        float v = qx_clamp_float((1 + r) * velocity, 1.0f, 127.0);
+        return (signed char)v;
+}
+
 void gkick_humanizer_enable_temporal(struct gkick_humanizer *humanizer,
                                      bool enable)
 {
@@ -53,22 +77,21 @@ bool gkick_humanizer_is_temporal_enabled(const struct gkick_humanizer *humanizer
         retun humanizer->temporal_enabled;
 }
 
-signed char gkick_humanizer_velocity(struct gkick_humanizer *humanizer,
-                                     signed char velocity)
+void gkick_humanizer_set_temporal_percent(struct gkick_humanizer *humanizer,
+                                          float percent)
 {
-        // [0.0, 1.0]
-        float rand_val = gkick_randomizer_get_float(humanizer->velocity_randomizer);
+        humanizer->temporal_percent = percent;
+}
 
-        // Shift to [-1.0, 1.0]
-        rand_val = 2.0f * rand_val - 1.0f;
+float gkick_humanizer_get_temporal_percent(const struct gkick_humanizer *humanizer)
+{
+        return  humanizer->temporal_percent;
+}
 
-        float percent = humanizer->velocity_percent * rand_val;
-        float modified = velocity * (1.0f + percent);
-
-        // Clamp to MIDI velocity range
-        GKICK_CLAMP(modified, 1.0f, 127.0);
-
-        return (signed char)(modified + 0.5f);
+float gkick_humanizer_velocity(struct gkick_humanizer *humanizer,
+                               float temp)
+{
+        return 0.0f;
 }
 
 #endif // GKICK_HUMANIZER_H

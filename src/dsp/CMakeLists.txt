@@ -1,6 +1,8 @@
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
 
 set(GKICK_DSP_HEADERS
+        ${GKICK_DSP_DIR}/src/qx_dsp_rools/qx_randomizer.h
+        ${GKICK_DSP_DIR}/src/humanizer.h
 	${GKICK_DSP_DIR}/src/audio_output.h
 	${GKICK_DSP_DIR}/src/distortion.h
 	${GKICK_DSP_DIR}/src/envelope.h
@@ -25,8 +27,9 @@ if (GKICK_STANDALONE)
 endif(GKICK_STANDALONE)
 
 set(GKICK_DSP_SOURCES
-	${GKICK_DSP_DIR}/src/audio_output.c
-	${GKICK_DSP_DIR}/src/distortion.c
+        ${GKICK_DSP_DIR}/src/humanizer.c
+        ${GKICK_DSP_DIR}/src/audio_output.c
+        ${GKICK_DSP_DIR}/src/distortion.c
 	${GKICK_DSP_DIR}/src/envelope.c
 	${GKICK_DSP_DIR}/src/filter.c
 	${GKICK_DSP_DIR}/src/geonkick.c

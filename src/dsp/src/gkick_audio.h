@@ -59,6 +59,10 @@ enum geonkick_error
 gkick_audio_play(struct gkick_audio *audio,
                  size_t id);
 
+/**
+ * This function must be called
+ * only from the audio thread.
+ */
 enum geonkick_error
 gkick_audio_key_pressed(struct gkick_audio *audio,
                         bool pressed,
