@@ -1,3 +1,11 @@
+## [3.6.2]
+
+### Fixes
+
+- fix misalignment of instrument channels in the kit list
+- donot install Redkite library when installing Geonkick
+- fix build for some use cases
+
 ## [3.6.1]
 
 ### Fixes

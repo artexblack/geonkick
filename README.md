@@ -10,7 +10,7 @@ claps, hi-hats, shakers, and unique effect sounds.
 
 **License:** GNU General Public License, Version 3
 
-**Version:** 3.6.1
+**Version:** 3.6.2
 
 ![Screenshot](data/screenshot.png)
 

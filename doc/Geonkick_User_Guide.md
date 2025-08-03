@@ -46,7 +46,7 @@
 
 **License:** This work (including all images it uses) is released under [CC0 1.0 Universal (CC0 1.0) Public Domain Dedication](https://creativecommons.org/publicdomain/zero/1.0/deed.en).
 
-**Version:** 3.6.0
+**Version:** 3.6.2
 
 **Website:** [https://geonkick.org](https://geonkick.org)
 
