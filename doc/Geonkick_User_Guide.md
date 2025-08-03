@@ -198,7 +198,6 @@ Each layer consists of three oscillators, the outputs of which are mixed with a 
 - **Waveform Types:** "Sine," "Square," "Triangle," "Sawtooth," "Noise," "Sample" – options for wave functions of the oscillator.
 - **Noise:** The oscillator will generate noise ("w" – white, "b" – brownian). Also, there is a "seed" spinbox to set the noise seed.
 - **"Sample":** Represents a sampler with a maximum length of 4 seconds.
-- **"...":** Button to browse and load a sample (WAV, FLAC, or OGG).
 - **"Phase":** Adjusts the initial phase of the oscillator. For samples, this moves the start of the sample up to 1/2 of the instrument's sound length.
 - **Amplitude Knob:** Sets the maximum current amplitude of the oscillator.
 - **Frequency Knob:** Sets the maximum current frequency of the oscillator.
