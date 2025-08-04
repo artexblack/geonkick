@@ -26,17 +26,10 @@
 
 #include "geonkick_internal.h"
 #include "ring_buffer.h"
+#include "humanizer.h"
 
 #include <pthread.h>
 #include <stdatomic.h>
-
-/**
- * Audio output (which maybe is not the best name)
- * is an interface to an array that holds the synthesised instrument.
- * Is has nothing to do with any real audio interfaces.
- * It provides access to the samples from the array in a "playable mode",
- * i.e. in a state machine fashion.
- */
 
 /* Decay time measured in number of audio frames. */
 #define GEKICK_KEY_RELESE_DECAY_TIME 1000
@@ -51,9 +44,9 @@ struct gkick_note_info {
 struct gkick_humanizer_params
 {
         atomic_bool  velocity_enabled;
-        atomic_float velocity;
+        _Atomic float velocity;
         atomic_bool  temporal_enabled;
-        atomic_float temporal;
+        _Atomic float temporal;
 };
 
 enum gkick_instrument_param {
@@ -201,9 +194,15 @@ void gkick_audio_output_enable_note_off(struct gkick_audio_output *audio_output,
 bool gkick_audio_output_note_off(struct gkick_audio_output *audio_output);
 
 void gkick_instrument_set_param(struct gkick_audio_output *audio_output,
-                                enum GKICK_INSTRUMENT_PARAM param,
-                                void *value);
-void gkick_instrument_get_param(const struct gkick_audio_output *audio_output,
-                                enum GKICK_INSTRUMENT_PARAM param,
+                                enum gkick_instrument_param param,
                                 const void *value);
+void gkick_instrument_get_param(const struct gkick_audio_output *audio_output,
+                                enum gkick_instrument_param param,
+                                void *value);
+struct gkick_note_info*
+gkick_instrument_humanize_key(struct gkick_audio_output *audio_output,
+                              struct gkick_note_info* key);
+void gkick_audio_output_lock(struct gkick_audio_output *audio_output);
+void gkick_audio_output_unlock(struct gkick_audio_output *audio_output);
+
 #endif // GKICK_AUDO_OUTPUT_H

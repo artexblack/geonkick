@@ -2,7 +2,7 @@
  * File name: geonkick_internal.h
  * Project: Geonkick (A percussiove synthesizer)
  *
- * Copyright (C) 2017 Iurie Nistor 
+ * Copyright (C) 2017 Iurie Nistor
  *
  * This file is part of Geonkick.
  *
@@ -28,6 +28,7 @@
 #include "synthesizer.h"
 #include "gkick_audio.h"
 #include "gkick_buffer.h"
+#include "qx_math.h"
 
 #include <pthread.h>
 #include <stdatomic.h>

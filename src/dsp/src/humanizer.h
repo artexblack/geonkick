@@ -43,7 +43,7 @@ float gkick_humanizer_get_velocity_percent(const struct gkick_humanizer *humaniz
 void gkick_humanizer_set_velocity_percent(struct gkick_humanizer *humanizer,
                                           float percent);
 signed char gkick_humanizer_velocity(struct gkick_humanizer *humanizer,
-                                     signed char velocity)
+                                     signed char velocity);
 void gkick_humanizer_enable_temporal(struct gkick_humanizer *humanizer,
                                      bool enable);
 bool gkick_humanizer_is_temporal_enabled(const struct gkick_humanizer *humanizer);

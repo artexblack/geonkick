@@ -1,7 +1,10 @@
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
 
+set(QUAMPLEX_DSP_TOOLS_PATH ${GKICK_DSP_DIR}/src/quamplex_dsp_tools)
+
 set(GKICK_DSP_HEADERS
-        ${GKICK_DSP_DIR}/src/qx_dsp_rools/qx_randomizer.h
+        ${QUAMPLEX_DSP_TOOLS_PATH}/qx_math.h
+        ${QUAMPLEX_DSP_TOOLS_PATH}/qx_randomizer.h
         ${GKICK_DSP_DIR}/src/humanizer.h
 	${GKICK_DSP_DIR}/src/audio_output.h
 	${GKICK_DSP_DIR}/src/distortion.h
@@ -51,6 +54,7 @@ if (GKICK_STANDALONE)
 endif(GKICK_STANDALONE)
 
 include_directories(${GKICK_DSP_DIR}/src)
+include_directories(${QUAMPLEX_DSP_TOOLS_PATH})
 
 if (GKICK_STANDALONE)
 	add_library(dsp_standalone STATIC

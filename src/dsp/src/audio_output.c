@@ -47,14 +47,12 @@ gkick_audio_output_create(struct gkick_audio_output **audio_output, int sample_r
         (*audio_output)->midi_channel = GEONKICK_ANY_MIDI_CHANNEL;
         (*audio_output)->sample_rate  = sample_rate;
         (*audio_output)->note_off     = false;
-        (*audio_output)->humanizer_params = (struct gkick_humanizer) {
+        (*audio_output)->humanizer_params = (struct gkick_humanizer_params) {
                 .velocity_enabled = false,
-                .velocity_percent = 10.0f,
+                .velocity = 10.0f,
                 .temporal_enabled = false,
-                .temporal_percent = 10.0f };
-        (*audio_output)->velocity_humanizer  = 0.0f;
-        (*audio_output)->velocity_temporal   = 0.0f;
-        gkick_humanizer_init(&(*audio_output)->humanizer);
+                .temporal = 10.0f };
+        gkick_humanizer_init(&(*audio_output)->velocity_humanizer);
 
         gkick_buffer_new(&(*audio_output)->updated_buffer,
                          (*audio_output)->sample_rate * GEONKICK_MAX_LENGTH);
@@ -336,10 +334,10 @@ bool gkick_audio_output_note_off(struct gkick_audio_output *audio_output)
 }
 
 void gkick_instrument_set_param(struct gkick_audio_output *audio_output,
-                                enum GKICK_INSTRUMENT_PARAM param,
+                                enum gkick_instrument_param param,
                                 const void *value)
 {
-        struct gkick_humanier_param *p = audio_output->humanizer_params;
+        struct gkick_humanizer_params *p = &audio_output->humanizer_params;
 
         switch (param) {
         case GKICK_INSTR_PARAM_HUM_VEL_ENABLE:
@@ -368,7 +366,7 @@ void gkick_instrument_set_param(struct gkick_audio_output *audio_output,
 }
 
 void gkick_instrument_get_param(const struct gkick_audio_output *audio_output,
-                                enum GKICK_INSTRUMENT_PARAM param,
+                                enum gkick_instrument_param param,
                                 void *value)
 {
         const struct gkick_humanizer_params *p = &audio_output->humanizer_params;
@@ -377,25 +375,25 @@ void gkick_instrument_get_param(const struct gkick_audio_output *audio_output,
         case GKICK_INSTR_PARAM_HUM_VEL_ENABLE:
         {
                 bool v = atomic_load_explicit(&p->velocity_enabled, memory_order_relaxed);
-                *(bool *)val = v;
+                *(bool*)value = v;
                 break;
         }
         case GKICK_INSTR_PARAM_HUM_TEMP_ENABLE:
         {
                 bool v = atomic_load_explicit(&p->temporal_enabled, memory_order_relaxed);
-                *(bool *)val = v;
+                *(bool *)value = v;
                 break;
         }
         case GKICK_INSTR_PARAM_HUM_VEL:
         {
                 float v = atomic_load_explicit(&p->velocity, memory_order_relaxed);
-                *(float *)val = v;
+                *(float *)value = v;
                 break;
         }
         case GKICK_INSTR_PARAM_HUM_TEMP:
         {
                 float v = atomic_load_explicit(&p->temporal, memory_order_relaxed);
-                *(float *)val = v;
+                *(float *)value = v;
                 break;
         }
         default:
@@ -405,7 +403,7 @@ void gkick_instrument_get_param(const struct gkick_audio_output *audio_output,
 
 struct gkick_note_info*
 gkick_instrument_humanize_key(struct gkick_audio_output *audio_output,
-                              gkick_note_info* key)
+                              struct gkick_note_info* key)
 {
         bool velocity_enabled = false;
         bool temporal_enabled = false;
@@ -423,15 +421,23 @@ gkick_instrument_humanize_key(struct gkick_audio_output *audio_output,
         gkick_instrument_get_param(audio_output, GKICK_INSTR_PARAM_HUM_TEMP,
                                    &temporal_percent);
 
+        struct gkick_humanizer *humanizer = &audio_output->velocity_humanizer;
         gkick_humanizer_enable_velocity(humanizer,
                                         velocity_enabled);
         gkick_humanizer_set_velocity_percent(humanizer,
                                              velocity_percent);
-        gkick_humanizer_enable_temporal(humanizer,
-                                        temporal_enabled);
-        gkick_humanizer_set_temporal_percent(humanizer,
-                                             temporal_percent);
-
         key->velocity = gkick_humanizer_velocity(humanizer, key->velocity);
         return key;
+}
+
+void gkick_audio_output_lock(struct gkick_audio_output *audio_output)
+{
+        if (audio_output != NULL)
+                pthread_mutex_lock(&audio_output->lock);
+}
+
+void gkick_audio_output_unlock(struct gkick_audio_output *audio_output)
+{
+        if (audio_output != NULL)
+                pthread_mutex_unlock(&audio_output->lock);
 }
