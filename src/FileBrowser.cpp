@@ -1,6 +1,6 @@
 /**
  * File name: FileBrowser.cpp
- * Project: Geonkick (A percussiove synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2019 Iurie Nistor
  *

@@ -1,6 +1,6 @@
 /**
  * File name: export_widget.cpp
- * Project: Geonkick (A percussiove synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2018 Iurie Nistor
  *

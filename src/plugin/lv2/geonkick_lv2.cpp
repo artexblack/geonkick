@@ -1,6 +1,6 @@
 /**
  * File name: geonkick_lv2.cpp
- * Project: Geonkick (A percussiove synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2018 Iurie Nistor 
  *

@@ -1,6 +1,6 @@
 /**
  * File name: HumanizerView.h
- * Project: Geonkick (A percussiove synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *
