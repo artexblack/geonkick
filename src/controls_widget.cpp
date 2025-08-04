@@ -33,6 +33,7 @@
 #include "GeonkickModel.h"
 #include "kit_model.h"
 #include "InstrumentModel.h"
+#include "HumanizerView.h"
 #include "AppInfoWidget.h"
 
 ControlsWidget::ControlsWidget(GeonkickWidget *parent,
@@ -87,10 +88,15 @@ ControlsWidget::ControlsWidget(GeonkickWidget *parent,
         layersWidget->show();
 
 #ifndef GEONKICK_BASIC_VERSION
-        auto humanizerView = new HumanizerView(this, geonkickModel->getKitModel()->currentPercussion());
+        auto humanizerView = new HumanizerView(this, kitModel->currentPercussion());
         humanizerView->setPosition(layersWidget->x() + layersWidget->width(),
                                    layersWidget->y());
-#else // GEONKICK_BASIC_VERSION
+        RK_ACT_BIND(kitModel,
+                    modelUpdated,
+                    RK_ACT_ARGS(),
+                    humanizerView,
+                    setModel(kitModel->currentPercussion()));
+#else
         auto appInfoWidget = new AppInfoWidget(this, geonkickModel);
         appInfoWidget->setPosition(layersWidget->x() + layersWidget->width(),
                                    layersWidget->y());
