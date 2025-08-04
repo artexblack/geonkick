@@ -89,11 +89,11 @@ void EnvelopeWidgetDrawingArea::paintWidget([[maybe_unused]] RkPaintEvent *event
         pen.setColor({180, 180, 180, 200});
         pen.setWidth(1);
         painter.setPen(pen);
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
         painter.drawText(150, height() - 12, getEnvStateText());
 #else
         painter.drawText(50, height() - 12, getEnvStateText());
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
         pen.setColor({20, 20, 20, 255});
         painter.setPen(pen);
         painter.drawRect({0, 0, width() - 1, height() - 1});
@@ -105,7 +105,7 @@ void EnvelopeWidgetDrawingArea::paintWidget([[maybe_unused]] RkPaintEvent *event
 std::string EnvelopeWidgetDrawingArea::getEnvStateText() const
 {
         std::string str;
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
         str = "L" + std::to_string(static_cast<int>(dspProxy->layer()) + 1) + " / ";
 #endif // GEONKICK_SINGLE_VERSION
         switch(currentEnvelope->category()) {
@@ -285,7 +285,7 @@ void EnvelopeWidgetDrawingArea::wheelEvent(RkWheelEvent *event)
 
 void EnvelopeWidgetDrawingArea::zoomIn()
 {
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
         if (currentEnvelope && (static_cast<int>(currentEnvelope->getZoom()) < 32)) {
                 currentEnvelope->zoomIn();
                 auto zoomedLengthX = currentEnvelope->envelopeLength() / currentEnvelope->getZoom();
@@ -299,12 +299,12 @@ void EnvelopeWidgetDrawingArea::zoomIn()
                 action zoomUpdated(Geonkick::doubleToStr(currentEnvelope->getZoom(), 0));
         }
         update();
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
 }
 
 void EnvelopeWidgetDrawingArea::zoomOut()
 {
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
         if (currentEnvelope && (static_cast<int>(currentEnvelope->getZoom()) / 2 > 0)) {
                 auto zoomedLengthX = currentEnvelope->envelopeLength() / currentEnvelope->getZoom();
                 auto zoomedLengthY = currentEnvelope->envelopeAmplitude() / currentEnvelope->getZoom();
@@ -318,7 +318,7 @@ void EnvelopeWidgetDrawingArea::zoomOut()
                 action zoomUpdated(Geonkick::doubleToStr(currentEnvelope->getZoom(), 0));
         }
         update();
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
 }
 
 void EnvelopeWidgetDrawingArea::envelopeUpdated()

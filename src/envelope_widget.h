@@ -53,24 +53,24 @@ public:
 protected:
         Envelope* getEnvelope(Envelope::Category category);
         void updateInstrumentWaveform(std::shared_ptr<RkImage> waveformImage);
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
         void createLayersButtons(GeonkickWidget *buttomAreaWidget);
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
         void setLayer(DspProxy::Layer layer);
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
         void createButtomMenu();
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
         void createZoomInfoLabel();
         void createPointInfoLabel();
 
 private:
         std::unordered_map<int, std::unique_ptr<Envelope>> envelopes;
         EnvelopeWidgetDrawingArea *drawArea;
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
         GeonkickButton *layer1Button;
         GeonkickButton *layer2Button;
         GeonkickButton *layer3Button;
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
         GeonkickModel *geonkickModel;
         DspProxy *dspProxy;
         const std::vector<OscillatorModel*>& oscillators;

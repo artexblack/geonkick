@@ -75,9 +75,9 @@ GeonkickModel::KitType GeonkickModel::kitType() const
 
 bool GeonkickModel::isBasic() const
 {
-#if defined(GEONKICK_LIMITED_VERSION)
+#if defined(GEONKICK_BASIC_VERSION)
         return true;
 #else
         return false;
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
 }

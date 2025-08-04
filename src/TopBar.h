@@ -55,19 +55,19 @@ class TopBar : public GeonkickWidget
         void showSettings();
 
  private:
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
         void createLyersButtons(RkContainer *mainLayout);
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
         void addSeparator(RkContainer *mainLayout, int width = 5);
         GeonkickModel *geonkickModel;
         GeonkickButton *saveFileButton;
         GeonkickButton *exportFileButton;
         PresetNavigator* presetNavigator;
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
         GeonkickButton *layer1Button;
         GeonkickButton *layer2Button;
         GeonkickButton *layer3Button;
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
         GeonkickButton *tuneCheckbox;
         RkLineEdit *instrumentName;
         GeonkickButton *controlsButton;

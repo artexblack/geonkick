@@ -49,7 +49,7 @@ RK_DECLARE_IMAGE_RC(reset_active);
 RK_DECLARE_IMAGE_RC(play);
 RK_DECLARE_IMAGE_RC(play_pressed);
 RK_DECLARE_IMAGE_RC(play_hover);
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
 RK_DECLARE_IMAGE_RC(layer1);
 RK_DECLARE_IMAGE_RC(layer2);
 RK_DECLARE_IMAGE_RC(layer3);
@@ -59,7 +59,7 @@ RK_DECLARE_IMAGE_RC(layer3_disabled);
 RK_DECLARE_IMAGE_RC(layer1_hover);
 RK_DECLARE_IMAGE_RC(layer2_hover);
 RK_DECLARE_IMAGE_RC(layer3_hover);
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
 RK_DECLARE_IMAGE_RC(tune_checkbox_on);
 RK_DECLARE_IMAGE_RC(tune_checkbox_off);
 RK_DECLARE_IMAGE_RC(tune_checkbox_hover);
@@ -86,11 +86,11 @@ TopBar::TopBar(GeonkickWidget *parent, GeonkickModel *model)
         , geonkickModel{model}
         , exportFileButton{nullptr}
         , presetNavigator{nullptr}
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
         , layer1Button{nullptr}
         , layer2Button{nullptr}
         , layer3Button{nullptr}
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
         , instrumentName {nullptr}
         , controlsButton{nullptr}
         , midiKeyButton{nullptr}
@@ -150,10 +150,10 @@ TopBar::TopBar(GeonkickWidget *parent, GeonkickModel *model)
         mainLayout->addWidget(playButton);
         addSeparator(mainLayout, 5);
 
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
         createLyersButtons(mainLayout);
         addSeparator(mainLayout, 5);
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
 
         auto resetButton = new RkButton(this);
         resetButton->setSize(33, 18);
@@ -315,7 +315,7 @@ void TopBar::addSeparator(RkContainer *mainLayout, int width)
         mainLayout->addSpace(width);
 }
 
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
 void TopBar::createLyersButtons(RkContainer *mainLayout)
 {
         layer1Button = new GeonkickButton(this);
@@ -372,7 +372,7 @@ void TopBar::createLyersButtons(RkContainer *mainLayout)
         RK_ACT_BIND(layer2Button, toggled, RK_ACT_ARGS(bool b),
         geonkickModel->getDspProxy(), enbaleLayer(DspProxy::Layer::Layer2, b));
 }
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
 
 RkWidget* TopBar::createInstrumentNameLabel()
 {
@@ -413,11 +413,11 @@ void TopBar::setPresetName(const std::string &name)
 void TopBar::updateGui()
 {
         auto dsp = geonkickModel->getDspProxy();
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
         layer1Button->setPressed(dsp->isLayerEnabled(DspProxy::Layer::Layer1));
         layer2Button->setPressed(dsp->isLayerEnabled(DspProxy::Layer::Layer2));
         layer3Button->setPressed(dsp->isLayerEnabled(DspProxy::Layer::Layer3));
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
         tuneCheckbox->setPressed(dsp->isAudioOutputTuned(dsp->currentPercussion()));
         setPresetName(geonkickModel->getKitModel()->currentPercussion()->name());
         auto kitModel = geonkickModel->getKitModel();

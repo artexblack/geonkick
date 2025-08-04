@@ -44,11 +44,11 @@ RK_DECLARE_IMAGE_RC(layer3_env_active);
 EnvelopeWidget::EnvelopeWidget(GeonkickWidget *parent, GeonkickModel *model)
         : GeonkickWidget(parent)
         , drawArea{nullptr}
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
         , layer1Button{nullptr}
         , layer2Button{nullptr}
         , layer3Button{nullptr}
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
         , geonkickModel{model}
         , dspProxy{geonkickModel->getDspProxy()}
         , oscillators{geonkickModel->getOscillatorModels()}
@@ -83,9 +83,9 @@ EnvelopeWidget::EnvelopeWidget(GeonkickWidget *parent, GeonkickModel *model)
         generalEnvelope->setCategory(Envelope::Category::InstrumentGlobal);
         envelopes.insert({static_cast<int>(Envelope::Category::InstrumentGlobal),
                         std::move(generalEnvelope)});
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
         createButtomMenu();
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
         showEnvelope(Envelope::Category::InstrumentGlobal, Envelope::Type::Amplitude);
         RK_ACT_BIND(viewState(), envelopeChanged,
                     RK_ACT_ARGS(Envelope::Category category, Envelope::Type envelope),
@@ -96,7 +96,7 @@ EnvelopeWidget::EnvelopeWidget(GeonkickWidget *parent, GeonkickModel *model)
         drawArea->show();
 }
 
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
 void EnvelopeWidget::createButtomMenu()
 {
         auto buttomAreaWidget = new GeonkickWidget(drawArea);
@@ -114,7 +114,7 @@ void EnvelopeWidget::createButtomMenu()
         menuContainer->addWidget(layer3Button);
         buttomAreaWidget->show();
 }
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
 
 void EnvelopeWidget::createPointInfoLabel()
 {
@@ -168,7 +168,7 @@ void EnvelopeWidget::hideEnvelope(bool b)
         drawArea->setHideEnvelope(b);
 }
 
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
 void EnvelopeWidget::createLayersButtons(GeonkickWidget *buttomAreaWidget)
 {
         layer1Button = new GeonkickButton(buttomAreaWidget);
@@ -211,15 +211,15 @@ void EnvelopeWidget::createLayersButtons(GeonkickWidget *buttomAreaWidget)
         RK_ACT_BIND(layer3Button, toggled, RK_ACT_ARGS(bool b),
                     this, setLayer(DspProxy::Layer::Layer3));
 }
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
 
 void EnvelopeWidget::setLayer(DspProxy::Layer layer)
 {
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
         layer1Button->setPressed(DspProxy::Layer::Layer1 == layer);
         layer2Button->setPressed(DspProxy::Layer::Layer2 == layer);
         layer3Button->setPressed(DspProxy::Layer::Layer3 == layer);
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
         dspProxy->setLayer(layer);
         action requestUpdateGui();
 }
