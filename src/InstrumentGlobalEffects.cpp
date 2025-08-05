@@ -27,6 +27,7 @@
 #include "FilterView.h"
 #include "DistortionModel.h"
 #include "DistortionView.h"
+#include "HumanizerView.h"
 #include "EffectTabButton.h"
 
 #include "RkContainer.h"
@@ -38,6 +39,9 @@ RK_DECLARE_IMAGE_RC(effects_tab_filter_button_hover);
 RK_DECLARE_IMAGE_RC(effects_tab_distortion_button);
 RK_DECLARE_IMAGE_RC(effects_tab_distortion_button_active);
 RK_DECLARE_IMAGE_RC(effects_tab_distortion_button_hover);
+RK_DECLARE_IMAGE_RC(effects_tab_humanizer_button);
+RK_DECLARE_IMAGE_RC(effects_tab_humanizer_button_active);
+RK_DECLARE_IMAGE_RC(effects_tab_humanizer_button_hover);
 
 
 InstrumentGlobalEffects::InstrumentGlobalEffects(GeonkickWidget *parent, PercussionModel* model)
@@ -45,6 +49,7 @@ InstrumentGlobalEffects::InstrumentGlobalEffects(GeonkickWidget *parent, Percuss
         , instrumentModel{model}
         , filterTabButton{nullptr}
         , distortionTabButton{nullptr}
+        , humanizerTabButton {nullptr}
         , currentTabView{nullptr}
 {
         setName("InstrumentGlobalEffects");
@@ -62,8 +67,10 @@ void InstrumentGlobalEffects::bindModel()
         if (currentTabView) {
                 if (dynamic_cast<FilterView*>(currentTabView))
                         currentTabView->setModel(instrumentModel->getFilter());
-                else
+                else if (dynamic_cast<DistortionView*>(currentTabView))
                         currentTabView->setModel(instrumentModel->getDistortion());
+                else
+                        currentTabView->setModel(instrumentModel->getHumanizer());
         }
 }
 
@@ -113,6 +120,26 @@ void InstrumentGlobalEffects::createView()
                                      instrumentModel->getDistortion()->enable(b);
                      });
 
+        tabButtonsLayout->addSpace(2);
+        humanizerTabButton = new EffectTabButton(this);
+        humanizerTabButton->setImage(RkImage(humanizerTabButton->size(), RK_IMAGE_RC(effects_tab_humanizer_button)),
+                                  RkButton::State::Unpressed);
+        humanizerTabButton->setImage(RkImage(humanizerTabButton->size(), RK_IMAGE_RC(effects_tab_humanizer_button_active)),
+                                  RkButton::State::Pressed);
+        humanizerTabButton->setImage(RkImage(humanizerTabButton->size(), RK_IMAGE_RC(effects_tab_humanizer_button_hover)),
+                                  RkButton::State::UnpressedHover);
+        humanizerTabButton->setImage(RkImage(humanizerTabButton->size(), RK_IMAGE_RC(effects_tab_humanizer_button_hover)),
+                                  RkButton::State::PressedHover);
+
+        tabButtonsLayout->addWidget(humanizerTabButton);
+        RK_ACT_BINDL(humanizerTabButton,
+                    enabled,
+                    RK_ACT_ARGS(bool b),
+                     [=,this](bool b){
+                             if (instrumentModel)
+                                     instrumentModel->getHumanizer()->enable(b);
+                     });
+
         RK_ACT_BIND(filterTabButton,
                      pressed,
                      RK_ACT_ARGS(),
@@ -123,10 +150,17 @@ void InstrumentGlobalEffects::createView()
                      RK_ACT_ARGS(),
                      this,
                      showDistortion());
+        RK_ACT_BIND(distortionTabButton,
+                     pressed,
+                     RK_ACT_ARGS(),
+                     this,
+                     showHumanizer());
         if (filterTabButton->isPressed())
                 showFilter();
-        else
+        else if (distortionTabButton->isPressed())
                 showDistortion();
+        else
+                showHumanizer();
         updateView();
 }
 
@@ -135,6 +169,7 @@ void InstrumentGlobalEffects::showFilter()
         if (currentTabView)
                 delete currentTabView;
         distortionTabButton->setPressed(false);
+        humanizerTabButton->setPressed(false);
         currentTabView = new FilterView(this, instrumentModel->getFilter());
         currentTabView->setPosition(0, 22);
 }
@@ -144,7 +179,18 @@ void InstrumentGlobalEffects::showDistortion()
         if (currentTabView)
                 delete currentTabView;
         filterTabButton->setPressed(false);
+        humanizerTabButton->setPressed(false);
         currentTabView = new DistortionView(this, instrumentModel->getDistortion());
+        currentTabView->setPosition(0, 22);
+}
+
+void InstrumentGlobalEffects::showDistortion()
+{
+        if (currentTabView)
+                delete currentTabView;
+        filterTabButton->setPressed(false);
+        distortionTabButton->setPressed(false);
+        currentTabView = new HumanizerView(this, instrumentModel->getHumanizer());
         currentTabView->setPosition(0, 22);
 }
 
@@ -154,5 +200,6 @@ void InstrumentGlobalEffects::updateView()
                 return;
         filterTabButton->enable(instrumentModel->getFilter()->isEnabled());
         distortionTabButton->enable(instrumentModel->getDistortion()->isEnabled());
+        humanizerTabButton->enable(instrumentModel->getHumanizer()->isEnabled());
         currentTabView->updateView();
 }

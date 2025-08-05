@@ -50,6 +50,7 @@ void Knob::setKnobImage(const RkImage &img)
 void Knob::setKnobBackgroundImage(const RkImage &img)
 {
         knobBackground = img;
+        setSize(knobBackground.size());
 }
 
 void Knob::paintWidget(RkPaintEvent *event)

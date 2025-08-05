@@ -25,6 +25,7 @@
 #include "kit_model.h"
 #include "InstrumentFilterModel.h"
 #include "InstrumentDistortionModel.h"
+#include "InstrumentHumanizerModel.h"
 #include "preset.h"
 
 #include "RkAction.h"
@@ -36,6 +37,7 @@ PercussionModel::PercussionModel(KitModel* parent, int id)
         , instrumentId{id}
         , filterModel{new InstrumentFilterModel(this)}
         , distortionModel{new InstrumentDistortionModel(this)}
+        , humanizerModel{new InstrumentHumanizerModel(this)}
 {
         RK_ACT_BIND(kitModel,
                     instrumentSelected,
@@ -302,6 +304,11 @@ FilterModel* PercussionModel::getFilter() const
 DistortionModel* PercussionModel::getDistortion() const
 {
         return distortionModel;
+}
+
+HumanizerModel* PercussionModel::getHumanizer() const
+{
+        return humanizerModel;
 }
 
 bool PercussionModel::loadPreset(const Preset &preset)

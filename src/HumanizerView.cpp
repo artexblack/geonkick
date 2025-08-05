@@ -22,115 +22,65 @@
  */
 
 
-#include "general_group_box.h"
+#include "HumanizerView.h"
 #include "InstrumentModel.h"
 #include "knob.h"
 #include "geonkick_button.h"
-#include "FilterView.h"
 #include "ViewState.h"
-#include "InstrumentGlobalEffects.h"
 
+#include "RkContainer.h"
 #include "RkLabel.h"
 
-RK_DECLARE_IMAGE_RC(global_hboxbk_ampl_env);
-RK_DECLARE_IMAGE_RC(hboxbk_filter);
-RK_DECLARE_IMAGE_RC(knob_bk_image);
-RK_DECLARE_IMAGE_RC(knob);
-RK_DECLARE_IMAGE_RC(osc_ampl_button_off);
-RK_DECLARE_IMAGE_RC(osc_ampl_button_on);
-RK_DECLARE_IMAGE_RC(osc_ampl_button_hover);
+RK_DECLARE_IMAGE_RC(humanizer_label);
+RK_DECLARE_IMAGE_RC(humanizer_enable);
+RK_DECLARE_IMAGE_RC(humanizer_enable_on);
+RK_DECLARE_IMAGE_RC(humanizer_enable_hover);
+RK_DECLARE_IMAGE_RC(humanizer_velocity_knob_label);
+RK_DECLARE_IMAGE_RC(humanizer_velocity_knob_bk);
+RK_DECLARE_IMAGE_RC(humanizer_velocity_knob);
+RK_DECLARE_IMAGE_RC(humanizer_timing_knob_label);
+RK_DECLARE_IMAGE_RC(humanizer_timing_knob_bk);
+RK_DECLARE_IMAGE_RC(humanizer_timing_knob);
 
-GeneralGroupBox::GeneralGroupBox(GeonkickWidget *parent, PercussionModel *model)
+HumanizerView::HumanizerView(GeonkickWidget *parent, PercussionModel *model)
         : AbstractView(parent, model)
-        , instrumentAmplitudeKnob{nullptr}
-        , instrumentLengthKnob{nullptr}
-        , globalEffects{nullptr}
 {
-        setName("GeneralGroupBox");
-        setFixedSize(224, 262);
+        setFixedSize(110, 65);
+        //        setBackgroundColor({0, 99, 0});
         createView();
         bindModel();
 }
 
-void GeneralGroupBox::createView()
+void HumanizerView::createView()
 {
-        createAplitudeEnvelopeHBox();
-        createEffects();
+        auto mainContainer = new RkContainer(this, Rk::Orientation::Vertical);
+
+        auto label = new RkLabel(this, RK_RC_IMAGE(humanizer_label));
+        label->show();
+        mainContainer->addWidget(label);
+
+        auto horizontalContainer = new RkContainer(this);
+        auto velocityKnob = createVelocityKnob();
+        auto timingKnob = createTimingKnob();
+        horizontalContainer->addSpace(8);
+        horizontalContainer->addContainer(velocityKnob);
+        horizontalContainer->addSpace(10);
+        horizontalContainer->addContainer(timingKnob);
+        mainContainer->addContainer(horizontalContainer);
 }
 
-void GeneralGroupBox::updateView()
+void HumanizerView::updateView()
 {
         auto model = static_cast<PercussionModel*>(getModel());
         if (!model)
                 return;
-        instrumentAmplitudeKnob->setCurrentValue(model->getAmplitude());
-        instrumentLengthKnob->setCurrentValue(model->getLength());
+        //        instrumentAmplitudeKnob->setCurrentValue(model->getAmplitude());
+        //        instrumentLengthKnob->setCurrentValue(model->getLength());
 }
 
-void GeneralGroupBox::createAplitudeEnvelopeHBox()
+void HumanizerView::bindModel()
 {
-        auto amplitudeEnvelopeBox = new GeonkickWidget(this);
-        amplitudeEnvelopeBox->setPosition(0, 0);
-        amplitudeEnvelopeBox->setFixedSize(224, 125);
-        amplitudeEnvelopeBox->setBackgroundImage(RkImage(224, 125, RK_IMAGE_RC(global_hboxbk_ampl_env)));
-        amplitudeEnvelopeBox->show();
-
-        instrumentAmplitudeKnob = new Knob(amplitudeEnvelopeBox);
-        instrumentAmplitudeKnob->setDefaultValue(0.8);
-        instrumentAmplitudeKnob->setFixedSize(80, 78);
-        instrumentAmplitudeKnob->setPosition((224 / 2 - 80) / 2, (125 - 80) / 2 - 4);
-        instrumentAmplitudeKnob->setBackgroundColor({0, 255, 0});
-        instrumentAmplitudeKnob->setKnobBackgroundImage(RkImage(80, 80, RK_IMAGE_RC(knob_bk_image)));
-        instrumentAmplitudeKnob->setKnobImage(RkImage(70, 70, RK_IMAGE_RC(knob)));
-        instrumentAmplitudeKnob->setRange(0, 4.0);
-        instrumentAmplitudeKnob->show();
-
-        auto amplEnvelopeButton = new GeonkickButton(amplitudeEnvelopeBox);
-        amplEnvelopeButton->setPressed(viewState()->getEnvelopeType() == Envelope::Type::Amplitude
-                                       && Envelope::Category::InstrumentGlobal == viewState()->getEnvelopeCategory());
-        amplEnvelopeButton->setFixedSize(63, 21);
-        amplEnvelopeButton->setPosition(instrumentAmplitudeKnob->x()
-                                        + instrumentAmplitudeKnob->width() / 2
-                                        - amplEnvelopeButton->width() / 2,
-                                        instrumentAmplitudeKnob->y()
-                                        + instrumentAmplitudeKnob->height() + 2);
-        amplEnvelopeButton->setImage(RkImage(amplEnvelopeButton->size(), RK_IMAGE_RC(osc_ampl_button_off)),
-                                        RkButton::State::Unpressed);
-        amplEnvelopeButton->setImage(RkImage(amplEnvelopeButton->size(), RK_IMAGE_RC(osc_ampl_button_on)),
-                                        RkButton::State::Pressed);
-        amplEnvelopeButton->setImage(RkImage(amplEnvelopeButton->size(), RK_IMAGE_RC(osc_ampl_button_hover)),
-                                        RkButton::State::PressedHover);
-        amplEnvelopeButton->setImage(RkImage(amplEnvelopeButton->size(), RK_IMAGE_RC(osc_ampl_button_hover)),
-                                        RkButton::State::UnpressedHover);
-        amplEnvelopeButton->show();
-        RK_ACT_BIND(amplEnvelopeButton,
-                    pressed,
-                    RK_ACT_ARGS(),
-                    viewState(), setEnvelope(Envelope::Category::InstrumentGlobal, Envelope::Type::Amplitude));
-        RK_ACT_BIND(amplitudeEnvelopeBox->viewState(), envelopeChanged,
-                    RK_ACT_ARGS(Envelope::Category category, Envelope::Type envelope),
-                    amplEnvelopeButton, setPressed(envelope == Envelope::Type::Amplitude
-                                                   && category == Envelope::Category::InstrumentGlobal));
-
-        instrumentLengthKnob = new Knob(amplitudeEnvelopeBox);
-        instrumentLengthKnob->setDefaultValue(300);
-        instrumentLengthKnob->setFixedSize(80, 80);
-        instrumentLengthKnob->setPosition(224 / 2 + (224 / 2 - 80) / 2, (125 - 80) / 2 - 4);
-        instrumentLengthKnob->setKnobBackgroundImage(RkImage(80, 80, RK_IMAGE_RC(knob_bk_image)));
-        instrumentLengthKnob->setKnobImage(RkImage(70, 70, RK_IMAGE_RC(knob)));
-        instrumentLengthKnob->setRange(50, static_cast<PercussionModel*>(getModel())->getMaxLength());
-        instrumentLengthKnob->show();
-}
-
-void GeneralGroupBox::createEffects()
-{
-        globalEffects = new InstrumentGlobalEffects(this, static_cast<PercussionModel*>(getModel()));
-        globalEffects->setPosition(0, 125);
-}
-
-void GeneralGroupBox::bindModel()
-{
-        auto model = static_cast<PercussionModel*>(getModel());
+        /*auto model = static_cast<PercussionModel*>(getModel());
         if (!model)
                 return;
         RK_ACT_BIND(instrumentLengthKnob,
@@ -142,12 +92,84 @@ void GeneralGroupBox::bindModel()
                     valueUpdated,
                     RK_ACT_ARGS(double val),
                     model,
-                    setAmplitude(val));
-        globalEffects->setModel(model);
+                    setAmplitude(val));*/
 }
 
-void GeneralGroupBox::unbindModel()
+void HumanizerView::unbindModel()
 {
-        instrumentLengthKnob->unbindObject(getModel());
-        instrumentAmplitudeKnob->unbindObject(getModel());
+        //instrumentLengthKnob->unbindObject(getModel());
+        //        instrumentAmplitudeKnob->unbindObject(getModel());
 }
+
+RkContainer* HumanizerView::createVelocityKnob()
+{
+        auto label = new RkLabel(this, RK_RC_IMAGE(humanizer_velocity_knob_label));
+        label->show();
+
+        auto enableVelocityButton = new GeonkickButton(this);
+        enableVelocityButton->setType(RkButton::ButtonType::ButtonCheckable);
+        enableVelocityButton->setImage(RK_RC_IMAGE(humanizer_enable),
+                                 RkButton::State::Unpressed);
+        enableVelocityButton->setImage(RK_RC_IMAGE(humanizer_enable_hover),
+                                 RkButton::State::UnpressedHover);
+        enableVelocityButton->setImage(RK_RC_IMAGE(humanizer_enable_on),
+                                 RkButton::State::Pressed);
+        enableVelocityButton->setImage(RK_RC_IMAGE(humanizer_enable_hover),
+                                 RkButton::State::PressedHover);
+
+        auto velocityKnob = new Knob(this);
+        velocityKnob->setKnobBackgroundImage(RK_RC_IMAGE(humanizer_velocity_knob_bk));
+        velocityKnob->setKnobImage(RK_RC_IMAGE(humanizer_velocity_knob));
+
+        auto labelContainer = new RkContainer(this);
+        labelContainer->setSize({velocityKnob->width(), label->height()});
+        labelContainer->addWidget(enableVelocityButton);
+        labelContainer->addSpace(3);
+        labelContainer->addWidget(label);
+
+        auto container = new RkContainer(this, Rk::Orientation::Vertical);
+        container->setSize({velocityKnob->width(),
+                        labelContainer->height() + velocityKnob->height()});
+        container->addContainer(labelContainer);
+        container->addSpace(3);
+        container->addWidget(velocityKnob);
+
+        return container;
+}
+
+RkContainer* HumanizerView::createTimingKnob()
+{
+        auto label = new RkLabel(this, RK_RC_IMAGE(humanizer_timing_knob_label));
+        label->show();
+
+        auto enableTimingButton = new GeonkickButton(this);
+        enableTimingButton->setType(RkButton::ButtonType::ButtonCheckable);
+        enableTimingButton->setImage(RK_RC_IMAGE(humanizer_enable),
+                                       RkButton::State::Unpressed);
+        enableTimingButton->setImage(RK_RC_IMAGE(humanizer_enable_hover),
+                                       RkButton::State::UnpressedHover);
+        enableTimingButton->setImage(RK_RC_IMAGE(humanizer_enable_on),
+                                       RkButton::State::Pressed);
+        enableTimingButton->setImage(RK_RC_IMAGE(humanizer_enable_hover),
+                                       RkButton::State::PressedHover);
+
+        auto timingKnob = new Knob(this);
+        timingKnob->setKnobBackgroundImage(RK_RC_IMAGE(humanizer_timing_knob_bk));
+        timingKnob->setKnobImage(RK_RC_IMAGE(humanizer_timing_knob));
+
+        auto labelContainer = new RkContainer(this);
+        labelContainer->setSize({timingKnob->width(), label->height()});
+        labelContainer->addWidget(enableTimingButton);
+        labelContainer->addSpace(3);
+        labelContainer->addWidget(label);
+
+        auto container = new RkContainer(this, Rk::Orientation::Vertical);
+        container->setSize({timingKnob->width(),
+                           labelContainer->height() + timingKnob->height()});
+        container->addContainer(labelContainer);
+        container->addSpace(3);
+        container->addWidget(timingKnob);
+
+        return container;
+}
+

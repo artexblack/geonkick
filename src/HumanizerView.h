@@ -29,6 +29,7 @@
 class Knob;
 class GeonkickButton;
 class PercussionModel;
+class RkContainer;
 
 class HumanizerView: public AbstractView
 {
@@ -40,6 +41,8 @@ class HumanizerView: public AbstractView
  protected:
         void bindModel() override;
         void unbindModel() override;
+        RkContainer* createVelocityKnob();
+        RkContainer* createTimingKnob();
 };
 
 #endif // GKICK_GUMANIZER_VIEW_H

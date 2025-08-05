@@ -1,5 +1,5 @@
 /**
- * File name: InstrumentGlobalEffects.h
+ * File name: InstrumentHumanizerModel.h
  * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2024 Iurie Nistor
@@ -21,33 +21,31 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef INSTRUMENT_GLOBAL_EFFECTS
-#define INSTRUMENT_GLOBAL_EFFECTS
+#ifndef INSTRUEMNT_HUMANIZER_MODEL_H
+#define INSTRUEMNT_HUMANIZER_MODEL_H
 
-#include "geonkick_widget.h"
-#include "AbstractView.h"
+#include "AbstractModel.h"
 
 class PercussionModel;
-class EffectTabButton;
+class DspProxy;
 
-class InstrumentGlobalEffects: public AbstractView {
+class InstrumentHumanizerModel: public AbstractModel
+{
  public:
-        InstrumentGlobalEffects(GeonkickWidget *parent, PercussionModel* model);
-        void createView() override;
-        void updateView() override;
+        InstrumentHumanizerModel(PercussionModel *parent);
+        void enable(bool b);
+        bool isEnabled() const;
+        void enableVelocty(bool);
+        bool isVeloctyEnabled(bool) const;
+        void enableTiming(bool);
+        bool isTimingEnabled(bool) const;
+        void setVelocityPercent(double drive);
+        double getVelocityPercent() const;
+        void setTimingPercent(double drive);
+        double getTimingPercent() const;
 
-protected:
-        void bindModel() override;
-        void unbindModel() override;
-        void showFilter();
-        void showDistortion();
-
- private:
-        PercussionModel *instrumentModel;
-        EffectTabButton *filterTabButton;
-        EffectTabButton *distortionTabButton;
-        EffectTabButton *humanizerTabButton;
-        AbstractView *currentTabView;
+private:
+        DspProxy *dspProxy;
 };
 
-#endif // INSTRUMENT_GLOBAL_EFFECTS
+#endif // INSTRUEMNT_HUMANIZER_MODEL_H
