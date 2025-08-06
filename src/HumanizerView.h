@@ -26,15 +26,15 @@
 
 #include "AbstractView.h"
 
+class HumanizerModel;
 class Knob;
-class GeonkickButton;
-class PercussionModel;
+class RkLabel;
 class RkContainer;
 
 class HumanizerView: public AbstractView
 {
  public:
-        explicit HumanizerView(GeonkickWidget *parent, PercussionModel *model);
+        explicit HumanizerView(GeonkickWidget *parent, HumanizerModel *model);
         void createView() override;
         void updateView() override;
 
@@ -43,6 +43,10 @@ class HumanizerView: public AbstractView
         void unbindModel() override;
         RkContainer* createVelocityKnob();
         RkContainer* createTimingKnob();
+        Knob *velocityKnob;
+        Knob *timingKnob;
+        RkLabel *velocityValueLabel;
+        RkLabel *timingValueLabel;
 };
 
 #endif // GKICK_GUMANIZER_VIEW_H

@@ -63,7 +63,7 @@ FilterView::FilterView(GeonkickWidget *parent, FilterModel *model)
         , bpFilterButton{nullptr}
 {
         setFixedSize(224, 115);
-        setBackgroundImage(RkImage(224, 115, RK_IMAGE_RC(effect_view_bk)));
+        setBackgroundImage(RK_RC_IMAGE(effect_view_bk));
         createView();
         bindModel();
 }

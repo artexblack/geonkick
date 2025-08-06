@@ -39,6 +39,7 @@
 
 DspProxy::DspProxy(int sample_rate, InstanceType instance, geonkick *dsp)
         : geonkickDsp{dsp}
+        , dspProxyHumanizer {dsp}
         , instanceType{instance}
         , limiterLevelers{}
         , jackEnabled{false}

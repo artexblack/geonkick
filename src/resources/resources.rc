@@ -349,14 +349,6 @@ file_history_button_forward_hover.png
 file_history_button_forward_disabled.png
 
 #====== Humanizer =====
-humanizer_label.png
-humanizer_enable.png
-humanizer_enable_on.png
-humanizer_enable_hover.png
 humanizer_velocity_knob_label.png
-humanizer_velocity_knob_bk.png
-humanizer_velocity_knob.png
 humanizer_timing_knob_label.png
-humanizer_timing_knob_bk.png
-humanizer_timing_knob.png
 )

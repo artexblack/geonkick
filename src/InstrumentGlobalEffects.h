@@ -41,6 +41,7 @@ protected:
         void unbindModel() override;
         void showFilter();
         void showDistortion();
+        void showHumanizer();
 
  private:
         PercussionModel *instrumentModel;

@@ -27,6 +27,7 @@
 #include "globals.h"
 #include "EnvelopePoint.h"
 
+class DspProxyHumanizer;
 class OscillatorModel;
 class PercussionState;
 class KitState;
@@ -384,6 +385,7 @@ protected:
 
 private:
   mutable struct geonkick *geonkickDsp;
+  std::unique_ptr<DspProxyHumanizer> dspPorxyHumanizer;
   InstanceType instanceType;
   std::array<std::atomic<double>, GEONKICK_MAX_INSTRUMENTS> limiterLevelers;
   bool jackEnabled;

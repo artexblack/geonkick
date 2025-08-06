@@ -1,5 +1,5 @@
 /**
- * File name: InstrumentHumanizerModel.h
+ * File name: HumanizerModel.h
  * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2024 Iurie Nistor
@@ -27,25 +27,33 @@
 #include "AbstractModel.h"
 
 class PercussionModel;
-class DspProxy;
+class DspProxyHumanizer;
 
-class InstrumentHumanizerModel: public AbstractModel
+class HumanizerModel: public AbstractModel
 {
  public:
-        InstrumentHumanizerModel(PercussionModel *parent);
+        explicit HumanizerModel(PercussionModel *parent);
         void enable(bool b);
         bool isEnabled() const;
-        void enableVelocty(bool);
-        bool isVeloctyEnabled(bool) const;
-        void enableTiming(bool);
-        bool isTimingEnabled(bool) const;
-        void setVelocityPercent(double drive);
+        void setVelocityPercent(double value);
         double getVelocityPercent() const;
-        void setTimingPercent(double drive);
+        void setTimingPercent(double value);
         double getTimingPercent() const;
+        RK_DECL_ACT(enabled,
+                    enabled(bool b),
+                    RK_ARG_TYPE(bool),
+                    RK_ARG_VAL(b));
+        RK_DECL_ACT(velocityPercentUpdated,
+                    velocityPercentUpdated(double value),
+                    RK_ARG_TYPE(double),
+                    RK_ARG_VAL(value));
+        RK_DECL_ACT(timingPercentUpdated,
+                    timingPercentUpdated(double value),
+                    RK_ARG_TYPE(double),
+                    RK_ARG_VAL(value));
 
 private:
-        DspProxy *dspProxy;
+        DspProxyHumanizer *dspPoxyHumanizer;
 };
 
 #endif // INSTRUEMNT_HUMANIZER_MODEL_H

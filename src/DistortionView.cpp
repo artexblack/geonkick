@@ -99,7 +99,7 @@ void DistortionView::bindModel()
                     RK_ACT_ARGS(double value),
                     this,
                     onSetDrive(value));
-                RK_ACT_BIND(distortionModel,
+        RK_ACT_BIND(distortionModel,
                     distortionTypeChanged,
                     RK_ACT_ARGS(DistortionType type),
                     this,

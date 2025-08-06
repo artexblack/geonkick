@@ -149,7 +149,7 @@ class PercussionModel : public AbstractModel {
         int instrumentId;
         FilterModel *filterModel;
         DistortionModel *distortionModel;
-        HumanizerModel *distortionModel;
+        HumanizerModel *humanizerModel;
 };
 
 #endif // INSTRUMENT_MODEL_H
