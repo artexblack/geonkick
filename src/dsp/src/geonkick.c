@@ -1640,7 +1640,7 @@ geonkick_set_current_instrument(struct geonkick *kick,
 }
 
 enum geonkick_error
-geonkick_get_current_instrument(struct geonkick *kick,
+geonkick_get_current_instrument(const struct geonkick *kick,
                                 size_t *index)
 {
         if (kick == NULL || index == NULL) {
@@ -2042,3 +2042,86 @@ size_t geonkick_layers_number(void)
         return GKICK_OSC_GROUPS_NUMBER;
 }
 
+static struct gkick_humanizer_params* get_humanizer_params(struct geonkick *dsp)
+{
+        size_t index = 0;
+        enum geonkick_error res = geonkick_get_current_instrument(dsp, &index);
+        if (res != GEONKICK_OK)
+                return NULL;
+
+        struct gkick_audio_output *instrument = dsp->audio->audio_outputs[index];
+        struct gkick_humanizer_params *humanizer_params = &instrument->humanizer_params;
+        return &instrument->humanizer_params;
+}
+
+static const struct gkick_humanizer_params* get_humanizer_params_const(const struct geonkick *dsp)
+{
+        size_t index = 0;
+        enum geonkick_error res = geonkick_get_current_instrument(dsp, &index);
+        if (res != GEONKICK_OK)
+                return NULL;
+
+        const struct gkick_audio_output *instrument = dsp->audio->audio_outputs[index];
+        const struct gkick_humanizer_params *humanizer_params = &instrument->humanizer_params;
+        return &instrument->humanizer_params;
+}
+
+enum geonkick_error
+geonkick_humanizer_enable(struct geonkick *dsp, bool b)
+{
+        struct gkick_humanizer_params *params = get_humanizer_params(dsp);
+        if (params == NULL)
+                return GEONKICK_ERROR;
+
+        params->enabled = b;
+        return GEONKICK_OK;
+}
+
+bool geonkick_humanizer_is_enabled(const struct geonkick *dsp)
+{
+        const struct gkick_humanizer_params *params = get_humanizer_params_const(dsp);
+        if (params == NULL)
+                return false;
+
+        return params->enabled;
+}
+
+enum geonkick_error
+geonkick_humanizer_set_velocity(struct geonkick *dsp, float value)
+{
+        struct gkick_humanizer_params *params =  get_humanizer_params(dsp);
+        if (params == NULL)
+                return GEONKICK_ERROR;
+
+        params->velocity = value;
+        return GEONKICK_OK;
+}
+
+float geonkick_humanizer_get_velocity(const struct geonkick *dsp)
+{
+        const struct gkick_humanizer_params *params = get_humanizer_params_const(dsp);
+        if (params == NULL)
+                return false;
+
+        return params->velocity;
+}
+
+enum geonkick_error
+geonkick_humanizer_set_timing(struct geonkick *dsp, float value)
+{
+        struct gkick_humanizer_params *params =  get_humanizer_params(dsp);
+        if (params == NULL)
+                return GEONKICK_ERROR;
+
+        params->timing = value;
+        return GEONKICK_OK;
+}
+
+float geonkick_humanizer_get_timing(const struct geonkick *dsp)
+{
+        const struct gkick_humanizer_params *params = get_humanizer_params_const(dsp);
+        if (params == NULL)
+                return false;
+
+        return params->timing;
+}

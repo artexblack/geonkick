@@ -28,33 +28,37 @@ DspProxyHumanizer::DspProxyHumanizer(geonkick *dsp)
 {
 }
 
-DspProxyHumanizer::~DspProxyHumanizer()
-{
-}
-
 bool DspProxyHumanizer::enable(bool b)
 {
+        auto res = geonkick_humanizer_enable(geonkickDsp, b);
+        return res == GEONKICK_OK;
 }
 
 bool DspProxyHumanizer::isEnabled() const
 {
-        return false;
+        return geonkick_humanizer_is_enabled(geonkickDsp);
 }
 
 bool DspProxyHumanizer::setVelocityPercent(double value)
 {
+        auto res = geonkick_humanizer_set_velocity(geonkickDsp,
+                                                   static_cast<float>(value));
+        return res == GEONKICK_OK;
 }
 
 double DspProxyHumanizer::getVelocityPercent() const
 {
-        return 0.0;
+        return geonkick_humanizer_get_velocity(geonkickDsp);
 }
 
-bool DspProxyHumanizer::setTimingPercent(double value)
+bool DspProxyHumanizer::setTiming(double value)
 {
+        auto res = geonkick_humanizer_set_timing(geonkickDsp,
+                                                 static_cast<float>(value));
+        return res == GEONKICK_OK;
 }
 
-double DspProxyHumanizer::getTimingPercent() const
+double DspProxyHumanizer::getTiming() const
 {
-        return 0.0;
+        return geonkick_humanizer_get_timing(geonkickDsp);
 }

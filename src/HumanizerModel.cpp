@@ -25,43 +25,43 @@
 #include "InstrumentModel.h"
 #include "kit_model.h"
 #include "DspProxy.h"
-//#include "DspProxyHumanizer.h"
+#include "DspProxyHumanizer.h"
 
 HumanizerModel::HumanizerModel(PercussionModel *parent)
         : AbstractModel(parent)
-          //        , dspProxyHumanizer{parent->parentModel()->getDspProxy()->getHumanizer()}
+        , dspProxyHumanizer{parent->parentModel()->getDspProxy()->getHumanizer()}
 {
 }
 
 void HumanizerModel::enable(bool b)
 {
-        //if (dspProxyHumanizer->isEnabled())
-        //        action enabled(b);
+        if (dspProxyHumanizer->enable(b))
+                action enabled(b);
 }
 
 bool HumanizerModel::isEnabled() const
 {
-        return 0.0;//dspProxyHumanizer->isEnabled();
+        return dspProxyHumanizer->isEnabled();
 }
 
 void HumanizerModel::setVelocityPercent(double value)
 {
-        //if (dspProxyHumanizer->setVelocityPercent(value))
-        action velocityPercentUpdated(value);
+        if (dspProxyHumanizer->setVelocityPercent(value))
+                action velocityPercentUpdated(value);
 }
 
 double HumanizerModel::getVelocityPercent() const
 {
-        return 0;//dspProxyHumanizer->getVelocityPercent();
+        return dspProxyHumanizer->getVelocityPercent();
 }
 
-void HumanizerModel::setTimingPercent(double value)
+void HumanizerModel::setTiming(double value)
 {
-        //if (dspProxyHumanizer->setTimingPercent(value))
-        action timingPercentUpdated(value);
+        if (dspProxyHumanizer->setTiming(value))
+                action timingUpdated(value);
 }
 
-double HumanizerModel::getTimingPercent() const
+double HumanizerModel::getTiming() const
 {
-        return 0;//dspProxyHumanizer->getVelocityPercent(value);
+        return dspProxyHumanizer->getTiming();
 }

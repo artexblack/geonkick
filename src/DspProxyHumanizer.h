@@ -27,19 +27,17 @@
 #include "globals.h"
 
 class DspProxyHumanizer {
- public:
-
-   explicit DspProxyHumanizer(geonkick *dsp);
-   ~DspProxyHumanizer();
-   bool enable(bool b);
-   bool isEnabled() const;
-   bool setVelocityPercent(double value);
-   double getVelocityPercent() const;
-   bool setTimingPercent(double value);
-   double getTimingPercent() const;
+public:
+        explicit DspProxyHumanizer(geonkick *dsp);
+        bool enable(bool b);
+        bool isEnabled() const;
+        bool setVelocityPercent(double value);
+        double getVelocityPercent() const;
+        bool setTiming(double value);
+        double getTiming() const;
 
 private:
-  mutable struct geonkick *geonkickDsp;
+        mutable geonkick *geonkickDsp;
 };
 
 #endif // DSP_PROXY_HUMANIZER_H

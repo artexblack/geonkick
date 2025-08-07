@@ -39,21 +39,20 @@ struct gkick_note_info {
         signed char channel;
         signed char note_number;
         signed char velocity;
+        float timing;
 };
 
 struct gkick_humanizer_params
 {
-        atomic_bool  velocity_enabled;
+        atomic_bool  enabled;
         _Atomic float velocity;
-        atomic_bool  temporal_enabled;
-        _Atomic float temporal;
+        _Atomic float timing;
 };
 
 enum gkick_instrument_param {
-        GKICK_INSTR_PARAM_HUM_VEL_ENABLE,
-        GKICK_INSTR_PARAM_HUM_TEMP_ENABLE,
+        GKICK_INSTR_PARAM_HUM_ENABLE,
         GKICK_INSTR_PARAM_HUM_VEL,
-        GKICK_INSTR_PARAM_HUM_TEMP
+        GKICK_INSTR_PARAM_HUM_TIME
 };
 
 struct gkick_audio_output
@@ -123,6 +122,9 @@ struct gkick_audio_output
 
         /* Velocity humanizer */
         struct gkick_humanizer velocity_humanizer;
+
+        /* Timing humanizer */
+        struct gkick_humanizer timing_humanizer;
 };
 
 enum geonkick_error
@@ -183,11 +185,10 @@ enum geonkick_error
 gkick_audio_output_get_channel(struct gkick_audio_output *audio_output,
                                size_t *channel);
 
-void gkick_audio_get_data(struct gkick_audio_output *audio_output,
-                          gkick_real **data,
-                          gkick_real *leveler,
-                          size_t size);
-
+void gkick_audio_output_get_data(struct gkick_audio_output *audio_output,
+                                 gkick_real **data,
+                                 gkick_real *leveler,
+                                 size_t size);
 void gkick_audio_output_enable_note_off(struct gkick_audio_output *audio_output,
                                  bool enable);
 

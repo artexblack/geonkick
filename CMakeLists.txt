@@ -158,6 +158,7 @@ set(GKICK_COMMON_HEADERS
   ${GKICK_COMMON_DIR}/knob.h
   ${GKICK_COMMON_DIR}/OscillatorModel.h
   ${GKICK_COMMON_DIR}/DspProxy.h
+  ${GKICK_COMMON_DIR}/DspProxyHumanizer.h
   ${GKICK_COMMON_DIR}/InstrumentState.h
   ${GKICK_COMMON_DIR}/kit_state.h
   ${GKICK_COMMON_DIR}/oscillator_envelope.h
@@ -236,6 +237,7 @@ set(GKICK_COMMON_SOURCES
   ${GKICK_COMMON_DIR}/knob.cpp
   ${GKICK_COMMON_DIR}/OscillatorModel.cpp
   ${GKICK_COMMON_DIR}/DspProxy.cpp
+  ${GKICK_COMMON_DIR}/DspProxyHumanizer.cpp
   ${GKICK_COMMON_DIR}/InstrumentState.cpp
   ${GKICK_COMMON_DIR}/kit_state.cpp
   ${GKICK_COMMON_DIR}/oscillator_envelope.cpp

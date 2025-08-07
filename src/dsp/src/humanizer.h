@@ -27,30 +27,26 @@
 #include "qx_randomizer.h"
 
 struct gkick_humanizer {
-        bool velocity_enabled;
-        bool temporal_enabled;
+        bool enabled;
         float velocity_percent;
-        float temporal_percent;
+        float timing;
         struct qx_randomizer velocity_randomizer;
-        struct qx_randomizer temporal_randomizer;
+        struct qx_randomizer timing_randomizer;
 };
 
 void gkick_humanizer_init(struct gkick_humanizer *humanizer);
-void gkick_humanizer_enable_velocity(struct gkick_humanizer *humanizer,
-                                     bool enable);
-bool gkick_humanizer_is_velocity_enabled(const struct gkick_humanizer *humanizer);
+void gkick_humanizer_enable(struct gkick_humanizer *humanizer,
+                            bool enable);
+bool gkick_humanizer_is_enabled(const struct gkick_humanizer *humanizer);
 float gkick_humanizer_get_velocity_percent(const struct gkick_humanizer *humanizer);
 void gkick_humanizer_set_velocity_percent(struct gkick_humanizer *humanizer,
                                           float percent);
-signed char gkick_humanizer_velocity(struct gkick_humanizer *humanizer,
-                                     signed char velocity);
-void gkick_humanizer_enable_temporal(struct gkick_humanizer *humanizer,
-                                     bool enable);
-bool gkick_humanizer_is_temporal_enabled(const struct gkick_humanizer *humanizer);
-float gkick_humanizer_get_temporal_percent(const struct gkick_humanizer *humanizer);
-void gkick_humanizer_set_temporal_percent(struct gkick_humanizer *humanizer,
+void gkick_humanizer_velocity(struct gkick_humanizer *humanizer,
+                              signed char *velocity);
+float gkick_humanizer_get_timing_percent(const struct gkick_humanizer *humanizer);
+void gkick_humanizer_set_timing_percent(struct gkick_humanizer *humanizer,
                                           float percent);
-float gkick_humanizer_temporal(struct gkick_humanizer *humanizer,
-                               float temp);
+void gkick_humanizer_timing(struct gkick_humanizer *humanizer,
+                            float *time);
 
 #endif // GKICK_HUMANIZER_H

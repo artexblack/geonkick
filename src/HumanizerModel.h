@@ -37,8 +37,8 @@ class HumanizerModel: public AbstractModel
         bool isEnabled() const;
         void setVelocityPercent(double value);
         double getVelocityPercent() const;
-        void setTimingPercent(double value);
-        double getTimingPercent() const;
+        void setTiming(double value);
+        double getTiming() const;
         RK_DECL_ACT(enabled,
                     enabled(bool b),
                     RK_ARG_TYPE(bool),
@@ -47,13 +47,13 @@ class HumanizerModel: public AbstractModel
                     velocityPercentUpdated(double value),
                     RK_ARG_TYPE(double),
                     RK_ARG_VAL(value));
-        RK_DECL_ACT(timingPercentUpdated,
-                    timingPercentUpdated(double value),
+        RK_DECL_ACT(timingUpdated,
+                    timingUpdated(double value),
                     RK_ARG_TYPE(double),
                     RK_ARG_VAL(value));
 
 private:
-        DspProxyHumanizer *dspPoxyHumanizer;
+        DspProxyHumanizer *dspProxyHumanizer;
 };
 
 #endif // INSTRUEMNT_HUMANIZER_MODEL_H

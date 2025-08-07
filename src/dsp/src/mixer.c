@@ -121,7 +121,7 @@ gkick_mixer_process(struct gkick_mixer *mixer,
                 size_t right_index = left_index + 1;
                 gkick_real *data[2] = {out[left_index] + offset, out[right_index] + offset};
                 gkick_real leveler = 0.0f;
-                gkick_audio_get_data(output, data, &leveler, size);
+                gkick_audio_output_get_data(output, data, &leveler, size);
                 gkick_mixer_set_leveler(mixer, i, fabsf(leveler));
         }
 

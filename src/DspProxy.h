@@ -360,6 +360,7 @@ class DspProxy : public RkObject {
                               int sampleRate,
                               size_t channels,
                               const std::string &filePath);
+  DspProxyHumanizer* getHumanizer() const;
 
 protected:
   void setupPaths();
@@ -385,7 +386,7 @@ protected:
 
 private:
   mutable struct geonkick *geonkickDsp;
-  std::unique_ptr<DspProxyHumanizer> dspPorxyHumanizer;
+  std::unique_ptr<DspProxyHumanizer> dspProxyHumanizer;
   InstanceType instanceType;
   std::array<std::atomic<double>, GEONKICK_MAX_INSTRUMENTS> limiterLevelers;
   bool jackEnabled;

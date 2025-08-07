@@ -27,23 +27,28 @@
 
 void gkick_humanizer_init(struct gkick_humanizer *humanizer)
 {
-        humanizer->velocity_enabled = false;
-        humanizer->temporal_enabled = false;
+        humanizer->enabled = false;
+        humanizer->velocity_percent = 10.0f;
+        humanizer->timing = 10.0f;
         qx_randomizer_init(&humanizer->velocity_randomizer,
-                           -10.0f, 10.0f, 0.5f);
-        qx_randomizer_init(&humanizer->temporal_randomizer,
-                           -10.0f, 10.0f, 0.5f);
+                           -humanizer->velocity_percent, // min %
+                           humanizer->velocity_percent,  // max %
+                           0.5f);  // resolution %
+        qx_randomizer_init(&humanizer->timing_randomizer,
+                           -humanizer->timing, // min ms
+                           humanizer->timing,  // max ms
+                           1.0f);  // resolution in ms
 }
 
-void gkick_humanizer_enable_velocity(struct gkick_humanizer *humanizer,
-                                     bool enable)
+void gkick_humanizer_enable(struct gkick_humanizer *humanizer,
+                            bool enable)
 {
-        humanizer->velocity_enabled = enable;
+        humanizer->enabled = enable;
 }
 
-bool gkick_humanizer_is_velocity_enabled(const struct gkick_humanizer *humanizer)
+bool gkick_humanizer_is_enabled(const struct gkick_humanizer *humanizer)
 {
-        return humanizer->velocity_enabled;
+        return humanizer->enabled;
 }
 
 void gkick_humanizer_set_velocity_percent(struct gkick_humanizer *humanizer,
@@ -60,39 +65,39 @@ float gkick_humanizer_get_velocity_percent(const struct gkick_humanizer *humaniz
         return humanizer->velocity_percent;
 }
 
-signed char gkick_humanizer_velocity(struct gkick_humanizer *humanizer,
-                                     signed char velocity)
+void gkick_humanizer_velocity(struct gkick_humanizer *humanizer,
+                              signed char *velocity)
 {
+        if (!humanizer->enabled)
+                return;
+
         float r = qx_randomizer_get_float(&humanizer->velocity_randomizer);
-        float v = qx_clamp_float((1 + r) * velocity, 1.0f, 127.0);
-        return (signed char)v;
+        float v = qx_clamp_float((1 + r) * (*velocity), 1.0f, 127.0);
+        *velocity = (signed char)v;
 }
 
-void gkick_humanizer_enable_temporal(struct gkick_humanizer *humanizer,
-                                     bool enable)
+void gkick_humanizer_set_timing_percent(struct gkick_humanizer *humanizer,
+                                        float time)
 {
-        humanizer->temporal_enabled = enable;
+        humanizer->timing = time;
+        qx_randomizer_set_range(&humanizer->timing_randomizer,
+                                -humanizer->timing,
+                                humanizer->timing);
 }
 
-bool gkick_humanizer_is_temporal_enabled(const struct gkick_humanizer *humanizer)
+float gkick_humanizer_get_timing_percent(const struct gkick_humanizer *humanizer)
 {
-        return humanizer->temporal_enabled;
+        return  humanizer->timing;
 }
 
-void gkick_humanizer_set_temporal_percent(struct gkick_humanizer *humanizer,
-                                          float percent)
+void gkick_humanizer_timing(struct gkick_humanizer *humanizer, float *time)
 {
-        humanizer->temporal_percent = percent;
-}
+        if (!humanizer->enabled) {
+                *time = 0.0f;
+                return;
+        }
 
-float gkick_humanizer_get_temporal_percent(const struct gkick_humanizer *humanizer)
-{
-        return  humanizer->temporal_percent;
-}
-
-float gkick_humanizer_temporal(struct gkick_humanizer *humanizer,
-                               float temp)
-{
-        return 0.0f;
+        float r = qx_randomizer_get_float(&humanizer->timing_randomizer);
+        *time = qx_clamp_float(r, -humanizer->timing, humanizer->timing);
 }
 

@@ -670,7 +670,7 @@ geonkick_set_current_instrument(struct geonkick *kick,
                                 size_t index);
 
 enum geonkick_error
-geonkick_get_current_instrument(struct geonkick *kick,
+geonkick_get_current_instrument(const struct geonkick *kick,
                                 size_t *index);
 
 enum geonkick_error
@@ -810,6 +810,16 @@ geonkick_note_off_enabled(struct geonkick *kick,
                           bool *enabled);
 
 size_t geonkick_layers_number(void);
+
+enum geonkick_error
+geonkick_humanizer_enable(struct geonkick *dsp, bool b);
+bool geonkick_humanizer_is_enabled(const struct geonkick *dsp);
+enum geonkick_error
+geonkick_humanizer_set_velocity(struct geonkick *dsp, float value);
+float geonkick_humanizer_get_velocity(const struct geonkick *dsp);
+enum geonkick_error
+geonkick_humanizer_set_timing(struct geonkick *dsp, float value);
+float geonkick_humanizer_get_timing(const struct geonkick *dsp);
 
 bool
 geonkick_is_plugin();

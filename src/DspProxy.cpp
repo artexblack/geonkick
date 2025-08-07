@@ -22,6 +22,7 @@
  */
 
 #include "DspProxy.h"
+#include "DspProxyHumanizer.h"
 #include "DesktopPaths.h"
 #include "OscillatorModel.h"
 #include "globals.h"
@@ -39,7 +40,7 @@
 
 DspProxy::DspProxy(int sample_rate, InstanceType instance, geonkick *dsp)
         : geonkickDsp{dsp}
-        , dspProxyHumanizer {dsp}
+        , dspProxyHumanizer {std::make_unique<DspProxyHumanizer>(dsp)}
         , instanceType{instance}
         , limiterLevelers{}
         , jackEnabled{false}
@@ -2030,4 +2031,9 @@ void DspProxy::setScaleFactor(double factor)
         GeonkickConfig config;
         config.setScaleFactor(scaleFactor);
         config.save();
+}
+
+DspProxyHumanizer* DspProxy::getHumanizer() const
+{
+        return dspProxyHumanizer.get();
 }
