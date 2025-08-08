@@ -45,6 +45,14 @@ struct DistortionInfo {
         std::vector<EnvelopePoint> outLimiterEnvelope = {{0, 1}, {1, 1}};
 };
 
+struct HumanizerInfo {
+        bool enabled = false;
+        double velocity = 10.0; // ms
+        double timing = 5.0; // ms
+        bool toJson(std::ostringstream &jsonStream) const;
+        bool fromObject(const auto& obj);
+};
+
 struct OscillatorInfo {
         OscillatorInfo()
                 : type{DspProxy::OscillatorType::Oscillator1}
@@ -210,6 +218,12 @@ class PercussionState
         static std::string toBase64F(const std::vector<float> &data);
         bool save(const std::string &fileName);
         static std::vector<EnvelopePoint> parseEnvelopeArray(const rapidjson::Value &envelopeArray);
+        void humanizerEnable(bool b = true);
+        bool humanizerIsEnabled() const;
+        void humanizerSetVelocity(double percent);
+        double humanizerGetVelocity() const;
+        void humanizerSetTiming(double time);
+        double humanizerGetTiming() const;
 
  protected:
         void parseKickObject(const rapidjson::Value &kick);
@@ -256,6 +270,7 @@ private:
         std::vector<double> layersAmplitude;
         DspProxy::Layer currentLayer;
         bool tunedOutput;
+        HumanizerInfo instrumentHumanizer;
 };
 
 #endif // GEONKICK_STATE_H

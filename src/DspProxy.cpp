@@ -184,6 +184,10 @@ std::unique_ptr<PercussionState> DspProxy::getDefaultPercussionState()
         state->setDistortionInLimiter(1.0);
         state->setDistortionOutLimiter(0.1);
         state->setDistortionDrive(1.0);
+        state->setDistortionDrive(1.0);
+        state->humanizerEnable(false);
+        state->humanizerSetVelocity(10.0);
+        state->humanizerSetTiming(5.0);
 
         std::vector<DspProxy::OscillatorType> oscillators = {
                 DspProxy::OscillatorType::Oscillator1,
@@ -292,6 +296,9 @@ void DspProxy::setPercussionState(const std::unique_ptr<PercussionState> &state)
         setDistortionInLimiter(state->getDistortionInLimiter());
         setDistortionOutLimiter(state->getDistortionOutLimiter());
         setDistortionDrive(state->getDistortionDrive());
+        getHumanizer()->enable(state->humanizerIsEnabled());
+        getHumanizer()->setVelocityPercent(state->humanizerGetVelocity());
+        getHumanizer()->setTiming(state->humanizerGetTiming());
 
         geonkick_set_current_instrument(geonkickDsp, currentId);
         geonkick_enable_synthesis(geonkickDsp, true);
@@ -369,6 +376,9 @@ std::unique_ptr<PercussionState> DspProxy::getPercussionState() const
         state->setDistortionInLimiter(getDistortionInLimiter());
         state->setDistortionOutLimiter(getDistortionOutLimiter());
         state->setDistortionDrive(getDistortionDrive());
+        state->humanizerEnable(getHumanizer()->isEnabled());
+        state->humanizerSetVelocity(getHumanizer()->getVelocityPercent());
+        state->humanizerSetTiming(getHumanizer()->getTiming());
 
         return state;
 }

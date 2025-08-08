@@ -94,6 +94,32 @@ bool DistortionInfo::fromObject(const auto& obj)
         return true;
 }
 
+bool HumanizerInfo::toJson(std::ostringstream &jsonStream) const
+{
+        jsonStream << "\"humanizer\": {" << std::endl;
+        jsonStream << "\"enabled\": " << (enabled ? "true" : "false") << ", " << std::endl;
+        jsonStream << "\"velocity\": " << velocity  << ", " << std::endl;
+        jsonStream << "\"timing\": " << timing << std::endl;
+        jsonStream << "}" << std::endl;
+        return true;
+}
+
+bool HumanizerInfo::fromObject(const auto& obj)
+{
+        if (obj.name != "humanizer" || !obj.value.IsObject() )
+                return false;
+        for (const auto &el: obj.value.GetObject()) {
+                if (el.name == "enabled" && el.value.IsBool())
+                        enabled = el.value.GetBool();
+                if (el.name == "velocity" && el.value.IsDouble())
+                        velocity = el.value.GetDouble();
+                if (el.name == "timing" && el.value.IsDouble())
+                        timing = el.value.GetDouble();
+        }
+
+        return true;
+}
+
 PercussionState::PercussionState()
         : appVersion{GEONKICK_VERSION}
         , kickId{0}
@@ -396,6 +422,7 @@ void PercussionState::parseKickObject(const rapidjson::Value &kick)
 			setKickEnvelopeApplyType(DspProxy::EnvelopeType::FilterCutOff, applyType);
                 }
                 instrumentDistortion.fromObject(m);
+                instrumentHumanizer.fromObject(m);
         }
 }
 
@@ -1305,6 +1332,8 @@ void PercussionState::kickJson(std::ostringstream &jsonStream) const
         jsonStream << "]" << std::endl; // points
         jsonStream << "}, " << std::endl;  // filter;
         instrumentDistortion.toJson(jsonStream);
+        jsonStream << "," << std::endl;
+        instrumentHumanizer.toJson(jsonStream);
         jsonStream << "}" << std::endl; // kick
 }
 
@@ -1407,3 +1436,34 @@ DspProxy::EnvelopeApplyType PercussionState::getApplyTypeFromObj(const rapidjson
 		return static_cast<DspProxy::EnvelopeApplyType>(value.GetInt());
 	return DspProxy::EnvelopeApplyType::Linear;
 }
+
+void PercussionState::humanizerEnable(bool b)
+{
+        instrumentHumanizer.enabled = b;
+}
+
+bool PercussionState::humanizerIsEnabled() const
+{
+        return instrumentHumanizer.enabled;
+}
+
+void PercussionState::humanizerSetVelocity(double percent)
+{
+        instrumentHumanizer.velocity = percent;
+}
+
+double PercussionState::humanizerGetVelocity() const
+{
+        return instrumentHumanizer.velocity;
+}
+
+void PercussionState::humanizerSetTiming(double time)
+{
+        instrumentHumanizer.timing = time;
+}
+
+double PercussionState::humanizerGetTiming() const
+{
+        return instrumentHumanizer.timing;
+}
+
