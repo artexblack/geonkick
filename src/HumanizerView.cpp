@@ -130,7 +130,7 @@ RkContainer* HumanizerView::createVelocityKnob()
         velocityKnob = new Knob(this);
         velocityKnob->setKnobBackgroundImage(RK_RC_IMAGE(knob_bk_image));
         velocityKnob->setKnobImage(RK_RC_IMAGE(knob));
-        velocityKnob->setRange(0.0, 50.0);
+        velocityKnob->setRange(0.0, 30.0);
 
         auto container = new RkContainer(this, Rk::Orientation::Vertical);
         container->setSize({std::max(velocityKnob->width(), label->width()),
@@ -160,7 +160,7 @@ RkContainer* HumanizerView::createTimingKnob()
         timingKnob = new Knob(this);
         timingKnob->setKnobBackgroundImage(RK_RC_IMAGE(knob_bk_image));
         timingKnob->setKnobImage(RK_RC_IMAGE(knob));
-        timingKnob->setRange(0.0, 500.0);
+        timingKnob->setRange(0.0, 30);
 
         auto container = new RkContainer(this, Rk::Orientation::Vertical);
         container->setSize({std::max(timingKnob->width(), label->width()),

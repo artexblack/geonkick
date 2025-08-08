@@ -28,16 +28,16 @@
 void gkick_humanizer_init(struct gkick_humanizer *humanizer)
 {
         humanizer->enabled = false;
-        humanizer->velocity_percent = 10.0f;
-        humanizer->timing = 10.0f;
+        humanizer->velocity_percent = 5.0f;
+        humanizer->timing = 5.0f;
         qx_randomizer_init(&humanizer->velocity_randomizer,
                            -humanizer->velocity_percent, // min %
                            humanizer->velocity_percent,  // max %
-                           0.5f);  // resolution %
+                           1.0f);  // resolution %
         qx_randomizer_init(&humanizer->timing_randomizer,
-                           -humanizer->timing, // min ms
+                           0.0f, // min ms
                            humanizer->timing,  // max ms
-                           1.0f);  // resolution in ms
+                           0.25f);  // resolution in ms
 }
 
 void gkick_humanizer_enable(struct gkick_humanizer *humanizer,
@@ -56,8 +56,8 @@ void gkick_humanizer_set_velocity_percent(struct gkick_humanizer *humanizer,
 {
         humanizer->velocity_percent = percent;
         qx_randomizer_set_range(&humanizer->velocity_randomizer,
-                                -humanizer->velocity_percent / 100.0f,
-                                humanizer->velocity_percent / 100.0f);
+                                -humanizer->velocity_percent,
+                                humanizer->velocity_percent);
 }
 
 float gkick_humanizer_get_velocity_percent(const struct gkick_humanizer *humanizer)
@@ -71,8 +71,8 @@ void gkick_humanizer_velocity(struct gkick_humanizer *humanizer,
         if (!humanizer->enabled)
                 return;
 
-        float r = qx_randomizer_get_float(&humanizer->velocity_randomizer);
-        float v = qx_clamp_float((1 + r) * (*velocity), 1.0f, 127.0);
+        float r = qx_randomizer_get_float(&humanizer->velocity_randomizer) / 100.0f;
+        float v = qx_clamp_float((1.0f + r) * (*velocity), 1.0f, 127.0);
         *velocity = (signed char)v;
 }
 
@@ -81,7 +81,7 @@ void gkick_humanizer_set_timing_percent(struct gkick_humanizer *humanizer,
 {
         humanizer->timing = time;
         qx_randomizer_set_range(&humanizer->timing_randomizer,
-                                -humanizer->timing,
+                                0,
                                 humanizer->timing);
 }
 
@@ -98,6 +98,6 @@ void gkick_humanizer_timing(struct gkick_humanizer *humanizer, float *time)
         }
 
         float r = qx_randomizer_get_float(&humanizer->timing_randomizer);
-        *time = qx_clamp_float(r, -humanizer->timing, humanizer->timing);
+        *time = qx_clamp_float(r, 0.0f, humanizer->timing);
 }
 
