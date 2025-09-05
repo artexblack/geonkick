@@ -1,3 +1,9 @@
+## [3.7.0]
+
+### Features
+
+- Velocity & time humanizer
+
 ## [3.6.2]
 
 ### Fixes
