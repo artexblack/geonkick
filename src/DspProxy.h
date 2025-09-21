@@ -301,6 +301,7 @@ class DspProxy : public RkObject {
   void pasteFromClipboard();
   void setScaleFactor(double factor);
   double getScaleFactor() const;
+  void waitPlayingReady();
 
   RK_DECL_ACT(kickLengthUpdated,
               kickLengthUpdated(double val),

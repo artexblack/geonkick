@@ -104,19 +104,25 @@ GKickVstProcessor::setupProcessing(Vst::ProcessSetup& setup)
         if (res != kResultTrue)
                 return res;
 
-        if (!dspProxy || sampleRate != setup.sampleRate) {
-                sampleRate = setup.sampleRate;
-                dspProxy = std::make_unique<DspProxy>(sampleRate,
-                                                            DspProxy::InstanceType::Vst3);
-                if (!dspProxy->init()) {
-                        dspProxy = nullptr;
-                        GEONKICK_LOG_ERROR("can't init Geonkick API");
-                        return kResultFalse;
-                }
 
-		if (!stateData.empty())
-		  dspProxy->setKitState(stateData);
+        sampleRate = setup.sampleRate;
+        std::unique_ptr<KitState> tempKitState;
+        if (dspProxy)
+                tempKitState = dspProxy->getKitState();
+        dspProxy = std::make_unique<DspProxy>(sampleRate,
+                                              DspProxy::InstanceType::Vst3);
+        if (!dspProxy->init()) {
+                dspProxy = nullptr;
+                GEONKICK_LOG_ERROR("can't init Geonkick API");
+                return kResultFalse;
         }
+
+        if (tempKitState)
+                dspProxy->setKitState(tempKitState);
+        else if (!stateData.empty())
+                dspProxy->setKitState(stateData);
+        dspProxy->waitPlayingReady();
+
         return kResultTrue;
 }
 

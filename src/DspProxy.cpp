@@ -119,7 +119,7 @@ bool DspProxy::init()
 		setPercussionState(state);
         }
 
-        setKitState(std::move(getDefaultKitState()));
+        setKitState(getDefaultKitState());
         enablePercussion(0, true);
         addOrderedPercussionId(0);
 
@@ -1987,7 +1987,7 @@ void DspProxy::setState(const std::string &data)
                 if (m.name == "KitState" && m.value.IsObject()) {
                         auto kitState = std::make_unique<KitState>();
                         kitState->fromJsonObject(m.value);
-                        setKitState(std::move(kitState));
+                        setKitState(kitState);
                 }
         }
 }
@@ -2046,4 +2046,9 @@ void DspProxy::setScaleFactor(double factor)
 DspProxyHumanizer* DspProxy::getHumanizer() const
 {
         return dspProxyHumanizer.get();
+}
+
+void DspProxy::waitPlayingReady()
+{
+        return geonkick_wait_playing_ready();
 }

@@ -2,7 +2,7 @@
  * File name: geonkick_lv2.cpp
  * Project: Geonkick (A percussive synthesizer)
  *
- * Copyright (C) 2018 Iurie Nistor 
+ * Copyright (C) 2018 Iurie Nistor
  *
  * This file is part of Geonkick.
  *
@@ -74,6 +74,7 @@ class GeonkickLv2Plugin : public RkObject
                         return false;
                 }
                 outputChannels = std::vector<float*>(2 * dspProxy->numberOfChannels(), nullptr);
+
                 return true;
         }
 
@@ -147,7 +148,6 @@ class GeonkickLv2Plugin : public RkObject
         {
                 RK_UNUSED(flags);
                 if (data.find("UiSettings") == std::string::npos) {
-                        GEONKICK_LOG_INFO("old plugin state version");
                         dspProxy->setKitState(data);
                         dspProxy->notifyUpdateGui();
                         dspProxy->notifyKitUpdated();
@@ -163,7 +163,7 @@ class GeonkickLv2Plugin : public RkObject
                 return dspProxy->getState();
         }
 
-        DspProxy* getApi() const
+        DspProxy* getProxy() const
         {
                 return dspProxy.get();
         }
@@ -319,8 +319,8 @@ static LV2UI_Handle gkick_instantiate_ui(const LV2UI_Descriptor*   descriptor,
         auto info = rk_from_native_x11(xDisplay, screenNumber, parentWinId);
 #endif // GEONKICK_OS_GNU
         auto guiApp = new RkMain();
-        geonkickLv2PLugin->getApi()->setEventQueue(guiApp->eventQueue());
-        auto mainWidget = new MainWindow(*guiApp, geonkickLv2PLugin->getApi(), info);
+        geonkickLv2PLugin->getProxy()->setEventQueue(guiApp->eventQueue());
+        auto mainWidget = new MainWindow(*guiApp, geonkickLv2PLugin->getProxy(), info);
         RK_ACT_BINDL(mainWidget,
                      onScaleFactor,
                      RK_ACT_ARGS(double factor),
@@ -487,6 +487,7 @@ gkick_state_restore(LV2_Handle                  instance,
                                                          &size, &type, &flags);
                 if (data && size > 0)
                         geonkickLv2PLugin->setStateData(std::string(data, size), flags);
+                geonkickLv2PLugin->getProxy()->waitPlayingReady();
         }
         return LV2_STATE_SUCCESS;
 }

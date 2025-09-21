@@ -2,7 +2,7 @@
  * File name: worker.h
  * Project: Geonkick (A kick synthesizer)
  *
- * Copyright (C) 2020 Iurie Nistor 
+ * Copyright (C) 2020 Iurie Nistor
  *
  * This file is part of Geonkick.
  *
@@ -50,6 +50,7 @@ geonkick_worker_create()
 		return GEONKICK_ERROR_MEM_ALLOC;
 
 	geonkick_worker->running = false;
+        geonkick_worker->process_completed = false;
         if (pthread_cond_init(&geonkick_worker->condition_var, NULL) != 0) {
                 gkick_log_error("can't init worker condition variable");
 		return GEONKICK_ERROR;
@@ -66,6 +67,7 @@ geonkick_worker_start()
         if (geonkick_worker->running)
                 return GEONKICK_OK;
         geonkick_worker->running = true;
+        geonkick_worker->process_completed = false;
         if (pthread_create(&geonkick_worker->thread, NULL,
                            &geonkick_worker_thread, NULL) != 0) {
                 gkick_log_error("can't create worker thread");
@@ -126,22 +128,24 @@ void *geonkick_worker_thread(void *arg)
                  * The last updates will be processed.
                  */
                 geonkick_usleep(40000);
-                gkick_log_debug("process...");
                 pthread_mutex_lock(&geonkick_worker->lock);
                 for (size_t i = 0; geonkick_worker->instances[i] != NULL && i < GEONKICK_MAX_INSTANCES; i++)
                         geonkick_process(geonkick_worker->instances[i]);
 
+                geonkick_worker->process_completed = true;
+                pthread_cond_broadcast(&geonkick_worker->condition_var);
                 if (!geonkick_worker->running) {
                         pthread_mutex_unlock(&geonkick_worker->lock);
                         break;
                 }
 
-                gkick_log_debug("wait...");
                 pthread_cond_wait(&geonkick_worker->condition_var, &geonkick_worker->lock);
+                geonkick_worker->process_completed = false;
                 pthread_mutex_unlock(&geonkick_worker->lock);
-                gkick_log_debug("next");
 	}
+
         gkick_log_debug("exit");
+
         return NULL;
 }
 
@@ -149,5 +153,17 @@ void geonkick_worker_wakeup()
 {
         pthread_mutex_lock(&geonkick_worker->lock);
         pthread_cond_signal(&geonkick_worker->condition_var);
+        pthread_mutex_unlock(&geonkick_worker->lock);
+}
+
+void geonkick_worker_sync()
+{
+        pthread_mutex_lock(&geonkick_worker->lock);
+
+        while (!geonkick_worker->process_completed) {
+                pthread_cond_wait(&geonkick_worker->condition_var,
+                                  &geonkick_worker->lock);
+        }
+
         pthread_mutex_unlock(&geonkick_worker->lock);
 }

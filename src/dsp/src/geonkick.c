@@ -41,6 +41,7 @@ geonkick_create(struct geonkick **kick, int sample_rate)
 	*kick = (struct geonkick*)calloc(1, sizeof(struct geonkick));
 	if (*kick == NULL)
 		return GEONKICK_ERROR_MEM_ALLOC;
+
 	strcpy((*kick)->name, "Geonkick");
 	(*kick)->sample_rate = sample_rate;
         (*kick)->synthesis_on = false;
@@ -103,7 +104,6 @@ void geonkick_free(struct geonkick **kick)
                 geonkick_worker_remove_instance(*kick);
                 if (geonkick_worker_reference_count() == 0)
                         geonkick_worker_destroy();
-                gkick_log_debug("ref count: %d", geonkick_worker_reference_count());
                 for (size_t i = 0; i < GEONKICK_MAX_INSTRUMENTS; i++)
                         gkick_synth_free(&((*kick)->synths[i]));
                 gkick_audio_free(&((*kick)->audio));
@@ -2124,4 +2124,9 @@ float geonkick_humanizer_get_timing(const struct geonkick *dsp)
                 return false;
 
         return params->timing;
+}
+
+void geonkick_wait_playing_ready()
+{
+        geonkick_worker_sync();
 }

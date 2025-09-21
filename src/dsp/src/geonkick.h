@@ -820,6 +820,7 @@ float geonkick_humanizer_get_velocity(const struct geonkick *dsp);
 enum geonkick_error
 geonkick_humanizer_set_timing(struct geonkick *dsp, float value);
 float geonkick_humanizer_get_timing(const struct geonkick *dsp);
+void geonkick_wait_playing_ready();
 
 bool
 geonkick_is_plugin();
