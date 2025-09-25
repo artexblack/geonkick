@@ -40,7 +40,6 @@
 
 DspProxy::DspProxy(int sample_rate, InstanceType instance, geonkick *dsp)
         : geonkickDsp{dsp}
-        , dspProxyHumanizer {std::make_unique<DspProxyHumanizer>(dsp)}
         , instanceType{instance}
         , limiterLevelers{}
         , jackEnabled{false}
@@ -58,7 +57,6 @@ DspProxy::DspProxy(int sample_rate, InstanceType instance, geonkick *dsp)
         uiSettings->setSamplesBrowserPath(getSettings("GEONKICK_CONFIG/HOME_PATH"));
         GeonkickConfig cfg;
         scaleFactor = cfg.getScaleFactor();
-        forceMidiChannel(cfg.getMidiChannel(), cfg.isMidiChannelForced());
 }
 
 DspProxy::~DspProxy()
@@ -104,6 +102,9 @@ bool DspProxy::init()
         if (!initDSP())
 	        return false;
 
+        GeonkickConfig cfg;
+        forceMidiChannel(cfg.getMidiChannel(), cfg.isMidiChannelForced());
+        dspProxyHumanizer = std::make_unique<DspProxyHumanizer>(geonkickDsp);
 	loadPresets();
 
         jackEnabled = geonkick_is_module_enabed(geonkickDsp, GEONKICK_MODULE_JACK);

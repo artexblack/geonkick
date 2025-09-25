@@ -1644,7 +1644,7 @@ geonkick_get_current_instrument(const struct geonkick *kick,
                                 size_t *index)
 {
         if (kick == NULL || index == NULL) {
-                gkick_log_error("wrong arguments");
+                gkick_log_error("wrong arguments %d, %d", kick, index);
                 return GEONKICK_ERROR;
         }
 
@@ -2054,7 +2054,8 @@ static struct gkick_humanizer_params* get_humanizer_params(struct geonkick *dsp)
         return &instrument->humanizer_params;
 }
 
-static const struct gkick_humanizer_params* get_humanizer_params_const(const struct geonkick *dsp)
+static const struct gkick_humanizer_params*
+get_humanizer_params_const(const struct geonkick *dsp)
 {
         size_t index = 0;
         enum geonkick_error res = geonkick_get_current_instrument(dsp, &index);
