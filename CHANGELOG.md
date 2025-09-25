@@ -4,6 +4,11 @@
 
 - Velocity & time humanizer
 
+### Fixes
+
+- Fix accessing dsp when is not yet created
+- Fix prefixes for LV2 (potential problems on some hosts)
+
 ## [3.6.2]
 
 ### Fixes
