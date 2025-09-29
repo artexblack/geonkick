@@ -39,6 +39,7 @@ EnvelopeWidgetDrawingArea::EnvelopeWidgetDrawingArea(GeonkickWidget *parent, Dsp
           , instrumentWaveform{nullptr}
           , pointEditingMode{false}
           , addAsControlPoint{false}
+          , bezierMode {false}
 {
         setFixedSize(850, 300);
         int padding = 50;
@@ -90,9 +91,9 @@ void EnvelopeWidgetDrawingArea::paintWidget([[maybe_unused]] RkPaintEvent *event
         pen.setWidth(1);
         painter.setPen(pen);
 #ifndef GEONKICK_BASIC_VERSION
-        painter.drawText(150, height() - 12, getEnvStateText());
+        painter.drawText(50 + 140, height() - 12, getEnvStateText());
 #else
-        painter.drawText(50, height() - 12, getEnvStateText());
+        painter.drawText(50 + 50, height() - 12, getEnvStateText());
 #endif // GEONKICK_BASIC_VERSION
         pen.setColor({20, 20, 20, 255});
         painter.setPen(pen);
@@ -272,6 +273,9 @@ void EnvelopeWidgetDrawingArea::mouseMoveEvent(RkMouseEvent *event)
 
 void EnvelopeWidgetDrawingArea::shortcutEvent(RkKeyEvent *event)
 {
+        if (bezierMode)
+                return;
+
         if (event->modifiers() & static_cast<int>(Rk::KeyModifiers::Control))
                 addAsControlPoint = true;
         else
@@ -319,6 +323,17 @@ void EnvelopeWidgetDrawingArea::zoomOut()
         }
         update();
 #endif // GEONKICK_BASIC_VERSION
+}
+
+void EnvelopeWidgetDrawingArea::setBezierMode(bool b)
+{
+        bezierMode = b;
+        addAsControlPoint = b;
+}
+
+bool EnvelopeWidgetDrawingArea::isBezierMode() const
+{
+        return bezierMode;
 }
 
 void EnvelopeWidgetDrawingArea::envelopeUpdated()

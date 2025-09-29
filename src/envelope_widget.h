@@ -60,8 +60,10 @@ protected:
 #ifndef GEONKICK_BASIC_VERSION
         void createButtomMenu();
 #endif // GEONKICK_BASIC_VERSION
+        void createBezierModeControls(GeonkickWidget* widget, RkContainer *container);
         void createZoomInfoLabel();
         void createPointInfoLabel();
+        void enableBezierMode(bool b = true);
 
 private:
         std::unordered_map<int, std::unique_ptr<Envelope>> envelopes;
@@ -71,6 +73,7 @@ private:
         GeonkickButton *layer2Button;
         GeonkickButton *layer3Button;
 #endif // GEONKICK_BASIC_VERSION
+        GeonkickButton *bezierModeButton;
         GeonkickModel *geonkickModel;
         DspProxy *dspProxy;
         const std::vector<OscillatorModel*>& oscillators;

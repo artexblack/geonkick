@@ -3,6 +3,11 @@
 ### Features
 
 - Velocity & time humanizer
+- Bezier mode button
+
+### Improvements
+
+- All adding non-control points when Bezier mode is enabled
 
 ### Fixes
 

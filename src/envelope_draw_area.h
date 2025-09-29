@@ -51,6 +51,8 @@ class EnvelopeWidgetDrawingArea : public GeonkickWidget
    void setPointEditingMode(bool b = true);
    void zoomIn();
    void zoomOut();
+   void setBezierMode(bool b);
+   bool isBezierMode() const;
    RK_DECL_ACT(isOverPoint,
                isOverPoint(const std::string info),
                RK_ARG_TYPE(const std::string),
@@ -81,6 +83,7 @@ class EnvelopeWidgetDrawingArea : public GeonkickWidget
    InstrumentWaveform *instrumentWaveform;
    bool pointEditingMode;
    bool addAsControlPoint;
+   bool bezierMode;
 };
 
 #endif // ENVELOPE_DRAW_AREA_H

@@ -55,6 +55,8 @@ class GeonkickConfig {
         const std::string& getExportFormat() const;
         void setExportNumberOfChannels(unsigned int channels);
         unsigned int getExportNumberOfChannels() const;
+        void setBezierMode(bool b = true);
+        bool isBezierMode() const;
 
  protected:
         void loadConfig(const std::string &data);
@@ -75,6 +77,7 @@ class GeonkickConfig {
         bool showSidebar;
         std::string exportFormat;
         unsigned int exportNumberOfChannels;
+        bool bezierMode;
 };
 
 #endif // GEONGKICK_CONFIG_H

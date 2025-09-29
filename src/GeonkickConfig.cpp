@@ -42,6 +42,7 @@ GeonkickConfig::GeonkickConfig(bool autosave)
         , showSidebar{false}
         , exportFormat{Geonkick::defaultExportFormat}
         , exportNumberOfChannels{1}
+        , bezierMode {false}
 {
         open();
 }
@@ -132,6 +133,8 @@ void GeonkickConfig::loadConfig(const std::string &data)
                         exportFormat = m.value.GetString();
                 if (m.name == "exportNumberOfChannels" && m.value.IsInt())
                         exportNumberOfChannels = m.value.GetInt();
+                if (m.name == "bezierMode" && m.value.IsBool())
+                        bezierMode = m.value.GetBool();
         }
 }
 
@@ -292,6 +295,16 @@ unsigned int GeonkickConfig::getExportNumberOfChannels() const
         return exportNumberOfChannels;
 }
 
+void GeonkickConfig::setBezierMode(bool b)
+{
+        bezierMode = b;
+}
+
+bool GeonkickConfig::isBezierMode() const
+{
+        return bezierMode;
+}
+
 void GeonkickConfig::writeBookmarkedPathsToJson(auto& writer) const
 {
         writer.Key("bookmarkedPaths");
@@ -337,6 +350,10 @@ std::string GeonkickConfig::toJson() const
                 writer.Key("exportNumberOfChannels");
                 writer.Int(exportNumberOfChannels);
         }
+
+        writer.Key("bezierMode");
+        writer.Bool(bezierMode);
+
         writer.EndObject();
         return s.GetString();
 }
