@@ -1,6 +1,6 @@
 /**
  * File name: envelope_draw_area.cpp
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *
@@ -23,32 +23,33 @@
 
 #include "envelope_draw_area.h"
 #include "envelope.h"
-#include "kick_graph.h"
+#include "InstrumentWaveform.h"
 #include "EnvelopePointContextWidget.h"
 
 #include "RkPainter.h"
 #include "RkEvent.h"
 #include "RkAction.h"
 
-EnvelopeWidgetDrawingArea::EnvelopeWidgetDrawingArea(GeonkickWidget *parent, GeonkickApi *api)
+EnvelopeWidgetDrawingArea::EnvelopeWidgetDrawingArea(GeonkickWidget *parent, DspProxy *dsp)
           : GeonkickWidget(parent)
-          , geonkickApi{api}
+          , dspProxy{dsp}
           , currentEnvelope{nullptr}
           , hideEnvelope{false}
-          , kickGraphImage{nullptr}
-          , kickGraphics{nullptr}
+          , instrumentWaveformImage{nullptr}
+          , instrumentWaveform{nullptr}
           , pointEditingMode{false}
           , addAsControlPoint{false}
+          , bezierMode {false}
 {
         setFixedSize(850, 300);
         int padding = 50;
         drawingArea = RkRect(1.1 * padding, padding / 2, width() - 1.5 * padding, height() - 1.2 * padding);
         setBackgroundColor(40, 40, 40);
-        kickGraphics = new KickGraph(this, geonkickApi, drawingArea.size());
-        RK_ACT_BIND(kickGraphics,
-                    graphUpdated,
-                    RK_ACT_ARGS(std::shared_ptr<RkImage> graphImage),
-                    this, updateKickGraph(graphImage));
+        instrumentWaveform = new InstrumentWaveform(this, dspProxy, drawingArea.size());
+        RK_ACT_BIND(instrumentWaveform,
+                    waveformUpdated,
+                    RK_ACT_ARGS(std::shared_ptr<RkImage> waveformImage),
+                    this, updateInstrumentWaveform(waveformImage));
         addShortcut(Rk::Key::Key_Control_Left, Rk::KeyModifiers::Control_Left);
 }
 
@@ -57,7 +58,7 @@ void EnvelopeWidgetDrawingArea::setEnvelope(Envelope* envelope)
         if (envelope) {
                 currentEnvelope = envelope;
                 if (currentEnvelope) {
-                        kickGraphics->setEnvelope(currentEnvelope);
+                        instrumentWaveform->setEnvelope(currentEnvelope);
                         action zoomUpdated(Geonkick::doubleToStr(currentEnvelope->getZoom(), 0));
                 }
                 envelopeUpdated();
@@ -74,10 +75,10 @@ void EnvelopeWidgetDrawingArea::paintWidget([[maybe_unused]] RkPaintEvent *event
         RkPainter painter(&envelopeImage);
         painter.fillRect(rect(), background());
 
-        if (kickGraphImage && !kickGraphImage->isNull())
-                painter.drawImage(*kickGraphImage.get(), drawingArea.topLeft().x(), drawingArea.topLeft().y());
+        if (instrumentWaveformImage && !instrumentWaveformImage->isNull())
+                painter.drawImage(*instrumentWaveformImage.get(), drawingArea.topLeft().x(), drawingArea.topLeft().y());
         else
-                kickGraphics->updateGraphBuffer();
+                instrumentWaveform->updateWaveformBuffer();
 
         if (currentEnvelope)
                 currentEnvelope->draw(painter, Envelope::DrawLayer::Axies);
@@ -89,11 +90,11 @@ void EnvelopeWidgetDrawingArea::paintWidget([[maybe_unused]] RkPaintEvent *event
         pen.setColor({180, 180, 180, 200});
         pen.setWidth(1);
         painter.setPen(pen);
-#ifndef GEONKICK_LIMITED_VERSION
-        painter.drawText(150, height() - 12, getEnvStateText());
+#ifndef GEONKICK_BASIC_VERSION
+        painter.drawText(50 + 140, height() - 12, getEnvStateText());
 #else
-        painter.drawText(50, height() - 12, getEnvStateText());
-#endif // GEONKICK_LIMITED_VERSION
+        painter.drawText(50 + 50, height() - 12, getEnvStateText());
+#endif // GEONKICK_BASIC_VERSION
         pen.setColor({20, 20, 20, 255});
         painter.setPen(pen);
         painter.drawRect({0, 0, width() - 1, height() - 1});
@@ -105,8 +106,8 @@ void EnvelopeWidgetDrawingArea::paintWidget([[maybe_unused]] RkPaintEvent *event
 std::string EnvelopeWidgetDrawingArea::getEnvStateText() const
 {
         std::string str;
-#ifndef GEONKICK_LIMITED_VERSION
-        str = "L" + std::to_string(static_cast<int>(geonkickApi->layer()) + 1) + " / ";
+#ifndef GEONKICK_BASIC_VERSION
+        str = "L" + std::to_string(static_cast<int>(dspProxy->layer()) + 1) + " / ";
 #endif // GEONKICK_SINGLE_VERSION
         switch(currentEnvelope->category()) {
         case Envelope::Category::Oscillator1:
@@ -246,7 +247,7 @@ void EnvelopeWidgetDrawingArea::mouseMoveEvent(RkMouseEvent *event)
                 auto valueOrg = -pointDiff.y() * (zoomedLengthY / currentEnvelope->H());
                 currentEnvelope->setTimeOrigin(currentEnvelope->getTimeOrigin() + timeOrg);
                 currentEnvelope->setValueOrigin(currentEnvelope->getValueOrigin() + valueOrg);
-                kickGraphics->updateGraph();
+                instrumentWaveform->updateWaveform();
                 mousePoint.setX(event->x());
                 mousePoint.setY(event->y());
                 envelopeUpdated();
@@ -272,6 +273,9 @@ void EnvelopeWidgetDrawingArea::mouseMoveEvent(RkMouseEvent *event)
 
 void EnvelopeWidgetDrawingArea::shortcutEvent(RkKeyEvent *event)
 {
+        if (bezierMode)
+                return;
+
         if (event->modifiers() & static_cast<int>(Rk::KeyModifiers::Control))
                 addAsControlPoint = true;
         else
@@ -285,7 +289,7 @@ void EnvelopeWidgetDrawingArea::wheelEvent(RkWheelEvent *event)
 
 void EnvelopeWidgetDrawingArea::zoomIn()
 {
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
         if (currentEnvelope && (static_cast<int>(currentEnvelope->getZoom()) < 32)) {
                 currentEnvelope->zoomIn();
                 auto zoomedLengthX = currentEnvelope->envelopeLength() / currentEnvelope->getZoom();
@@ -295,16 +299,16 @@ void EnvelopeWidgetDrawingArea::zoomIn()
                 auto valueOrg = pointDiff.y() * (zoomedLengthY / currentEnvelope->H());
                 currentEnvelope->setTimeOrigin(currentEnvelope->getTimeOrigin() + timeOrg);
                 currentEnvelope->setValueOrigin(currentEnvelope->getValueOrigin() - valueOrg);
-                kickGraphics->updateGraph();
+                instrumentWaveform->updateWaveform();
                 action zoomUpdated(Geonkick::doubleToStr(currentEnvelope->getZoom(), 0));
         }
         update();
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
 }
 
 void EnvelopeWidgetDrawingArea::zoomOut()
 {
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
         if (currentEnvelope && (static_cast<int>(currentEnvelope->getZoom()) / 2 > 0)) {
                 auto zoomedLengthX = currentEnvelope->envelopeLength() / currentEnvelope->getZoom();
                 auto zoomedLengthY = currentEnvelope->envelopeAmplitude() / currentEnvelope->getZoom();
@@ -314,11 +318,22 @@ void EnvelopeWidgetDrawingArea::zoomOut()
                 currentEnvelope->setTimeOrigin(currentEnvelope->getTimeOrigin() - timeOrg);
                 currentEnvelope->setValueOrigin(currentEnvelope->getValueOrigin() + valueOrg);
                 currentEnvelope->zoomOut();
-                kickGraphics->updateGraph();
+                instrumentWaveform->updateWaveform();
                 action zoomUpdated(Geonkick::doubleToStr(currentEnvelope->getZoom(), 0));
         }
         update();
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
+}
+
+void EnvelopeWidgetDrawingArea::setBezierMode(bool b)
+{
+        bezierMode = b;
+        addAsControlPoint = b;
+}
+
+bool EnvelopeWidgetDrawingArea::isBezierMode() const
+{
+        return bezierMode;
 }
 
 void EnvelopeWidgetDrawingArea::envelopeUpdated()
@@ -337,9 +352,9 @@ const RkRect EnvelopeWidgetDrawingArea::getDrawingArea()
         return drawingArea;
 }
 
-void EnvelopeWidgetDrawingArea::updateKickGraph(const std::shared_ptr<RkImage> &graphImage)
+void EnvelopeWidgetDrawingArea::updateInstrumentWaveform(const std::shared_ptr<RkImage> &waveformImage)
 {
-        kickGraphImage = graphImage;
+        instrumentWaveformImage = waveformImage;
         update();
 }
 

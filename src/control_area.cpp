@@ -1,6 +1,6 @@
 /**
  * File name: control_area.cpp
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *

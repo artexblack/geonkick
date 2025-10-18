@@ -1,6 +1,6 @@
 /**
  * File name: preset_browser_view.h
- * Project: Geonkick (A percussion synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2020 Iurie Nistor
  *
@@ -25,7 +25,7 @@
 #include "preset_browser_model.h"
 #include "FileBrowser.h"
 #include "preset_folder.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 
 #include "RkPainter.h"
 #include "RkImage.h"

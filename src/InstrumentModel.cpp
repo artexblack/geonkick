@@ -1,6 +1,6 @@
 /**
- * File name: percussion_model.cpp
- * Project: Geonkick (A percussion synthesizer)
+ * File name: instrument_model.cpp
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2020 Iurie Nistor
  *
@@ -21,10 +21,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "percussion_model.h"
+#include "InstrumentModel.h"
 #include "kit_model.h"
 #include "InstrumentFilterModel.h"
 #include "InstrumentDistortionModel.h"
+#include "HumanizerModel.h"
 #include "preset.h"
 
 #include "RkAction.h"
@@ -33,12 +34,13 @@
 PercussionModel::PercussionModel(KitModel* parent, int id)
         : AbstractModel(parent)
         , kitModel{parent}
-        , percussionId{id}
+        , instrumentId{id}
         , filterModel{new InstrumentFilterModel(this)}
         , distortionModel{new InstrumentDistortionModel(this)}
+        , humanizerModel{new HumanizerModel(this)}
 {
         RK_ACT_BIND(kitModel,
-                    percussionSelected,
+                    instrumentSelected,
                     RK_ACT_ARGS(PercussionModel* model),
                     this,
                     onPercussionSelected());
@@ -50,13 +52,13 @@ PercussionModel::~PercussionModel()
 
 void PercussionModel::setId(int id)
 {
-        percussionId = id;
+        instrumentId = id;
         action modelUpdated();
 }
 
 PercussionModel::PercussionIndex PercussionModel::index() const
 {
-        return kitModel->getIndex(percussionId);
+        return kitModel->getIndex(instrumentId);
 }
 
 void PercussionModel::enable(bool b)
@@ -82,7 +84,7 @@ bool PercussionModel::isSelected() const
 
 void PercussionModel::increasePercussionChannel()
 {
-        auto channel = kitModel->percussionChannel(index());
+        auto channel = kitModel->instrumentChannel(index());
         if (channel < 0)
                 return;
 
@@ -94,7 +96,7 @@ void PercussionModel::increasePercussionChannel()
 
 void PercussionModel::decreasePercussionChannel()
 {
-        auto channel = kitModel->percussionChannel(index());
+        auto channel = kitModel->instrumentChannel(index());
         if (channel < 0)
                 return;
 
@@ -125,7 +127,7 @@ void PercussionModel::setKey(PercussionModel::KeyIndex keyIndex)
 
 PercussionModel::KeyIndex PercussionModel::key() const
 {
-        return kitModel->percussionKey(index());
+        return kitModel->instrumentKey(index());
 }
 
 bool PercussionModel::setName(const std::string &name)
@@ -139,12 +141,12 @@ bool PercussionModel::setName(const std::string &name)
 
 std::string PercussionModel::name() const
 {
-        return kitModel->percussionName(index());
+        return kitModel->instrumentName(index());
 }
 
 int PercussionModel::channel() const
 {
-        return kitModel->percussionChannel(index());
+        return kitModel->instrumentChannel(index());
 }
 
 size_t PercussionModel::numberOfChannels() const
@@ -154,13 +156,13 @@ size_t PercussionModel::numberOfChannels() const
 
 bool PercussionModel::canCopy() const
 {
-        auto n = kitModel->percussionNumber();
+        auto n = kitModel->instrumentNumber();
         return n > 0 && n < kitModel->maxPercussionNumber();
 }
 
 bool PercussionModel::canRemove() const
 {
-        return kitModel->percussionNumber() > 1;
+        return kitModel->instrumentNumber() > 1;
 }
 
 void PercussionModel::play()
@@ -203,12 +205,12 @@ void PercussionModel::setLimiter(int value)
 
 int PercussionModel::limiter() const
 {
-        return kitModel->percussionLimiter(index());
+        return kitModel->instrumentLimiter(index());
 }
 
 int PercussionModel::leveler() const
 {
-        return kitModel->percussionLeveler(index());
+        return kitModel->instrumentLeveler(index());
 }
 
 void PercussionModel::mute(bool b)
@@ -269,7 +271,7 @@ size_t PercussionModel::numberOfMidiChannels() const
 
 int PercussionModel::midiChannel() const
 {
-        return kitModel->percussionMidiChannel(index());
+        return kitModel->instrumentMidiChannel(index());
 }
 
 void PercussionModel::setMidiChannel(int chIndex)
@@ -302,6 +304,11 @@ FilterModel* PercussionModel::getFilter() const
 DistortionModel* PercussionModel::getDistortion() const
 {
         return distortionModel;
+}
+
+HumanizerModel* PercussionModel::getHumanizer() const
+{
+        return humanizerModel;
 }
 
 bool PercussionModel::loadPreset(const Preset &preset)

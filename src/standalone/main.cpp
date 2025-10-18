@@ -1,6 +1,6 @@
 /**
  * File name: main.cpp
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *
@@ -22,7 +22,7 @@
  */
 
 #include "MainWindow.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 
 #include "RkMain.h"
 
@@ -32,13 +32,13 @@
 
 static geonkick* createDSP()
 {
-        geonkick* geonkickApi = nullptr;
-        if (geonkick_create(&geonkickApi, Geonkick::defaultSampleRate) != GEONKICK_OK) {
+        geonkick* dspProxy = nullptr;
+        if (geonkick_create(&dspProxy, Geonkick::defaultSampleRate) != GEONKICK_OK) {
                 GEONKICK_LOG_ERROR("can't create geonkick API");
                 return nullptr;
         }
 
-        return geonkickApi;
+        return dspProxy;
 }
 
 int main(int argc, char *argv[])
@@ -62,18 +62,18 @@ int main(int argc, char *argv[])
         if (argc == 2)
                 preset = argv[1];
 
-        auto api = new GeonkickApi(Geonkick::defaultSampleRate,
-				   GeonkickApi::InstanceType::Standalone,
-		                   dsp);
-        api->setEventQueue(app.eventQueue());
-        api->setStandalone(true);
-        if (!api->init()) {
-                GEONKICK_LOG_ERROR("can't init API");
-                delete api;
+        auto dspProxy = new DspProxy(Geonkick::defaultSampleRate,
+                                     DspProxy::InstanceType::Standalone,
+                                     dsp);
+        dspProxy->setEventQueue(app.eventQueue());
+        dspProxy->setStandalone(true);
+        if (!dspProxy->init()) {
+                GEONKICK_LOG_ERROR("can't init DSP");
+                delete dspProxy;
                 exit(EXIT_FAILURE);
         }
 
-        auto window = new MainWindow(app, api, preset);
+        auto window = new MainWindow(app, dspProxy, preset);
         if (!window->init()) {
                 GEONKICK_LOG_ERROR("can't init main window");
                 exit(EXIT_FAILURE);

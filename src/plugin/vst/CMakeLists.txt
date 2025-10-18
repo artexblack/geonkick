@@ -47,7 +47,7 @@ else ()
 endif ()
 
 target_link_libraries(${target} PRIVATE base sdk sdk_common pluginterfaces)
-target_link_libraries(${target} PRIVATE geonkick_common api_plugin redkite)
+target_link_libraries(${target} PRIVATE geonkick_common dsp_plugin redkite)
 
 if (CMAKE_SYSTEM_NAME MATCHES Windows)
 target_link_libraries(${target} PRIVATE

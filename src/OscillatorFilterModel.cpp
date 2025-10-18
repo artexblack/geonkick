@@ -32,46 +32,46 @@ OscillatorFilterModel::OscillatorFilterModel(OscillatorModel *parent)
 
 void OscillatorFilterModel::enable(bool b)
 {
-        if (oscillatorModel->api()->enableOscillatorFilter(oscillatorModel->index(), b))
+        if (oscillatorModel->getDspProxy()->enableOscillatorFilter(oscillatorModel->index(), b))
                 action enabled(b);
 }
 
 bool OscillatorFilterModel::isEnabled() const
 {
-        return oscillatorModel->api()->isOscillatorFilterEnabled(oscillatorModel->index());
+        return oscillatorModel->getDspProxy()->isOscillatorFilterEnabled(oscillatorModel->index());
 }
 
 void OscillatorFilterModel::setCutOff(double val)
 {
-        if (oscillatorModel->api()->setOscillatorFilterCutOffFreq(oscillatorModel->index(), val))
+        if (oscillatorModel->getDspProxy()->setOscillatorFilterCutOffFreq(oscillatorModel->index(), val))
                 action cutOffChanged(val);
 }
 
 double OscillatorFilterModel::cutOff() const
 {
-        return oscillatorModel->api()->getOscillatorFilterCutOffFreq(oscillatorModel->index());
+        return oscillatorModel->getDspProxy()->getOscillatorFilterCutOffFreq(oscillatorModel->index());
 }
 
 void OscillatorFilterModel::setResonance(double val)
 {
-        if (oscillatorModel->api()->setOscillatorFilterFactor(oscillatorModel->index(), val))
+        if (oscillatorModel->getDspProxy()->setOscillatorFilterFactor(oscillatorModel->index(), val))
                 action resonanceChanged(val);
 }
 
 double OscillatorFilterModel::resonance() const
 {
-        return oscillatorModel->api()->getOscillatorFilterFactor(oscillatorModel->index());
+        return oscillatorModel->getDspProxy()->getOscillatorFilterFactor(oscillatorModel->index());
 }
 
 void OscillatorFilterModel::setType(FilterModel::FilterType type)
 {
-        if (oscillatorModel->api()->setOscillatorFilterType(oscillatorModel->index(), type))
+        if (oscillatorModel->getDspProxy()->setOscillatorFilterType(oscillatorModel->index(), type))
                 action typeChanged(type);
 }
 
 FilterModel::FilterType OscillatorFilterModel::type() const
 {
-        return oscillatorModel->api()->getOscillatorFilterType(oscillatorModel->index());
+        return oscillatorModel->getDspProxy()->getOscillatorFilterType(oscillatorModel->index());
 }
 
 void OscillatorFilterModel::setCutOffRange(const std::pair<double, double>& range)

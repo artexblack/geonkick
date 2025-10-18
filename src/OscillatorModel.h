@@ -1,6 +1,6 @@
 /**
  * File name: gkick_oscillator.h
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *
@@ -24,7 +24,7 @@
 #ifndef GEONKICK_OSCILLATOR_H
 #define GEONKICK_OSCILLATOR_H
 
-#include "geonkick_api.h"
+#include "DspProxy.h"
 
 class DistortionModel;
 class FilterModel;
@@ -34,11 +34,11 @@ class OscillatorModel: public RkObject
 {
  public:
 
-  using Type = GeonkickApi::OscillatorType;
-  using FunctionType = GeonkickApi::FunctionType;
-  using EnvelopeType = GeonkickApi::EnvelopeType;
-  using EnvelopeApplyType = GeonkickApi::EnvelopeApplyType;
-  using FilterType   = GeonkickApi::FilterType;
+  using Type = DspProxy::OscillatorType;
+  using FunctionType = DspProxy::FunctionType;
+  using EnvelopeType = DspProxy::EnvelopeType;
+  using EnvelopeApplyType = DspProxy::EnvelopeApplyType;
+  using FilterType   = DspProxy::FilterType;
 
   explicit OscillatorModel(GeonkickModel *model, OscillatorModel::Type type);
   OscillatorModel::FunctionType function() const;
@@ -82,7 +82,7 @@ class OscillatorModel: public RkObject
   std::string samplesPath() const;
   FilterModel* getFilter() const;
   DistortionModel* getDistortion() const;
-  GeonkickApi* api() const;
+  DspProxy* getDspProxy() const;
 
   RK_DECL_ACT(functionUpdated,
               functionUpdated(FunctionType func),
@@ -112,7 +112,7 @@ class OscillatorModel: public RkObject
  protected:
           int envelopeIndex(EnvelopeType type) const;
  private:
-	  GeonkickApi *geonkickApi;
+	  DspProxy *dspProxy;
           Type oscillatorType;
           FilterModel* filterModel;
           DistortionModel* distortionModel;

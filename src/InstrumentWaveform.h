@@ -1,6 +1,6 @@
 /**
- * File name: kick_graph.h
- * Project: Geonkick (A kick synthesizer)
+ * File name: InstrumentWaveform
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor 
  *
@@ -24,7 +24,7 @@
 #ifndef GEONKICK_GRAPTH_H
 #define GEONKICK_GRAPTH_H
 
-#include "geonkick_api.h"
+#include "DspProxy.h"
 
 #include "RkPainter.h"
 
@@ -33,36 +33,36 @@
 class RkEventQueue;
 class Envelope;
 
-class KickGraph : public RkObject {
+class InstrumentWaveform : public RkObject {
 
 public:
 
-     KickGraph(RkObject* parent, GeonkickApi *api, const RkSize &size);
-     ~KickGraph();
+     InstrumentWaveform(RkObject* parent, DspProxy *dsp, const RkSize &size);
+     ~InstrumentWaveform();
      void start();
-     RK_DECL_ACT(graphUpdated,
-                 graphUpdated(std::shared_ptr<RkImage> graphImage),
+     RK_DECL_ACT(waveformUpdated,
+                 waveformUpdated(std::shared_ptr<RkImage> waveformImage),
                  RK_ARG_TYPE(std::shared_ptr<RkImage>),
-                 RK_ARG_VAL(graphImage));
-     void setGraphLegnth(double val);
+                 RK_ARG_VAL(waveformImage));
+     void setWaveformLegnth(double val);
      void setEnvelope(Envelope * envelope);
      Envelope* getEnvelope() const;
-     void updateGraph(bool lock = true);
-     void updateGraphBuffer();
+     void updateWaveform(bool lock = true);
+     void updateWaveformBuffer();
 
 protected:
-     void drawKickGraph();
+     void drawInstrumentWaveform();
 
 private:
-     GeonkickApi *geonkickApi;
-     std::unique_ptr<std::thread> graphThread;
-     mutable std::mutex  graphMutex;
+     DspProxy *dspProxy;
+     std::unique_ptr<std::thread> waveformThread;
+     mutable std::mutex  waveformMutex;
      std::condition_variable threadConditionVar;
      std::vector<gkick_real> kickBuffer;
-     RkSize graphSize;
+     RkSize waveformSize;
      std::atomic<bool> isRunning;
-     bool redrawGraph;
+     bool redrawWaveform;
      Envelope *currentEnvelope;
 };
 
-#endif // GEONKICK_GRAPH
+#endif // GEONKICK_WAVEFORM

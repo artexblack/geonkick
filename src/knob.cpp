@@ -1,6 +1,6 @@
 /**
  * File name: knob.cpp
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor 
  *
@@ -50,6 +50,7 @@ void Knob::setKnobImage(const RkImage &img)
 void Knob::setKnobBackgroundImage(const RkImage &img)
 {
         knobBackground = img;
+        setSize(knobBackground.size());
 }
 
 void Knob::paintWidget(RkPaintEvent *event)

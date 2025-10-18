@@ -1,6 +1,6 @@
 /**
- * File name: percussion_model.h
- * Project: Geonkick (A percussion synthesizer)
+ * File name: InstrumentModel.h
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2020 Iurie Nistor
  *
@@ -21,18 +21,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef PERCUSSION_MODEL_H
-#define PERCUSSION_MODEL_H
+#ifndef INSTRUMENT_MODEL_H
+#define INSTRUMENT_MODEL_H
 
 #include "globals.h"
 #include "AbstractModel.h"
 #include "OscillatorModel.h"
 
-class GeonkickApi;
+class DspProxy;
 class GeonkickState;
 class KitModel;
 class FilterModel;
 class DistortionModel;
+class HumanizerModel;
 class Preset;
 
 class PercussionModel : public AbstractModel {
@@ -84,6 +85,7 @@ class PercussionModel : public AbstractModel {
         OscillatorModel* getCurrentLayerOscillator(OscillatorModel::Type type) const;
         FilterModel* getFilter() const;
         DistortionModel* getDistortion() const;
+        HumanizerModel* getHumanizer() const;
         bool loadPreset(const Preset &preset);
 
         RK_DECL_ACT(enabled,
@@ -144,9 +146,10 @@ class PercussionModel : public AbstractModel {
 
  private:
         KitModel* kitModel;
-        int percussionId;
+        int instrumentId;
         FilterModel *filterModel;
         DistortionModel *distortionModel;
+        HumanizerModel *humanizerModel;
 };
 
-#endif // PERCUSSION_MODEL_H
+#endif // INSTRUMENT_MODEL_H

@@ -1,6 +1,6 @@
 /**
  * File name: mixer.h
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2020 Iurie Nistor 
  *
@@ -40,6 +40,10 @@ struct gkick_mixer {
 enum geonkick_error
 gkick_mixer_create(struct gkick_mixer **mixer);
 
+/**
+ * This function must be called
+ * only from the audio thread.
+ */
 enum geonkick_error
 gkick_mixer_key_pressed(struct gkick_mixer *mixer,
 			struct gkick_note_info *note);

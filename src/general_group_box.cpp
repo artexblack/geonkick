@@ -1,6 +1,6 @@
 /**
  * File name: general_group_box.cpp
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *
@@ -23,7 +23,7 @@
 
 
 #include "general_group_box.h"
-#include "percussion_model.h"
+#include "InstrumentModel.h"
 #include "knob.h"
 #include "geonkick_button.h"
 #include "FilterView.h"

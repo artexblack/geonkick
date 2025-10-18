@@ -1,6 +1,6 @@
 /**
  * File name: geonkick.h
- * Project: GeonKick (A kick synthesizer)
+ * Project: GeonKick (A percussive synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *
@@ -64,9 +64,9 @@ typedef float gkick_real;
 #define GEONKICK_APP_NAME "geonkick"
 #define GEOKICK_VERSION_STRING GEONKICK_VERSION_STR
 
-#if defined(GEONKICK_LIMITED_VERSION) && !defined(GEONKICK_SINGLE)
+#if defined(GEONKICK_BASIC_VERSION) && !defined(GEONKICK_SINGLE)
 #define GEONKICK_SINGLE
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
 
 #ifdef GEONKICK_AUDIO_JACK
 #define GKICK_IS_STANDALONE (1)
@@ -122,11 +122,11 @@ enum GEONKICK_MODULE {
         GEONKICK_MODULE_JACK    = 1
 };
 
-#ifdef GEONKICK_LIMITED_VERSION
+#ifdef GEONKICK_BASIC_VERSION
 #define GKICK_OSC_GROUPS_NUMBER 1
 #else
 #define GKICK_OSC_GROUPS_NUMBER 3
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
 #define GKICK_OSC_GROUP_SIZE 3
 
 enum geonkick_channel_type {
@@ -666,24 +666,24 @@ geonkick_get_osc_sample(struct geonkick *kick,
                         size_t *size);
 
 enum geonkick_error
-geonkick_set_current_percussion(struct geonkick *kick,
+geonkick_set_current_instrument(struct geonkick *kick,
                                 size_t index);
 
 enum geonkick_error
-geonkick_get_current_percussion(struct geonkick *kick,
+geonkick_get_current_instrument(const struct geonkick *kick,
                                 size_t *index);
 
 enum geonkick_error
-geonkick_unused_percussion(struct geonkick *kick,
+geonkick_unused_instrument(struct geonkick *kick,
                            int *index);
 
 enum geonkick_error
-geonkick_enable_percussion(struct geonkick *kick,
+geonkick_enable_instrument(struct geonkick *kick,
                            size_t index,
                            bool enable);
 
 enum geonkick_error
-geonkick_is_percussion_enabled(struct geonkick *kick,
+geonkick_is_instrument_enabled(struct geonkick *kick,
                                size_t index,
                                bool *enable);
 
@@ -721,13 +721,13 @@ size_t
 geonkick_midi_channels_number(void);
 
 enum geonkick_error
-geonkick_set_percussion_name(struct geonkick *kick,
+geonkick_set_instrument_name(struct geonkick *kick,
                              size_t id,
                              const char *name,
                              size_t size);
 
 enum geonkick_error
-geonkick_get_percussion_name(struct geonkick *kick,
+geonkick_get_instrument_name(struct geonkick *kick,
                              size_t id,
                              char *name,
                              size_t size);
@@ -740,42 +740,42 @@ size_t
 geonkick_channels_number();
 
 enum geonkick_error
-geonkick_set_percussion_channel(struct geonkick *kick,
+geonkick_set_instrument_channel(struct geonkick *kick,
                                 size_t id,
                                 size_t channel);
 
 enum geonkick_error
-geonkick_get_percussion_channel(struct geonkick *kick,
+geonkick_get_instrument_channel(struct geonkick *kick,
                                 size_t id,
                                 size_t *channel);
 
 enum geonkick_error
-geonkick_percussion_set_limiter(struct geonkick *kick,
+geonkick_instrument_set_limiter(struct geonkick *kick,
                                 size_t id,
                                 gkick_real val);
 
 enum geonkick_error
-geonkick_percussion_get_limiter(struct geonkick *kick,
+geonkick_instrument_get_limiter(struct geonkick *kick,
                                 size_t id,
                                 gkick_real *val);
 
 enum geonkick_error
-geonkick_percussion_mute(struct geonkick *kick,
+geonkick_instrument_mute(struct geonkick *kick,
                          size_t id,
                          bool b);
 
 enum geonkick_error
-geonkick_percussion_is_muted(struct geonkick *kick,
+geonkick_instrument_is_muted(struct geonkick *kick,
                              size_t id,
                              bool *b);
 
 enum geonkick_error
-geonkick_percussion_solo(struct geonkick *kick,
+geonkick_instrument_solo(struct geonkick *kick,
                          size_t id,
                          bool b);
 
 enum geonkick_error
-geonkick_percussion_is_solo(struct geonkick *kick,
+geonkick_instrument_is_solo(struct geonkick *kick,
                             size_t id,
                             bool *b);
 
@@ -795,12 +795,12 @@ enum geonkick_error
 geonkick_get_sample_preview_limiter(struct geonkick *kick, gkick_real *val);
 
 enum geonkick_error
-geonkick_percussion_enable_note_off(struct geonkick *kick,
+geonkick_instrument_enable_note_off(struct geonkick *kick,
                                     size_t id,
                                     bool enable);
 
 enum geonkick_error
-geonkick_percussion_note_off_enabled(struct geonkick *kick,
+geonkick_instrument_note_off_enabled(struct geonkick *kick,
                                      size_t id,
                                      bool *enabled);
 
@@ -810,6 +810,17 @@ geonkick_note_off_enabled(struct geonkick *kick,
                           bool *enabled);
 
 size_t geonkick_layers_number(void);
+
+enum geonkick_error
+geonkick_humanizer_enable(struct geonkick *dsp, bool b);
+bool geonkick_humanizer_is_enabled(const struct geonkick *dsp);
+enum geonkick_error
+geonkick_humanizer_set_velocity(struct geonkick *dsp, float value);
+float geonkick_humanizer_get_velocity(const struct geonkick *dsp);
+enum geonkick_error
+geonkick_humanizer_set_timing(struct geonkick *dsp, float value);
+float geonkick_humanizer_get_timing(const struct geonkick *dsp);
+void geonkick_wait_playing_ready();
 
 bool
 geonkick_is_plugin();

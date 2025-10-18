@@ -1,6 +1,6 @@
 /**
  * File name: controls_widget.h
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2020 Iurie Nistor
  *
@@ -26,7 +26,7 @@
 
 #include "geonkick_widget.h"
 
-class GeonkickApi;
+class DspProxy;
 class Oscillator;
 class EnvelopeWidget;
 class GeonkickModel;

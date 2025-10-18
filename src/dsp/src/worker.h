@@ -1,6 +1,6 @@
 /**
  * File name: worker.h
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2020 Iurie Nistor 
  *
@@ -45,6 +45,7 @@ struct gkick_worker {
         /* Reference count for Geonkick instances. */
         atomic_size_t ref_count;
         pthread_mutex_t lock;
+        bool process_completed;
 };
 
 bool
@@ -68,6 +69,8 @@ void geonkick_worker_remove_instance(struct geonkick *instance);
 void *geonkick_worker_thread(void *arg);
 
 void geonkick_worker_wakeup();
+
+void geonkick_worker_sync();
 
 
 #endif // GEONKICK_WORKER_H

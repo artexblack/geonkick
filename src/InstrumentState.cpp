@@ -1,6 +1,6 @@
 /**
- * File name: percussion_state.cpp
- * Project: Geonkick (A kick synthesizer)
+ * File name: instrument_state.cpp
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2018 Iuri Nistor
  *
@@ -21,7 +21,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "percussion_state.h"
+#include "InstrumentState.h"
 #include "Base64EncoderDecoder.h"
 
 #include <iomanip>
@@ -94,6 +94,32 @@ bool DistortionInfo::fromObject(const auto& obj)
         return true;
 }
 
+bool HumanizerInfo::toJson(std::ostringstream &jsonStream) const
+{
+        jsonStream << "\"humanizer\": {" << std::endl;
+        jsonStream << "\"enabled\": " << (enabled ? "true" : "false") << ", " << std::endl;
+        jsonStream << "\"velocity\": " << velocity  << ", " << std::endl;
+        jsonStream << "\"timing\": " << timing << std::endl;
+        jsonStream << "}" << std::endl;
+        return true;
+}
+
+bool HumanizerInfo::fromObject(const auto& obj)
+{
+        if (obj.name != "humanizer" || !obj.value.IsObject() )
+                return false;
+        for (const auto &el: obj.value.GetObject()) {
+                if (el.name == "enabled" && el.value.IsBool())
+                        enabled = el.value.GetBool();
+                if (el.name == "velocity" && el.value.IsDouble())
+                        velocity = el.value.GetDouble();
+                if (el.name == "timing" && el.value.IsDouble())
+                        timing = el.value.GetDouble();
+        }
+
+        return true;
+}
+
 PercussionState::PercussionState()
         : appVersion{GEONKICK_VERSION}
         , kickId{0}
@@ -102,8 +128,8 @@ PercussionState::PercussionState()
         , outputChannel{0}
         , outputMidiChannel{GeonkickTypes::geonkickAnyMidiChannel}
         , kickEnabled{true}
-        , percussionMuted{false}
-        , percussionSolo{false}
+        , instrumentMuted{false}
+        , instrumentSolo{false}
         , noteOffEnabled{false}
         , limiterValue{0}
         , kickLength{50}
@@ -111,11 +137,11 @@ PercussionState::PercussionState()
         , kickFilterEnabled{0}
         , kickFilterFrequency{200}
         , kickFilterQFactor{1.0}
-        , kickFilterType{GeonkickApi::FilterType::LowPass}
-	, kickCutOffEnvelopeApplyType{GeonkickApi::EnvelopeApplyType::Logarithmic}
-        , layers(GeonkickApi::numberOfLayers(), false)
+        , kickFilterType{DspProxy::FilterType::LowPass}
+	, kickCutOffEnvelopeApplyType{DspProxy::EnvelopeApplyType::Logarithmic}
+        , layers(DspProxy::numberOfLayers(), false)
         , layersAmplitude{1.0, 1.0, 1.0}
-        , currentLayer{GeonkickApi::Layer::Layer1}
+        , currentLayer{DspProxy::Layer::Layer1}
         , tunedOutput{false}
 {
         initOscillators();
@@ -182,7 +208,7 @@ bool PercussionState::loadObject(const rapidjson::Value &obj)
 
         for (const auto &m: obj.GetObject()) {
                 for (decltype(layers.size()) i = 0; i < layers.size(); i++) {
-                        setCurrentLayer(static_cast<GeonkickApi::Layer>(i));
+                        setCurrentLayer(static_cast<DspProxy::Layer>(i));
                         if (m.name == ("osc" + std::to_string(0 + i * GKICK_OSC_GROUP_SIZE)).c_str()) {
                                 parseOscillatorObject(0, m.value);
                                 break;
@@ -232,7 +258,7 @@ void PercussionState::setChannel(size_t channel)
 {
         outputChannel = std::clamp(channel,
                                    static_cast<size_t>(0),
-                                   GeonkickApi::numberOfChannels() - 2);
+                                   DspProxy::numberOfChannels() - 2);
 }
 
 void PercussionState::setMidiChannel(signed char channel)
@@ -242,28 +268,28 @@ void PercussionState::setMidiChannel(signed char channel)
         } else {
                 outputMidiChannel = std::clamp(channel,
                                                static_cast<decltype(channel)>(0),
-                                               static_cast<decltype(channel)>(GeonkickApi::numberOfMidiChannels() - 1));
+                                               static_cast<decltype(channel)>(DspProxy::numberOfMidiChannels() - 1));
         }
 }
 
 void PercussionState::setMute(bool b)
 {
-        percussionMuted = b;
+        instrumentMuted = b;
 }
 
 bool PercussionState::isMuted() const
 {
-        return percussionMuted;
+        return instrumentMuted;
 }
 
 void PercussionState::setSolo(bool b)
 {
-        percussionSolo = b;
+        instrumentSolo = b;
 }
 
 bool PercussionState::isSolo() const
 {
-        return percussionSolo;
+        return instrumentSolo;
 }
 
 size_t PercussionState::getChannel() const
@@ -299,13 +325,13 @@ void PercussionState::enable(bool b)
 void PercussionState::initOscillators()
 {
         for (decltype(layers.size()) i = 0; i < layers.size(); i++) {
-                oscillators.insert({static_cast<int>(GeonkickApi::OscillatorType::Oscillator1)
+                oscillators.insert({static_cast<int>(DspProxy::OscillatorType::Oscillator1)
                                 + GKICK_OSC_GROUP_SIZE * i,
                                 OscillatorInfo()});
-                oscillators.insert({static_cast<int>(GeonkickApi::OscillatorType::Oscillator2)
+                oscillators.insert({static_cast<int>(DspProxy::OscillatorType::Oscillator2)
                                 + GKICK_OSC_GROUP_SIZE * i,
                                 OscillatorInfo()});
-                oscillators.insert({static_cast<int>(GeonkickApi::OscillatorType::Oscillator3)
+                oscillators.insert({static_cast<int>(DspProxy::OscillatorType::Oscillator3)
                                 + GKICK_OSC_GROUP_SIZE * i,
                                 OscillatorInfo()});
         }
@@ -342,10 +368,10 @@ void PercussionState::parseKickObject(const rapidjson::Value &kick)
                         tuneOutput(m.value.GetBool());
 
                 if (m.name == "layers" && m.value.IsArray()) {
-                        layers = std::vector<bool>(GeonkickApi::numberOfLayers(), false);
+                        layers = std::vector<bool>(DspProxy::numberOfLayers(), false);
                         for (const auto &el: m.value.GetArray())
                                 if (el.IsInt())
-                                        setLayerEnabled(static_cast<GeonkickApi::Layer>(el.GetInt()), true);
+                                        setLayerEnabled(static_cast<DspProxy::Layer>(el.GetInt()), true);
                 }
 
                 if (m.name == "layers_amplitude" && m.value.IsArray()) {
@@ -353,7 +379,7 @@ void PercussionState::parseKickObject(const rapidjson::Value &kick)
                         int i = 0;
                         for (const auto &el: m.value.GetArray()) {
                                 if (el.IsDouble())
-                                        setLayerAmplitude(static_cast<GeonkickApi::Layer>(i), el.GetDouble());
+                                        setLayerAmplitude(static_cast<DspProxy::Layer>(i), el.GetDouble());
                                 i++;
                         }
                 }
@@ -365,14 +391,14 @@ void PercussionState::parseKickObject(const rapidjson::Value &kick)
                                 if (el.name == "amplitude" && el.value.IsDouble())
                                         setKickAmplitude(el.value.GetDouble());
                                 if (el.name == "points" && el.value.IsArray()) {
-                                        setKickEnvelopePoints(GeonkickApi::EnvelopeType::Amplitude,
+                                        setKickEnvelopePoints(DspProxy::EnvelopeType::Amplitude,
                                                               parseEnvelopeArray(el.value));
                                 }
                         }
                 }
 
                 if (m.name == "filter" && m.value.IsObject()) {
-			auto applyType = GeonkickApi::EnvelopeApplyType::Linear;
+			auto applyType = DspProxy::EnvelopeApplyType::Linear;
                         for (const auto &el: m.value.GetObject()) {
                                 if (el.name == "enabled" && el.value.IsBool())
                                         enableKickFilter(el.value.GetBool());
@@ -383,19 +409,20 @@ void PercussionState::parseKickObject(const rapidjson::Value &kick)
                                 if (el.name == "factor" && el.value.IsDouble())
                                         setKickFilterQFactor(el.value.GetDouble());
                                 if (el.name == "type" && el.value.IsInt())
-                                        setKickFilterType(static_cast<GeonkickApi::FilterType>(el.value.GetInt()));
+                                        setKickFilterType(static_cast<DspProxy::FilterType>(el.value.GetInt()));
                                 if (el.name == "cutoff_env" && el.value.IsArray()) {
-                                        setKickEnvelopePoints(GeonkickApi::EnvelopeType::FilterCutOff,
+                                        setKickEnvelopePoints(DspProxy::EnvelopeType::FilterCutOff,
                                                               parseEnvelopeArray(el.value));
                                 }
 				if (el.name == "qfactor_env" && el.value.IsArray()) {
-                                        setKickEnvelopePoints(GeonkickApi::EnvelopeType::FilterQFactor,
+                                        setKickEnvelopePoints(DspProxy::EnvelopeType::FilterQFactor,
                                                               parseEnvelopeArray(el.value));
                                 }
                         }
-			setKickEnvelopeApplyType(GeonkickApi::EnvelopeType::FilterCutOff, applyType);
+			setKickEnvelopeApplyType(DspProxy::EnvelopeType::FilterCutOff, applyType);
                 }
                 instrumentDistortion.fromObject(m);
+                instrumentHumanizer.fromObject(m);
         }
 }
 
@@ -419,7 +446,7 @@ void PercussionState::parseOscillatorObject(int index,  const rapidjson::Value &
                 if (m.name == "sample" && m.value.IsString())
                         setOscillatorSample(index, fromBase64F(std::string(m.value.GetString())));
                 if (m.name == "function" && m.value.IsInt())
-                        setOscillatorFunction(index, static_cast<GeonkickApi::FunctionType>(m.value.GetInt()));
+                        setOscillatorFunction(index, static_cast<DspProxy::FunctionType>(m.value.GetInt()));
                 if (m.name == "phase" && m.value.IsDouble())
                         setOscillatorPhase(index, m.value.GetDouble());
                 if (m.name == "seed" && m.value.IsInt())
@@ -430,12 +457,12 @@ void PercussionState::parseOscillatorObject(int index,  const rapidjson::Value &
                                         setOscillatorAmplitue(index, el.value.GetDouble());
                                 if (el.name == "points" && el.value.IsArray())
                                         setOscillatorEnvelopePoints(index, parseEnvelopeArray(el.value),
-                                                                    GeonkickApi::EnvelopeType::Amplitude);
+                                                                    DspProxy::EnvelopeType::Amplitude);
                         }
                 }
 
                 if (m.name == "freq_env" && m.value.IsObject()) {
-                        auto applyType = GeonkickApi::EnvelopeApplyType::Linear;
+                        auto applyType = DspProxy::EnvelopeApplyType::Linear;
                         for (const auto &el: m.value.GetObject()) {
                                 if (el.name == "amplitude" && el.value.IsDouble())
                                         setOscillatorFrequency(index, el.value.GetDouble());
@@ -443,10 +470,10 @@ void PercussionState::parseOscillatorObject(int index,  const rapidjson::Value &
                                         applyType = getApplyTypeFromObj(el.value);
                                 if (el.name == "points" && el.value.IsArray())
                                         setOscillatorEnvelopePoints(index, parseEnvelopeArray(el.value),
-                                                                    GeonkickApi::EnvelopeType::Frequency);
+                                                                    DspProxy::EnvelopeType::Frequency);
                         }
                         setOscillatorEnvelopeApplyType(index,
-                                                       GeonkickApi::EnvelopeType::Frequency,
+                                                       DspProxy::EnvelopeType::Frequency,
                                                        applyType);
                 }
 
@@ -456,7 +483,7 @@ void PercussionState::parseOscillatorObject(int index,  const rapidjson::Value &
                                         setOscillatorPitchShift(index, el.value.GetDouble());
                                 if (el.name == "points" && el.value.IsArray())
                                         setOscillatorEnvelopePoints(index, parseEnvelopeArray(el.value),
-                                                                    GeonkickApi::EnvelopeType::PitchShift);
+                                                                    DspProxy::EnvelopeType::PitchShift);
                         }
                 }
 
@@ -466,12 +493,12 @@ void PercussionState::parseOscillatorObject(int index,  const rapidjson::Value &
                                         setOscillatorNoiseDensity(index, el.value.GetDouble());
                                 if (el.name == "points" && el.value.IsArray())
                                         setOscillatorEnvelopePoints(index, parseEnvelopeArray(el.value),
-                                                                    GeonkickApi::EnvelopeType::NoiseDensity);
+                                                                    DspProxy::EnvelopeType::NoiseDensity);
                         }
                 }
 
                 if (m.name == "filter" && m.value.IsObject()) {
-			auto applyType = GeonkickApi::EnvelopeApplyType::Linear;
+			auto applyType = DspProxy::EnvelopeApplyType::Linear;
                         for (const auto &el: m.value.GetObject()) {
                                 if (el.name == "enabled" && el.value.IsBool())
                                         setOscillatorFilterEnabled(index, el.value.GetBool());
@@ -482,18 +509,18 @@ void PercussionState::parseOscillatorObject(int index,  const rapidjson::Value &
 				if (el.name == "apply_type")
 					applyType = getApplyTypeFromObj(el.value);
                                 if (el.name == "type" && el.value.IsInt())
-                                        setOscillatorFilterType(index, static_cast<GeonkickApi::FilterType>(el.value.GetInt()));
+                                        setOscillatorFilterType(index, static_cast<DspProxy::FilterType>(el.value.GetInt()));
                                 if (el.name == "cutoff_env" && el.value.IsArray()) {
                                         setOscillatorEnvelopePoints(index, parseEnvelopeArray(el.value),
-                                                                    GeonkickApi::EnvelopeType::FilterCutOff);
+                                                                    DspProxy::EnvelopeType::FilterCutOff);
                                 }
 				if (el.name == "qfactor_env" && el.value.IsArray()) {
                                         setOscillatorEnvelopePoints(index, parseEnvelopeArray(el.value),
-                                                                    GeonkickApi::EnvelopeType::FilterQFactor);
+                                                                    DspProxy::EnvelopeType::FilterQFactor);
                                 }
                         }
 			setOscillatorEnvelopeApplyType(index,
-						       GeonkickApi::EnvelopeType::FilterCutOff,
+						       DspProxy::EnvelopeType::FilterCutOff,
 						       applyType);
                 }
                 instrumentOsc->distortion.fromObject(m);
@@ -546,28 +573,28 @@ void PercussionState::setKickFilterQFactor(double val)
         kickFilterQFactor = val;
 }
 
-void PercussionState::setKickFilterType(GeonkickApi::FilterType type)
+void PercussionState::setKickFilterType(DspProxy::FilterType type)
 {
         kickFilterType = type;
 }
 
-void PercussionState::setKickEnvelopePoints(GeonkickApi::EnvelopeType envelope,
+void PercussionState::setKickEnvelopePoints(DspProxy::EnvelopeType envelope,
                                             const std::vector<EnvelopePoint> &points)
 {
 	switch(envelope) {
-	case GeonkickApi::EnvelopeType::Amplitude:
+	case DspProxy::EnvelopeType::Amplitude:
                 kickEnvelopePoints = points;
 		break;
-	case GeonkickApi::EnvelopeType::FilterCutOff:
+	case DspProxy::EnvelopeType::FilterCutOff:
                 kickFilterCutOffEnvelope = points;
 		break;
-	case GeonkickApi::EnvelopeType::FilterQFactor:
+	case DspProxy::EnvelopeType::FilterQFactor:
                 kickFilterQFactorEnvelope = points;
 		break;
-	case GeonkickApi::EnvelopeType::DistortionDrive:
+	case DspProxy::EnvelopeType::DistortionDrive:
 		instrumentDistortion.driveEnvelope = points;
 		break;
-	case GeonkickApi::EnvelopeType::DistortionVolume:
+	case DspProxy::EnvelopeType::DistortionVolume:
 		instrumentDistortion.outLimiterEnvelope = points;
 		break;
 	default:
@@ -575,21 +602,21 @@ void PercussionState::setKickEnvelopePoints(GeonkickApi::EnvelopeType envelope,
 	}
 }
 
-void PercussionState::setKickEnvelopeApplyType(GeonkickApi::EnvelopeType envelope,
-					       GeonkickApi::EnvelopeApplyType applyType)
+void PercussionState::setKickEnvelopeApplyType(DspProxy::EnvelopeType envelope,
+					       DspProxy::EnvelopeApplyType applyType)
 {
 
-	if (envelope == GeonkickApi::EnvelopeType::FilterCutOff)
+	if (envelope == DspProxy::EnvelopeType::FilterCutOff)
 		kickCutOffEnvelopeApplyType = applyType;
 }
 
-GeonkickApi::EnvelopeApplyType
-PercussionState::getKickEnvelopeApplyType(GeonkickApi::EnvelopeType envelope) const
+DspProxy::EnvelopeApplyType
+PercussionState::getKickEnvelopeApplyType(DspProxy::EnvelopeType envelope) const
 {
 
-	if (envelope == GeonkickApi::EnvelopeType::FilterCutOff)
+	if (envelope == DspProxy::EnvelopeType::FilterCutOff)
 		return kickCutOffEnvelopeApplyType;
-	return GeonkickApi::EnvelopeApplyType::Linear;
+	return DspProxy::EnvelopeApplyType::Linear;
 }
 
 double PercussionState::getLimiterValue() const
@@ -622,24 +649,24 @@ double PercussionState::getKickFilterQFactor() const
         return kickFilterQFactor;
 }
 
-GeonkickApi::FilterType PercussionState::getKickFilterType() const
+DspProxy::FilterType PercussionState::getKickFilterType() const
 {
         return kickFilterType;
 }
 
 std::vector<EnvelopePoint>
-PercussionState::getKickEnvelopePoints(GeonkickApi::EnvelopeType envelope) const
+PercussionState::getKickEnvelopePoints(DspProxy::EnvelopeType envelope) const
 {
 	switch(envelope) {
-        case GeonkickApi::EnvelopeType::Amplitude:
+        case DspProxy::EnvelopeType::Amplitude:
                 return kickEnvelopePoints;
-        case GeonkickApi::EnvelopeType::FilterCutOff:
+        case DspProxy::EnvelopeType::FilterCutOff:
                 return kickFilterCutOffEnvelope;
-	case GeonkickApi::EnvelopeType::FilterQFactor:
+	case DspProxy::EnvelopeType::FilterQFactor:
 		return kickFilterQFactorEnvelope;
-	case GeonkickApi::EnvelopeType::DistortionDrive:
+	case DspProxy::EnvelopeType::DistortionDrive:
 		return instrumentDistortion.driveEnvelope;
-	case GeonkickApi::EnvelopeType::DistortionVolume:
+	case DspProxy::EnvelopeType::DistortionVolume:
 		return instrumentDistortion.outLimiterEnvelope;
 	default:
 		return {};
@@ -675,7 +702,7 @@ void PercussionState::setOscillatorEnabled(int index, bool b)
                 oscillator->isEnabled = b;
 }
 
-void PercussionState::setOscillatorFunction(int index, GeonkickApi::FunctionType type)
+void PercussionState::setOscillatorFunction(int index, DspProxy::FunctionType type)
 {
         auto oscillator = getOscillator(index);
         if (oscillator)
@@ -729,7 +756,7 @@ void PercussionState::setOscillatorFilterEnabled(int index, bool b)
                 oscillator->isFilterEnabled = b;
 }
 
-void PercussionState::setOscillatorFilterType(int index, GeonkickApi::FilterType type)
+void PercussionState::setOscillatorFilterType(int index, DspProxy::FilterType type)
 {
         auto oscillator = getOscillator(index);
         if (oscillator)
@@ -752,30 +779,30 @@ void PercussionState::setOscillatorFilterFactor(int index, double val)
 
 void PercussionState::setOscillatorEnvelopePoints(int index,
                                                 const std::vector<EnvelopePoint> &points,
-                                                GeonkickApi::EnvelopeType envelope)
+                                                DspProxy::EnvelopeType envelope)
 {
         auto oscillator = getOscillator(index);
         if (oscillator) {
                 switch (envelope) {
-                case GeonkickApi::EnvelopeType::Amplitude:
+                case DspProxy::EnvelopeType::Amplitude:
                         oscillator->amplitudeEnvelope = points;
                         break;
-                case GeonkickApi::EnvelopeType::Frequency:
+                case DspProxy::EnvelopeType::Frequency:
                         oscillator->frequencyEnvelope = points;
                         break;
-                case GeonkickApi::EnvelopeType::PitchShift:
+                case DspProxy::EnvelopeType::PitchShift:
                         oscillator->pitchShiftEnvelope = points;
                         break;
-                case GeonkickApi::EnvelopeType::NoiseDensity:
+                case DspProxy::EnvelopeType::NoiseDensity:
                         oscillator->noiseDensityEnvelope = points;
                         break;
-                case GeonkickApi::EnvelopeType::FilterCutOff:
+                case DspProxy::EnvelopeType::FilterCutOff:
                         oscillator->filterCutOffEnvelope = points;
                         break;
-		case GeonkickApi::EnvelopeType::FilterQFactor:
+		case DspProxy::EnvelopeType::FilterQFactor:
                         oscillator->filterQFactorEnvelope = points;
                         break;
-                case GeonkickApi::EnvelopeType::DistortionDrive:
+                case DspProxy::EnvelopeType::DistortionDrive:
                         oscillator->distortion.driveEnvelope = points;
                         break;
                 default:
@@ -785,18 +812,18 @@ void PercussionState::setOscillatorEnvelopePoints(int index,
 }
 
 void PercussionState::setOscillatorEnvelopeApplyType(int index,
-						     GeonkickApi::EnvelopeType envelopeType,
-						     GeonkickApi::EnvelopeApplyType applyType)
+						     DspProxy::EnvelopeType envelopeType,
+						     DspProxy::EnvelopeApplyType applyType)
 {
         auto oscillator = getOscillator(index);
         if (!oscillator)
                 return;
 
 	switch (envelopeType) {
-	case GeonkickApi::EnvelopeType::Frequency:
+	case DspProxy::EnvelopeType::Frequency:
 		oscillator->frequencyEnvelopeApplyType = applyType;
 		break;
-	case GeonkickApi::EnvelopeType::FilterCutOff:
+	case DspProxy::EnvelopeType::FilterCutOff:
 		oscillator->cutOffEnvelopeApplyType = applyType;
 		break;
 	default:
@@ -804,21 +831,21 @@ void PercussionState::setOscillatorEnvelopeApplyType(int index,
 	}
 }
 
-GeonkickApi::EnvelopeApplyType PercussionState::getOscillatorEnvelopeApplyType(int index,
-									       GeonkickApi::EnvelopeType envelope) const
+DspProxy::EnvelopeApplyType PercussionState::getOscillatorEnvelopeApplyType(int index,
+									       DspProxy::EnvelopeType envelope) const
 {
         auto oscillator = getConstOscillator(index);
         if (!oscillator)
-                return GeonkickApi::EnvelopeApplyType::Linear;
+                return DspProxy::EnvelopeApplyType::Linear;
 
 	switch (envelope) {
-	case GeonkickApi::EnvelopeType::Frequency:
+	case DspProxy::EnvelopeType::Frequency:
 		return oscillator->frequencyEnvelopeApplyType;
 		break;
-	case GeonkickApi::EnvelopeType::FilterCutOff:
+	case DspProxy::EnvelopeType::FilterCutOff:
 		return oscillator->cutOffEnvelopeApplyType;
 	default:
-		return GeonkickApi::EnvelopeApplyType::Linear;
+		return DspProxy::EnvelopeApplyType::Linear;
 	}
 }
 
@@ -862,13 +889,13 @@ bool PercussionState::isOscillatorEnabled(int index) const
         return false;
 }
 
-GeonkickApi::FunctionType PercussionState::oscillatorFunction(int index) const
+DspProxy::FunctionType PercussionState::oscillatorFunction(int index) const
 {
         auto oscillator = getConstOscillator(index);
         if (oscillator)
                 return oscillator->function;
 
-        return GeonkickApi::FunctionType::Sine;
+        return DspProxy::FunctionType::Sine;
 }
 
 double PercussionState::oscillatorPhase(int index) const
@@ -924,12 +951,12 @@ bool PercussionState::isOscillatorFilterEnabled(int index) const
         return false;
 }
 
-GeonkickApi::FilterType PercussionState::oscillatorFilterType(int index) const
+DspProxy::FilterType PercussionState::oscillatorFilterType(int index) const
 {
         auto oscillator = getConstOscillator(index);
         if (oscillator)
                 return oscillator->filterType;
-        return GeonkickApi::FilterType::LowPass;
+        return DspProxy::FilterType::LowPass;
 }
 
 double PercussionState::oscillatorFilterCutOffFreq(int index) const
@@ -949,23 +976,23 @@ double PercussionState::oscillatorFilterFactor(int index) const
 }
 
 std::vector<EnvelopePoint>
-PercussionState::oscillatorEnvelopePoints(int index, GeonkickApi::EnvelopeType type) const
+PercussionState::oscillatorEnvelopePoints(int index, DspProxy::EnvelopeType type) const
 {
         if (auto oscillator = getConstOscillator(index); oscillator) {
                 switch (type) {
-                case GeonkickApi::EnvelopeType::Amplitude:
+                case DspProxy::EnvelopeType::Amplitude:
                         return oscillator->amplitudeEnvelope;
-                case GeonkickApi::EnvelopeType::Frequency:
+                case DspProxy::EnvelopeType::Frequency:
                         return oscillator->frequencyEnvelope;
-                case GeonkickApi::EnvelopeType::PitchShift:
+                case DspProxy::EnvelopeType::PitchShift:
                         return oscillator->pitchShiftEnvelope;
-                case GeonkickApi::EnvelopeType::NoiseDensity:
+                case DspProxy::EnvelopeType::NoiseDensity:
                         return oscillator->noiseDensityEnvelope;
-                case GeonkickApi::EnvelopeType::FilterCutOff:
+                case DspProxy::EnvelopeType::FilterCutOff:
                         return oscillator->filterCutOffEnvelope;
-		case GeonkickApi::EnvelopeType::FilterQFactor:
+		case DspProxy::EnvelopeType::FilterQFactor:
                         return oscillator->filterQFactorEnvelope;
-                case GeonkickApi::EnvelopeType::DistortionDrive:
+                case DspProxy::EnvelopeType::DistortionDrive:
                         return oscillator->distortion.driveEnvelope;
                 default:
                         return {};
@@ -1116,7 +1143,7 @@ void PercussionState::envelopeToJson(std::ostringstream &jsonStream,
                                      const std::string &envName,
                                      double amplitude,
                                      const std::vector<EnvelopePoint> &envelope,
- 				     GeonkickApi::EnvelopeApplyType applyType)
+ 				     DspProxy::EnvelopeApplyType applyType)
 {
         jsonStream << "\"" << envName << "\": {" << std::endl;
         jsonStream << "\"amplitude\": " << amplitude << ", " << std::endl;
@@ -1142,7 +1169,7 @@ void PercussionState::oscJson(std::ostringstream &jsonStream) const
                 jsonStream << "\"enabled\": " << (val.second.isEnabled ? "true" : "false") << ", " << std::endl;
                 jsonStream << "\"is_fm\": " << (val.second.isFm ? "true" : "false") << ", " << std::endl;
                 jsonStream << "\"fm_k\": " << 10.0 << ", " << std::endl;
-                if (val.second.function == GeonkickApi::FunctionType::Sample && !val.second.sample.empty())
+                if (val.second.function == DspProxy::FunctionType::Sample && !val.second.sample.empty())
                         jsonStream <<  "\"sample\": \"" << toBase64F(val.second.sample) << "\"," << std::endl;
                 jsonStream <<  "\"function\": " << static_cast<int>(val.second.function) << "," << std::endl;
                 jsonStream <<  "\"phase\": "
@@ -1252,7 +1279,7 @@ void PercussionState::kickJson(std::ostringstream &jsonStream) const
         jsonStream << "\"ampl_env\": {" << std::endl;
         jsonStream << "\"amplitude\": " << getKickAmplitude() << ", " << std::endl;
         jsonStream << "\"length\": " << getKickLength() << ", " << std::endl;
-        auto points = getKickEnvelopePoints(GeonkickApi::EnvelopeType::Amplitude);
+        auto points = getKickEnvelopePoints(DspProxy::EnvelopeType::Amplitude);
         jsonStream << "\"points\": [";
         first = true;
         for (const auto &point: points) {
@@ -1274,10 +1301,10 @@ void PercussionState::kickJson(std::ostringstream &jsonStream) const
         jsonStream << "\"cutoff\": "
                    << getKickFilterFrequency() << ", " << std::endl;
 	jsonStream << "\"apply_type\": "
-                   << static_cast<int>(getKickEnvelopeApplyType(GeonkickApi::EnvelopeType::FilterCutOff)) << ", " << std::endl;
+                   << static_cast<int>(getKickEnvelopeApplyType(DspProxy::EnvelopeType::FilterCutOff)) << ", " << std::endl;
         jsonStream << "\"factor\": "
                    << getKickFilterQFactor() << ", " << std::endl;
-        points = getKickEnvelopePoints(GeonkickApi::EnvelopeType::FilterCutOff);
+        points = getKickEnvelopePoints(DspProxy::EnvelopeType::FilterCutOff);
         jsonStream << "\"cutoff_env\": [";
         first = true;
         for (const auto &point: points) {
@@ -1290,7 +1317,7 @@ void PercussionState::kickJson(std::ostringstream &jsonStream) const
                            << "," << (point.isControlPoint() ? "true" : "false") << "]";
         }
         jsonStream << "]," << std::endl; // points
-	points = getKickEnvelopePoints(GeonkickApi::EnvelopeType::FilterQFactor);
+	points = getKickEnvelopePoints(DspProxy::EnvelopeType::FilterQFactor);
         jsonStream << "\"qfactor_env\": [";
         first = true;
         for (const auto &point: points) {
@@ -1305,17 +1332,19 @@ void PercussionState::kickJson(std::ostringstream &jsonStream) const
         jsonStream << "]" << std::endl; // points
         jsonStream << "}, " << std::endl;  // filter;
         instrumentDistortion.toJson(jsonStream);
+        jsonStream << "," << std::endl;
+        instrumentHumanizer.toJson(jsonStream);
         jsonStream << "}" << std::endl; // kick
 }
 
-void PercussionState::setLayerEnabled(GeonkickApi::Layer layer, bool b)
+void PercussionState::setLayerEnabled(DspProxy::Layer layer, bool b)
 {
         auto index = static_cast<decltype(layers.size())>(layer);
         if (index >= 0 && index < layers.size())
                 layers[index] = b;
 }
 
-bool PercussionState::isLayerEnabled(GeonkickApi::Layer layer) const
+bool PercussionState::isLayerEnabled(DspProxy::Layer layer) const
 {
         auto index = static_cast<decltype(layers.size())>(layer);
         if (index >= 0 && index < layers.size())
@@ -1324,19 +1353,19 @@ bool PercussionState::isLayerEnabled(GeonkickApi::Layer layer) const
                 return false;
 }
 
-void PercussionState::setCurrentLayer(GeonkickApi::Layer layer)
+void PercussionState::setCurrentLayer(DspProxy::Layer layer)
 {
         currentLayer = layer;
 }
 
-void PercussionState::setLayerAmplitude(GeonkickApi::Layer layer, double amplitude)
+void PercussionState::setLayerAmplitude(DspProxy::Layer layer, double amplitude)
 {
         auto index = static_cast<decltype(layersAmplitude.size())>(layer);
         if (index >= 0 && index < layersAmplitude.size())
                 layersAmplitude[index] = amplitude;
 }
 
-double PercussionState::getLayerAmplitude(GeonkickApi::Layer layer) const
+double PercussionState::getLayerAmplitude(DspProxy::Layer layer) const
 {
         auto index = static_cast<decltype(layersAmplitude.size())>(layer);
         if (index >= 0 && index < layersAmplitude.size())
@@ -1401,9 +1430,40 @@ std::vector<float> PercussionState::getOscillatorSample(int oscillatorIndex) con
         return oscillator->sample;
 }
 
-GeonkickApi::EnvelopeApplyType PercussionState::getApplyTypeFromObj(const rapidjson::Value &value) const
+DspProxy::EnvelopeApplyType PercussionState::getApplyTypeFromObj(const rapidjson::Value &value) const
 {
 	if (value.IsInt())
-		return static_cast<GeonkickApi::EnvelopeApplyType>(value.GetInt());
-	return GeonkickApi::EnvelopeApplyType::Linear;
+		return static_cast<DspProxy::EnvelopeApplyType>(value.GetInt());
+	return DspProxy::EnvelopeApplyType::Linear;
 }
+
+void PercussionState::humanizerEnable(bool b)
+{
+        instrumentHumanizer.enabled = b;
+}
+
+bool PercussionState::humanizerIsEnabled() const
+{
+        return instrumentHumanizer.enabled;
+}
+
+void PercussionState::humanizerSetVelocity(double percent)
+{
+        instrumentHumanizer.velocity = percent;
+}
+
+double PercussionState::humanizerGetVelocity() const
+{
+        return instrumentHumanizer.velocity;
+}
+
+void PercussionState::humanizerSetTiming(double time)
+{
+        instrumentHumanizer.timing = time;
+}
+
+double PercussionState::humanizerGetTiming() const
+{
+        return instrumentHumanizer.timing;
+}
+

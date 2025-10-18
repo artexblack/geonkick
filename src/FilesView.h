@@ -1,6 +1,6 @@
 /**
  * File name: FilesView.h
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2019 Iurie Nistor
  *

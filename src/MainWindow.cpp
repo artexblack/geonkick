@@ -1,7 +1,7 @@
 
 /**
  * File name: MainWindow.cpp
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *
@@ -33,8 +33,8 @@
 #include "Sidebar.h"
 #include "limiter.h"
 #include "export_widget.h"
-#include "geonkick_api.h"
-#include "percussion_state.h"
+#include "DspProxy.h"
+#include "InstrumentState.h"
 #include "ViewState.h"
 #include "UiSettings.h"
 #include "GeonkickConfig.h"
@@ -48,51 +48,51 @@ constexpr int MAIN_WINDOW_HEIGHT = 690;
 constexpr int MAIN_WINDOW_HEIGHT = 715;
 #endif // GEONKICK_SINGLE
 
-MainWindow::MainWindow(RkMain& app, GeonkickApi *api, const std::string &preset)
+MainWindow::MainWindow(RkMain& app, DspProxy *dsp, const std::string &preset)
         : GeonkickWidget(app)
-        , geonkickApi{api}
+        , dspProxy{dsp}
         , topBar{nullptr}
         , envelopeWidget{nullptr}
         , presetName{preset}
         , limiterWidget{nullptr}
-        , geonkickModel{new GeonkickModel(this, geonkickApi)}
+        , geonkickModel{new GeonkickModel(this, dspProxy)}
 {
         setTitle(Geonkick::applicationName);
-        setScaleFactor(geonkickApi->getScaleFactor());
+        setScaleFactor(dspProxy->getScaleFactor());
         createViewState();
         setFixedSize(MAIN_WINDOW_WIDTH + (GeonkickConfig().isShowSidebar() ? 313 : 0),
                      MAIN_WINDOW_HEIGHT);
-        geonkickApi->registerCallbacks(true);
-        RK_ACT_BIND(geonkickApi, stateChanged, RK_ACT_ARGS(), this, updateGui());
+        dspProxy->registerCallbacks(true);
+        RK_ACT_BIND(dspProxy, stateChanged, RK_ACT_ARGS(), this, updateGui());
         createShortcuts();
 }
 
-MainWindow::MainWindow(RkMain& app, GeonkickApi *api, const RkNativeWindowInfo &info)
+MainWindow::MainWindow(RkMain& app, DspProxy *dsp, const RkNativeWindowInfo &info)
         : GeonkickWidget(app, info)
-        , geonkickApi{api}
+        , dspProxy{dsp}
         , topBar{nullptr}
         , envelopeWidget{nullptr}
         , presetName{std::string()}
         , limiterWidget{nullptr}
-        , geonkickModel{new GeonkickModel(this, geonkickApi)}
+        , geonkickModel{new GeonkickModel(this, dspProxy)}
 {
         setTitle(Geonkick::applicationName);
-        setScaleFactor(geonkickApi->getScaleFactor());
+        setScaleFactor(dspProxy->getScaleFactor());
         createViewState();
         setFixedSize(MAIN_WINDOW_WIDTH + (GeonkickConfig().isShowSidebar() ? 313 : 0),
                      MAIN_WINDOW_HEIGHT);
-        geonkickApi->registerCallbacks(true);
-        RK_ACT_BIND(geonkickApi, stateChanged, RK_ACT_ARGS(), this, updateGui());
+        dspProxy->registerCallbacks(true);
+        RK_ACT_BIND(dspProxy, stateChanged, RK_ACT_ARGS(), this, updateGui());
         createShortcuts();
 }
 
 MainWindow::~MainWindow()
 {
-        if (geonkickApi) {
-                geonkickApi->registerCallbacks(false);
-                geonkickApi->setEventQueue(nullptr);
-                if (geonkickApi->isStandalone())
-                        delete geonkickApi;
+        if (dspProxy) {
+                dspProxy->registerCallbacks(false);
+                dspProxy->setEventQueue(nullptr);
+                if (dspProxy->isStandalone())
+                        delete dspProxy;
         }
 }
 
@@ -100,15 +100,15 @@ void MainWindow::createViewState()
 {
         auto viewState = new ViewState(this);
         viewState->setName("ViewState");
-        UiSettings *uiSettings = geonkickApi->getUiSettings();
+        UiSettings *uiSettings = dspProxy->getUiSettings();
         viewState->setMainView(uiSettings->getMainView());
         viewState->setSamplesBrowserPath(uiSettings->samplesBrowserPath());
         RK_ACT_BIND(viewState, mainViewChanged,
                     RK_ACT_ARGS(ViewState::View view),
-                    geonkickApi, getUiSettings()->setMainView(view));
+                    dspProxy, getUiSettings()->setMainView(view));
         RK_ACT_BIND(viewState, samplesBrowserPathChanged,
                     RK_ACT_ARGS(const std::string &path),
-                    geonkickApi, getUiSettings()->setSamplesBrowserPath(path));
+                    dspProxy, getUiSettings()->setSamplesBrowserPath(path));
         setViewState(viewState);
 }
 
@@ -147,7 +147,7 @@ void MainWindow::createShortcuts()
 
 bool MainWindow::init(void)
 {
-        if (geonkickApi->isStandalone() && !geonkickApi->isJackEnabled()) {
+        if (dspProxy->isStandalone() && !dspProxy->isJackEnabled()) {
                 GEONKICK_LOG_INFO("Jack is not installed or not running. "
                                   << "There is a need for jack server running "
                                   << "in order to have audio output.");
@@ -159,8 +159,8 @@ bool MainWindow::init(void)
         RK_ACT_BIND(topBar, resetToDefault, RK_ACT_ARGS(),
                     this, resetToDefault());
         RK_ACT_BIND(topBar, layerSelected,
-                    RK_ACT_ARGS(GeonkickApi::Layer layer, bool b),
-                    geonkickApi, enbaleLayer(layer, b));
+                    RK_ACT_ARGS(DspProxy::Layer layer, bool b),
+                    dspProxy, enbaleLayer(layer, b));
 
         // Create Sidebar
         if (GeonkickConfig().isShowSidebar()) {
@@ -177,7 +177,7 @@ bool MainWindow::init(void)
 
         RK_ACT_BIND(this, updateGui, RK_ACT_ARGS(), envelopeWidget, updateGui());
         RK_ACT_BIND(envelopeWidget, requestUpdateGui, RK_ACT_ARGS(), this, updateGui());
-        limiterWidget = new Limiter(geonkickApi, this);
+        limiterWidget = new Limiter(dspProxy, this);
         limiterWidget->setPosition(envelopeWidget->x() + envelopeWidget->width() + 8,
                                    envelopeWidget->y());
         RK_ACT_BIND(this, updateGui, RK_ACT_ARGS(), limiterWidget, onUpdateLimiter());
@@ -197,9 +197,9 @@ bool MainWindow::init(void)
                     updatePercussion(geonkickModel->getKitModel()->selectedPercussion()));
 
         RK_ACT_BIND(this, updateGui, RK_ACT_ARGS(), controlAreaWidget, updateGui());
-        if (geonkickApi->isStandalone() && !presetName.empty())
+        if (dspProxy->isStandalone() && !presetName.empty())
                 openPreset(presetName);
-        topBar->setPresetName(geonkickApi->getPercussionName(geonkickApi->currentPercussion()));
+        topBar->setPresetName(dspProxy->getPercussionName(dspProxy->currentPercussion()));
         updateGui();
         show();
         return true;
@@ -233,15 +233,15 @@ void MainWindow::openPreset(const std::string &fileName)
 
         std::string fileData((std::istreambuf_iterator<char>(file)),
                              (std::istreambuf_iterator<char>()));
-        auto state = geonkickApi->getDefaultPercussionState();
+        auto state = dspProxy->getDefaultPercussionState();
         state->loadData(fileData);
         if (state->getName().empty() || state->getName() == "Default")
                 state->setName(filePath.stem().string());
-        state->setId(geonkickApi->currentPercussion());
-        geonkickApi->setPercussionState(state);
-        action geonkickApi->percussionUpdated(state->getId());
+        state->setId(dspProxy->currentPercussion());
+        dspProxy->setPercussionState(state);
+        action dspProxy->instrumentUpdated(state->getId());
         file.close();
-        geonkickApi->setCurrentWorkingPath("OpenPreset",
+        dspProxy->setCurrentWorkingPath("OpenPreset",
                                            filePath.has_parent_path() ? filePath.parent_path().string() : filePath.string());
         updateGui();
 }
@@ -251,25 +251,25 @@ void MainWindow::shortcutEvent(RkKeyEvent *event)
         if (event->type() == RkEvent::Type::KeyPressed) {
                 if (event->modifiers() & static_cast<int>(Rk::KeyModifiers::Control)
                     && (event->key() == Rk::Key::Key_k || event->key() == Rk::Key::Key_K)) {
-                        geonkickApi->playKick();
+                        dspProxy->playKick();
                 } else if (event->modifiers() & static_cast<int>(Rk::KeyModifiers::Control)
                            && (event->key() == Rk::Key::Key_r || event->key() == Rk::Key::Key_R)) {
                         resetToDefault();
                 } else if ((event->modifiers() & static_cast<int>(Rk::KeyModifiers::Control))
                            && (event->key() == Rk::Key::Key_c || event->key() == Rk::Key::Key_C)) {
-                        geonkickApi->copyToClipboard();
+                        dspProxy->copyToClipboard();
                 } else if ((event->modifiers() & static_cast<int>(Rk::KeyModifiers::Control))
                            && (event->key() == Rk::Key::Key_v || event->key() == Rk::Key::Key_V)) {
-                        geonkickApi->pasteFromClipboard();
-                        geonkickApi->notifyPercussionUpdated(geonkickApi->currentPercussion());
+                        dspProxy->pasteFromClipboard();
+                        dspProxy->notifyPercussionUpdated(dspProxy->currentPercussion());
                         updateGui();
                 } else if ((event->modifiers() & static_cast<int>(Rk::KeyModifiers::Control))
                            && (event->key() == Rk::Key::Key_F || event->key() == Rk::Key::Key_f)) {
-                        geonkickApi->setScaleFactor((geonkickApi->getScaleFactor() + 0.5 > 2.1) ? 1 : scaleFactor() + 0.5);
-                        setScaleFactor(geonkickApi->getScaleFactor());
+                        dspProxy->setScaleFactor((dspProxy->getScaleFactor() + 0.5 > 2.1) ? 1 : scaleFactor() + 0.5);
+                        setScaleFactor(dspProxy->getScaleFactor());
                         setFixedSize(MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT);
                         updateGui();
-                        action onScaleFactor(geonkickApi->getScaleFactor());
+                        action onScaleFactor(dspProxy->getScaleFactor());
                 }
 
                 if (event->modifiers() & static_cast<int>(Rk::KeyModifiers::Control_Left))
@@ -290,14 +290,14 @@ void MainWindow::shortcutEvent(RkKeyEvent *event)
 
 void MainWindow::resetToDefault()
 {
-        auto currId = geonkickApi->currentPercussion();
-        auto state = geonkickApi->getDefaultPercussionState();
+        auto currId = dspProxy->currentPercussion();
+        auto state = dspProxy->getDefaultPercussionState();
         state->setId(currId);
-        state->setName(geonkickApi->getPercussionName(currId));
-        state->setPlayingKey(geonkickApi->getPercussionPlayingKey(currId));
-        state->setChannel(geonkickApi->getPercussionChannel(currId));
-        geonkickApi->setPercussionState(state);
-        geonkickApi->notifyPercussionUpdated(geonkickApi->currentPercussion());
+        state->setName(dspProxy->getPercussionName(currId));
+        state->setPlayingKey(dspProxy->getPercussionPlayingKey(currId));
+        state->setChannel(dspProxy->getPercussionChannel(currId));
+        dspProxy->setPercussionState(state);
+        dspProxy->notifyPercussionUpdated(dspProxy->currentPercussion());
         updateGui();
 }
 
@@ -329,8 +329,8 @@ void MainWindow::setSample(const std::string &file)
         auto osc = envelopeWidget->getCurrentOscillator();
         if (osc) {
                 osc->setFunction(OscillatorModel::FunctionType::Sample);
-                geonkickApi->setOscillatorSample(file, osc->index());
-                geonkickApi->notifyPercussionUpdated(geonkickApi->currentPercussion());
+                dspProxy->setOscillatorSample(file, osc->index());
+                dspProxy->notifyPercussionUpdated(dspProxy->currentPercussion());
                 updateGui();
         }
 }

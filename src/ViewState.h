@@ -1,6 +1,6 @@
 /**
  * File name: ViewState.h
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2020 Iurie Nistor 
  *
@@ -25,7 +25,7 @@
 #define GEONGKICK_VIEW_STATE_H
 
 #include "globals.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 #include "envelope.h"
 
 #include "RkObject.h"
@@ -39,7 +39,7 @@ class ViewState: public RkObject {
                 Samples  = 3,
         };
 
-        using Oscillator = GeonkickApi::OscillatorType;
+        using Oscillator = DspProxy::OscillatorType;
 
         ViewState(RkObject *parent);
         RK_DECL_ACT(mainViewChanged,

@@ -1,6 +1,6 @@
 /**
  * File name: general_envelope.h
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *
@@ -27,13 +27,13 @@
 #include "envelope.h"
 
 class Oscillator;
-class GeonkickApi;
+class DspProxy;
 
 class GeneralEnvelope: public Envelope
 {
  public:
 
-  GeneralEnvelope(GeonkickApi *api, const RkRect &area);
+  GeneralEnvelope(DspProxy *dsp, const RkRect &area);
   double envelopeLength(void) const override;
   void setEnvelopeLengh(double len) override;
   void updateEnvelope() override;
@@ -46,7 +46,7 @@ class GeneralEnvelope: public Envelope
   double envelopeAmplitude(void) const override;
 
  private:
-          GeonkickApi *geonkickApi;
+          DspProxy *dspProxy;
 };
 
 #endif

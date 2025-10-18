@@ -25,7 +25,7 @@
 #define GEONKICK_MODEL_H
 
 #include "globals.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 
 #include "RkObject.h"
 
@@ -39,9 +39,9 @@ class GeonkickModel : public RkObject {
                 SingleInstrument,
                 MultiInstrument,
         };
-        using InstanceType = GeonkickApi::InstanceType;
-        explicit GeonkickModel(RkObject* parent, GeonkickApi *api);
-        GeonkickApi* api() const;
+        using InstanceType = DspProxy::InstanceType;
+        explicit GeonkickModel(RkObject* parent, DspProxy *dsp);
+        DspProxy* getDspProxy() const;
         KitModel* getKitModel() const;
         PresetBrowserModel* getPresetsModel() const;
         const std::vector<OscillatorModel*>& getOscillatorModels() const;
@@ -50,7 +50,7 @@ class GeonkickModel : public RkObject {
         bool isBasic() const;
 
  private:
-        GeonkickApi *geonkickApi;
+        DspProxy *dspProxy;
         std::vector<OscillatorModel*> oscillatorModels;
         KitModel *kitModel;
         PresetBrowserModel* presetModel;

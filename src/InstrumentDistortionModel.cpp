@@ -22,70 +22,70 @@
  */
 
 #include "InstrumentDistortionModel.h"
-#include "percussion_model.h"
+#include "InstrumentModel.h"
 #include "kit_model.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 
 InstrumentDistortionModel::InstrumentDistortionModel(PercussionModel *parent)
         : DistortionModel(parent)
-        , geonkickApi{parent->parentModel()->api()}
+        , dspProxy{parent->parentModel()->getDspProxy()}
 {
 }
 
 void InstrumentDistortionModel::enable(bool b)
 {
-        if (geonkickApi->enableDistortion(b))
+        if (dspProxy->enableDistortion(b))
                 action enabled(b);
 }
 
 bool InstrumentDistortionModel::isEnabled() const
 {
-        return geonkickApi->isDistortionEnabled();
+        return dspProxy->isDistortionEnabled();
 }
 
 void InstrumentDistortionModel::setDistortionType(DistortionType type)
 {
-        if (geonkickApi->setDistortionType(type))
+        if (dspProxy->setDistortionType(type))
                 action distortionTypeChanged(type);
 }
 
 DistortionModel::DistortionType
 InstrumentDistortionModel::getDistortionType() const
 {
-        return geonkickApi->getDistortionType();
+        return dspProxy->getDistortionType();
 }
 
 void InstrumentDistortionModel::setInLimiter(double value)
 {
-        if (geonkickApi->setDistortionInLimiter(value))
+        if (dspProxy->setDistortionInLimiter(value))
                 action inLimiterChanged(value);
 }
 
 double InstrumentDistortionModel::getInLimiter() const
 {
-        return geonkickApi->getDistortionInLimiter();
+        return dspProxy->getDistortionInLimiter();
 }
 
 void InstrumentDistortionModel::setOutLimiter(double value)
 {
-        if (geonkickApi->setDistortionOutLimiter(value))
+        if (dspProxy->setDistortionOutLimiter(value))
                 action outLimiterChanged(value);
 }
 
 double InstrumentDistortionModel::getOutLimiter() const
 {
-        return geonkickApi->getDistortionOutLimiter();
+        return dspProxy->getDistortionOutLimiter();
 }
 
 void InstrumentDistortionModel::setDrive(double drive)
 {
-        if (geonkickApi->setDistortionDrive(drive))
+        if (dspProxy->setDistortionDrive(drive))
                 action driveChanged(drive);
 }
 
 double InstrumentDistortionModel::getDrive() const
 {
-        return geonkickApi->getDistortionDrive();
+        return dspProxy->getDistortionDrive();
 }
 
 Envelope::Category InstrumentDistortionModel::envelopeCategory() const

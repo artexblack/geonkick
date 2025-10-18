@@ -6,7 +6,7 @@ add_library(geonkick_lv2 SHARED
   ${GKICK_LV2_SOURCES})
 
 set_target_properties(geonkick_lv2 PROPERTIES PREFIX "")
-target_link_libraries(geonkick_lv2 PRIVATE  geonkick_common api_plugin redkite)
+target_link_libraries(geonkick_lv2 PRIVATE  geonkick_common dsp_plugin redkite)
 
 if (CMAKE_SYSTEM_NAME MATCHES Windows)
     target_link_libraries(geonkick_lv2 PRIVATE
@@ -44,7 +44,7 @@ else()
     target_link_libraries(geonkick_lv2 PRIVATE "-lX11 -lsndfile -lrt -lm -ldl -lpthread -lcairo")
 endif()
 
-add_dependencies(geonkick_lv2 api_plugin)
+add_dependencies(geonkick_lv2 dsp_plugin)
 add_dependencies(geonkick_lv2 redkite)
 
 add_library(geonkick_single_lv2 SHARED
@@ -52,7 +52,7 @@ add_library(geonkick_single_lv2 SHARED
     ${GKICK_COMMON_RESOURCES}
     ${GKICK_LV2_SOURCES})
 set_target_properties(geonkick_single_lv2 PROPERTIES PREFIX "")
-target_link_libraries(geonkick_single_lv2 PRIVATE  geonkick_common_single api_plugin_single redkite)
+target_link_libraries(geonkick_single_lv2 PRIVATE  geonkick_common_single dsp_plugin_single redkite)
 
 if (CMAKE_SYSTEM_NAME MATCHES Windows)
     target_link_libraries(geonkick_single_lv2 PRIVATE
@@ -90,8 +90,8 @@ else()
   target_link_libraries(geonkick_single_lv2 PRIVATE "-lX11 -lsndfile -lrt -lm -ldl -lpthread -lcairo")
 endif()
 
-add_dependencies(geonkick_single_lv2 api_plugin_single)
-target_compile_options(geonkick_single_lv2 PRIVATE PUBLIC ${GKICK_API_PLUGIN_SINGLE_FLAGS})
+add_dependencies(geonkick_single_lv2 dsp_plugin_single)
+target_compile_options(geonkick_single_lv2 PRIVATE PUBLIC ${GKICK_DSP_PLUGIN_SINGLE_FLAGS})
 install(TARGETS geonkick_single_lv2 DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/lv2/geonkick.lv2)
 install(TARGETS geonkick_lv2 DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/lv2/geonkick.lv2)
 if (CMAKE_SYSTEM_NAME MATCHES Windows)

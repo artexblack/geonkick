@@ -1,6 +1,6 @@
 /**
  * File name: MainWindow.h
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *
@@ -29,7 +29,7 @@
 #include "kit_model.h"
 
 class Oscillator;
-class GeonkickApi;
+class DspProxy;
 class TopBar;
 class EnvelopeWidget;
 class ControlArea;
@@ -40,10 +40,10 @@ class MainWindow : public GeonkickWidget
 {
  public:
       explicit MainWindow(RkMain& app,
-                          GeonkickApi *api,
+                          DspProxy *dsp,
                           const std::string &preset = std::string());
       explicit MainWindow(RkMain& app,
-                          GeonkickApi *api,
+                          DspProxy *dsp,
                           const RkNativeWindowInfo &info);
       ~MainWindow();
       bool init(void);
@@ -65,7 +65,7 @@ class MainWindow : public GeonkickWidget
  private:
       void createViewState();
       void createShortcuts();
-      GeonkickApi *geonkickApi;
+      DspProxy *dspProxy;
       TopBar *topBar;
       EnvelopeWidget* envelopeWidget;
       ControlArea* controlAreaWidget;

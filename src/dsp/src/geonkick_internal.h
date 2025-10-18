@@ -1,8 +1,8 @@
 /**
  * File name: geonkick_internal.h
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
- * Copyright (C) 2017 Iurie Nistor 
+ * Copyright (C) 2017 Iurie Nistor
  *
  * This file is part of Geonkick.
  *
@@ -28,6 +28,7 @@
 #include "synthesizer.h"
 #include "gkick_audio.h"
 #include "gkick_buffer.h"
+#include "qx_math.h"
 
 #include <pthread.h>
 #include <stdatomic.h>
@@ -51,7 +52,7 @@ struct geonkick {
         struct gkick_synth *synths[GEONKICK_MAX_INSTRUMENTS];
         struct gkick_audio *audio;
 
-        /* Current controllable percussion index. */
+        /* Current controllable instrument index. */
         _Atomic size_t per_index;
 
         /**
@@ -82,9 +83,9 @@ geonkick_usleep(unsigned long int usecods);
 int
 geonkick_rand(unsigned int *seed);
 
-#define min(a, b) ((a) < (b) ? (a) : (b))
+#define min(a, b) (((a) < (b)) ? (a) : (b))
 
-#define GKICK_CLAMP(value, min_v, max_v) \
-    ((value) < (min_v) ? (min_v) : ((value) > (max_v) ? (max_v) : (value)))
+#define GKICK_CLAMP(value, min_v, max_v)                                \
+    (((value) < (min_v)) ? (min_v) : (((value) > (max_v)) ? (max_v) : (value)))
 
 #endif // GEONKICK_INTERNAL_H

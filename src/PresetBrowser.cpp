@@ -1,6 +1,6 @@
 /**
  * File name: PresetBrowser.cpp
- * Project: Geonkick (A percussion synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2025 Iurie Nistor
  *
@@ -25,7 +25,7 @@
 #include "GeonkickConfig.h"
 #include "FileBrowser.h"
 #include "kit_model.h"
-#include "percussion_model.h"
+#include "InstrumentModel.h"
 #include "preset.h"
 #include "DesktopPaths.h"
 #include "PathBookmarksModel.h"

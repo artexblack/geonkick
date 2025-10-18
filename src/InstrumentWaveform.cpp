@@ -1,6 +1,6 @@
 /**
- * File name: kick_graph.cpp
- * Project: Geonkick (A kick synthesizer)
+ * File name: kick_waveform.cpp
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *
@@ -21,101 +21,101 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "kick_graph.h"
-#include "geonkick_api.h"
+#include "InstrumentWaveform.h"
+#include "DspProxy.h"
 #include "globals.h"
 #include "envelope.h"
 
 #include "RkEventQueue.h"
 #include "RkAction.h"
 
-KickGraph::KickGraph(RkObject *parent, GeonkickApi *api, const RkSize &size)
+InstrumentWaveform::InstrumentWaveform(RkObject *parent, DspProxy *dsp, const RkSize &size)
         : RkObject(parent)
-        , geonkickApi{api}
-        , graphThread{nullptr}
-        , graphSize{size}
+        , dspProxy{dsp}
+        , waveformThread{nullptr}
+        , waveformSize{size}
         , isRunning{true}
-        , redrawGraph{true}
+        , redrawWaveform{true}
         , currentEnvelope{nullptr}
 {
-        RK_ACT_BIND(geonkickApi, kickUpdated, RK_ACT_ARGS(), this, updateGraphBuffer());
-        graphThread = std::make_unique<std::thread>(&KickGraph::drawKickGraph, this);
+        RK_ACT_BIND(dspProxy, kickUpdated, RK_ACT_ARGS(), this, updateWaveformBuffer());
+        waveformThread = std::make_unique<std::thread>(&InstrumentWaveform::drawInstrumentWaveform, this);
 }
 
-KickGraph::~KickGraph()
+InstrumentWaveform::~InstrumentWaveform()
 {
         isRunning = false;
         threadConditionVar.notify_one();
-        graphThread->join();
+        waveformThread->join();
 }
 
-void KickGraph::setEnvelope(Envelope * envelope)
+void InstrumentWaveform::setEnvelope(Envelope * envelope)
 {
-        std::unique_lock<std::mutex> lock(graphMutex);
+        std::unique_lock<std::mutex> lock(waveformMutex);
         currentEnvelope = envelope;
-        updateGraph(false);
+        updateWaveform(false);
 }
 
-Envelope* KickGraph::getEnvelope() const
+Envelope* InstrumentWaveform::getEnvelope() const
 {
-        std::unique_lock<std::mutex> lock(graphMutex);
+        std::unique_lock<std::mutex> lock(waveformMutex);
         return currentEnvelope;
 }
 
-void KickGraph::updateGraph(bool lock)
+void InstrumentWaveform::updateWaveform(bool lock)
 {
         if (lock) {
-                std::unique_lock<std::mutex> lock(graphMutex);
-                redrawGraph = true;
+                std::unique_lock<std::mutex> lock(waveformMutex);
+                redrawWaveform = true;
         } else {
-                redrawGraph = true;
+                redrawWaveform = true;
         }
         threadConditionVar.notify_one();
 }
 
-void KickGraph::updateGraphBuffer()
+void InstrumentWaveform::updateWaveformBuffer()
 {
         {
-                std::unique_lock<std::mutex> lock(graphMutex);
-                kickBuffer = geonkickApi->getKickBuffer();
+                std::unique_lock<std::mutex> lock(waveformMutex);
+                kickBuffer = dspProxy->getKickBuffer();
                 if (kickBuffer.empty())
-                        geonkickApi->triggerSynthesis();
-                updateGraph(false);
+                        dspProxy->triggerSynthesis();
+                updateWaveform(false);
         }
         threadConditionVar.notify_one();
 }
 
-void KickGraph::drawKickGraph()
+void InstrumentWaveform::drawInstrumentWaveform()
 {
         while (isRunning) {
                 // Ignore too many updates. The last update will be processed.
                 std::this_thread::sleep_for(std::chrono::milliseconds(60));
-                std::unique_lock<std::mutex> lock(graphMutex);
-                if (!redrawGraph)
+                std::unique_lock<std::mutex> lock(waveformMutex);
+                if (!redrawWaveform)
                         threadConditionVar.wait(lock);
 
                 if (!isRunning)
                         break;
                 if (!currentEnvelope || kickBuffer.empty()) {
-                        redrawGraph = false;
+                        redrawWaveform = false;
                         continue;
                 }
                 const auto zoomFactor = currentEnvelope->getZoom();
                 const auto timeOrigin = currentEnvelope->getTimeOrigin();
                 // const auto envelopeAmplitude = currentEnvelope->envelopeAmplitude();
                 // const auto valueOrigin = currentEnvelope->getValueOrigin() / envelopeAmplitude;
-                auto graphImage = std::make_shared<RkImage>(graphSize.width(), graphSize.height());
-                RkPainter painter(graphImage.get());
+                auto waveformImage = std::make_shared<RkImage>(waveformSize.width(), waveformSize.height());
+                RkPainter painter(waveformImage.get());
                 RkPen pen(RkColor(59, 130, 4, 255));
                 painter.setPen(pen);
-                std::vector<RkRealPoint> graphPoints;
+                std::vector<RkRealPoint> waveformPoints;
                 const auto instrumentBuffer = kickBuffer;
-                graphPoints.reserve(instrumentBuffer.size());
+                waveformPoints.reserve(instrumentBuffer.size());
                 const auto buffSize = static_cast<double>(instrumentBuffer.size()) / zoomFactor;
-                const gkick_real k = static_cast<gkick_real>(graphSize.width()) / buffSize;
-                const size_t indexOffset = (instrumentBuffer.size() / geonkickApi->kickLength()) * timeOrigin;
-                const auto instrumentGraphSize = graphSize;
-                redrawGraph = false;
+                const gkick_real k = static_cast<gkick_real>(waveformSize.width()) / buffSize;
+                const size_t indexOffset = (instrumentBuffer.size() / dspProxy->kickLength()) * timeOrigin;
+                const auto instrumentWaveformSize = waveformSize;
+                redrawWaveform = false;
                 lock.unlock();
 
                 /**
@@ -125,22 +125,22 @@ void KickGraph::drawKickGraph()
                  * reduces and normalizes the size of the buffer.
                  */
                 RkRealPoint prev;
-                painter.translate({0, instrumentGraphSize.height()});
+                painter.translate({0, instrumentWaveformSize.height()});
                 for (decltype(instrumentBuffer.size()) i = indexOffset; i < instrumentBuffer.size(); i++) {
                         const double x = k * (i - indexOffset);
                         // TODO:
-                        // const double value = -zoomFactor * (instrumentGraphSize.height() / 2
-                        //                               + instrumentGraphSize.height() * (instrumentBuffer[i] / 2
+                        // const double value = -zoomFactor * (instrumentWaveformSize.height() / 2
+                        //                               + instrumentWaveformSize.height() * (instrumentBuffer[i] / 2
                         //                               - valueOrigin));
-                        const double value = -(instrumentGraphSize.height() / 2
-                                               + instrumentGraphSize.height() * (instrumentBuffer[i] / 2));
+                        const double value = -(instrumentWaveformSize.height() / 2
+                                               + instrumentWaveformSize.height() * (instrumentBuffer[i] / 2));
                         double y = value;
                         RkRealPoint p(k * (i - indexOffset), value);
                         if (p == prev)
                                 continue;
                         else
                                 prev = p;
-                        graphPoints.push_back(p);
+                        waveformPoints.push_back(p);
 
                         const int i0 = i;
                         double ymin, ymax;
@@ -148,23 +148,23 @@ void KickGraph::drawKickGraph()
                         while (++i < instrumentBuffer.size()) {
                                 if (x != k * (i - indexOffset))
                                         break;
-                                y = instrumentGraphSize.height() - value;
+                                y = instrumentWaveformSize.height() - value;
                                 ymin = std::min(ymin, y);
                                 ymax = std::min(ymax, y);
                         }
 
                         if (i - i0 > 4) {
-                                graphPoints.emplace_back(RkRealPoint(x, ymin));
-                                graphPoints.emplace_back(RkRealPoint(x, ymax));
-                                graphPoints.emplace_back(RkRealPoint(x, y));
+                                waveformPoints.emplace_back(RkRealPoint(x, ymin));
+                                waveformPoints.emplace_back(RkRealPoint(x, ymax));
+                                waveformPoints.emplace_back(RkRealPoint(x, y));
                         }
                 }
-                graphPoints.shrink_to_fit();
-                painter.drawPolyline(graphPoints);
+                waveformPoints.shrink_to_fit();
+                painter.drawPolyline(waveformPoints);
                 if (eventQueue()) {
                         auto act = std::make_unique<RkAction>(this);
-                        act->setCallback([this, graphImage](void){ graphUpdated(graphImage); });
-                        graphImage.reset();
+                        act->setCallback([this, waveformImage](void){ waveformUpdated(waveformImage); });
+                        waveformImage.reset();
                         eventQueue()->postAction(std::move(act));
                 }
         }

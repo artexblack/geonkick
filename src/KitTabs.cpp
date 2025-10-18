@@ -23,7 +23,7 @@
 
 #include "KitTabs.h"
 #include "kit_model.h"
-#include "percussion_model.h"
+#include "InstrumentModel.h"
 
 #include "RkContainer.h"
 #include "RkButton.h"
@@ -55,7 +55,7 @@ void KitTabs::updateView()
         for (auto &tab: tabsList)
                 delete tab;
         tabsList.clear();
-        for (const auto &per: kitModel->percussionModels()) {
+        for (const auto &per: kitModel->instrumentModels()) {
                 auto tab = createTabButton(per);
                 mainLayout->addWidget(tab);
                 mainLayout->addSpace(2);

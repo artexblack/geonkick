@@ -25,13 +25,13 @@
 #define DISTORTION_MODEL_H
 
 #include "AbstractModel.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 #include "envelope.h"
 
 class DistortionModel: public AbstractModel
 {
  public:
-        using DistortionType = GeonkickApi::DistortionType;
+        using DistortionType = DspProxy::DistortionType;
         explicit DistortionModel(RkObject *parent);
         virtual ~DistortionModel() = default;
         virtual void enable(bool b) = 0;

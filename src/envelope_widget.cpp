@@ -1,6 +1,6 @@
 /**
  * File name: envelope_widget.cpp
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *
@@ -29,6 +29,7 @@
 #include "ViewState.h"
 #include "GeonkickModel.h"
 #include "OscillatorModel.h"
+#include "GeonkickConfig.h"
 
 #include "RkContainer.h"
 #include "RkLabel.h"
@@ -40,21 +41,25 @@ RK_DECLARE_IMAGE_RC(layer2_env);
 RK_DECLARE_IMAGE_RC(layer2_env_active);
 RK_DECLARE_IMAGE_RC(layer3_env);
 RK_DECLARE_IMAGE_RC(layer3_env_active);
+RK_DECLARE_IMAGE_RC(bezier_mode_button);
+RK_DECLARE_IMAGE_RC(bezier_mode_button_on);
+RK_DECLARE_IMAGE_RC(bezier_mode_button_hover);
 
 EnvelopeWidget::EnvelopeWidget(GeonkickWidget *parent, GeonkickModel *model)
         : GeonkickWidget(parent)
         , drawArea{nullptr}
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
         , layer1Button{nullptr}
         , layer2Button{nullptr}
         , layer3Button{nullptr}
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
+        , bezierModeButton {nullptr}
         , geonkickModel{model}
-        , geonkickApi{geonkickModel->api()}
+        , dspProxy{geonkickModel->getDspProxy()}
         , oscillators{geonkickModel->getOscillatorModels()}
 {
         // Create drawing area.
-        drawArea = new EnvelopeWidgetDrawingArea(this, geonkickApi);
+        drawArea = new EnvelopeWidgetDrawingArea(this, dspProxy);
         auto rect = drawArea->getDrawingArea();
 
         // Oscillator1 envelope
@@ -79,13 +84,11 @@ EnvelopeWidget::EnvelopeWidget(GeonkickWidget *parent, GeonkickModel *model)
                         std::move(envelope)});
 
         // General envelope
-        auto generalEnvelope = std::make_unique<GeneralEnvelope>(geonkickApi, rect);
+        auto generalEnvelope = std::make_unique<GeneralEnvelope>(dspProxy, rect);
         generalEnvelope->setCategory(Envelope::Category::InstrumentGlobal);
         envelopes.insert({static_cast<int>(Envelope::Category::InstrumentGlobal),
                         std::move(generalEnvelope)});
-#ifndef GEONKICK_LIMITED_VERSION
         createButtomMenu();
-#endif // GEONKICK_LIMITED_VERSION
         showEnvelope(Envelope::Category::InstrumentGlobal, Envelope::Type::Amplitude);
         RK_ACT_BIND(viewState(), envelopeChanged,
                     RK_ACT_ARGS(Envelope::Category category, Envelope::Type envelope),
@@ -96,25 +99,54 @@ EnvelopeWidget::EnvelopeWidget(GeonkickWidget *parent, GeonkickModel *model)
         drawArea->show();
 }
 
-#ifndef GEONKICK_LIMITED_VERSION
 void EnvelopeWidget::createButtomMenu()
 {
         auto buttomAreaWidget = new GeonkickWidget(drawArea);
         buttomAreaWidget->setBackgroundColor(40, 40, 40);
-        buttomAreaWidget->setFixedSize(90, 20);
+#ifndef GEONKICK_BASIC_VERSION
+        buttomAreaWidget->setFixedSize(120, 20);
+#else
+        buttomAreaWidget->setFixedSize(25, 20);
+#endif  // GEONKICK_BASIC_VERSION
         buttomAreaWidget->setPosition(55 + drawArea->x(),
                                       drawArea->y() + drawArea->height() - buttomAreaWidget->height() - 6);
 
         auto menuContainer = new RkContainer(buttomAreaWidget);
+#ifndef GEONKICK_BASIC_VERSION
         createLayersButtons(buttomAreaWidget);
         menuContainer->addWidget(layer1Button);
         menuContainer->addSpace(5);
         menuContainer->addWidget(layer2Button);
         menuContainer->addSpace(5);
         menuContainer->addWidget(layer3Button);
+        menuContainer->addSpace(10);
+#endif // GEONKICK_BASIC_VERSION
+        createBezierModeControls(buttomAreaWidget, menuContainer);
         buttomAreaWidget->show();
 }
-#endif // GEONKICK_LIMITED_VERSION
+
+void EnvelopeWidget::createBezierModeControls(GeonkickWidget* widget, RkContainer *container)
+{
+        bezierModeButton = new GeonkickButton(widget);
+        bezierModeButton->setSize(24, 18);
+        bezierModeButton->setCheckable(true);
+        bezierModeButton->setPressed(GeonkickConfig().isBezierMode());
+        bezierModeButton->setImage(RK_RC_IMAGE(bezier_mode_button),
+                                  RkButton::State::Unpressed);
+        bezierModeButton->setImage(RK_RC_IMAGE(bezier_mode_button_on),
+                                  RkButton::State::Pressed);
+        bezierModeButton->setImage(RK_RC_IMAGE(bezier_mode_button_hover),
+                                  RkButton::State::UnpressedHover);
+        bezierModeButton->setImage(RK_RC_IMAGE(bezier_mode_button_hover),
+                                  RkButton::State::PressedHover);
+        RK_ACT_BIND(bezierModeButton,
+                    toggled,
+                    RK_ACT_ARGS(bool pressed),
+                    this,
+                    enableBezierMode(pressed));
+
+        container->addWidget(bezierModeButton);
+}
 
 void EnvelopeWidget::createPointInfoLabel()
 {
@@ -142,10 +174,10 @@ void EnvelopeWidget::createZoomInfoLabel()
                     zoomInfoLabel, setText("1:" + info));
 }
 
-void EnvelopeWidget::updateKickGraph(std::shared_ptr<RkImage> graphImage)
+void EnvelopeWidget::updateInstrumentWaveform(std::shared_ptr<RkImage> waveformImage)
 {
-        if (graphImage && !graphImage->isNull())
-                drawArea->updateKickGraph(graphImage);
+        if (waveformImage && !waveformImage->isNull())
+                drawArea->updateInstrumentWaveform(waveformImage);
 }
 
 Envelope* EnvelopeWidget::getEnvelope(Envelope::Category category)
@@ -168,7 +200,7 @@ void EnvelopeWidget::hideEnvelope(bool b)
         drawArea->setHideEnvelope(b);
 }
 
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
 void EnvelopeWidget::createLayersButtons(GeonkickWidget *buttomAreaWidget)
 {
         layer1Button = new GeonkickButton(buttomAreaWidget);
@@ -183,7 +215,7 @@ void EnvelopeWidget::createLayersButtons(GeonkickWidget *buttomAreaWidget)
         layer1Button->setCheckable(true);
         layer1Button->setPressed(true);
         RK_ACT_BIND(layer1Button, toggled, RK_ACT_ARGS(bool b),
-                    this, setLayer(GeonkickApi::Layer::Layer1));
+                    this, setLayer(DspProxy::Layer::Layer1));
 
         layer2Button = new GeonkickButton(buttomAreaWidget);
         layer2Button->setBackgroundColor(buttomAreaWidget->background());
@@ -196,7 +228,7 @@ void EnvelopeWidget::createLayersButtons(GeonkickWidget *buttomAreaWidget)
                                RkButton::State::UnpressedHover);
         layer2Button->setCheckable(true);
         RK_ACT_BIND(layer2Button, toggled, RK_ACT_ARGS(bool b),
-                    this, setLayer(GeonkickApi::Layer::Layer2));
+                    this, setLayer(DspProxy::Layer::Layer2));
 
         layer3Button = new GeonkickButton(buttomAreaWidget);
         layer3Button->setBackgroundColor(buttomAreaWidget->background());
@@ -209,18 +241,18 @@ void EnvelopeWidget::createLayersButtons(GeonkickWidget *buttomAreaWidget)
                                RkButton::State::UnpressedHover);
         layer3Button->setCheckable(true);
         RK_ACT_BIND(layer3Button, toggled, RK_ACT_ARGS(bool b),
-                    this, setLayer(GeonkickApi::Layer::Layer3));
+                    this, setLayer(DspProxy::Layer::Layer3));
 }
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
 
-void EnvelopeWidget::setLayer(GeonkickApi::Layer layer)
+void EnvelopeWidget::setLayer(DspProxy::Layer layer)
 {
-#ifndef GEONKICK_LIMITED_VERSION
-        layer1Button->setPressed(GeonkickApi::Layer::Layer1 == layer);
-        layer2Button->setPressed(GeonkickApi::Layer::Layer2 == layer);
-        layer3Button->setPressed(GeonkickApi::Layer::Layer3 == layer);
-#endif // GEONKICK_LIMITED_VERSION
-        geonkickApi->setLayer(layer);
+#ifndef GEONKICK_BASIC_VERSION
+        layer1Button->setPressed(DspProxy::Layer::Layer1 == layer);
+        layer2Button->setPressed(DspProxy::Layer::Layer2 == layer);
+        layer3Button->setPressed(DspProxy::Layer::Layer3 == layer);
+#endif // GEONKICK_BASIC_VERSION
+        dspProxy->setLayer(layer);
         action requestUpdateGui();
 }
 
@@ -241,4 +273,10 @@ OscillatorModel* EnvelopeWidget::getCurrentOscillator() const
 void EnvelopeWidget::setPointEditingMode(bool b)
 {
         drawArea->setPointEditingMode(b);
+}
+
+void EnvelopeWidget::enableBezierMode(bool b)
+{
+        GeonkickConfig().setBezierMode(b);
+        drawArea->setBezierMode(b);
 }

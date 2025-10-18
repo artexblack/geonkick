@@ -1,6 +1,6 @@
 /**
  * File name: GKickVstEditor.cpp
- * Project: Geonkick (A percussion synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2019 Iurie Nistor
  *
@@ -21,7 +21,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "geonkick_api.h"
+#include "DspProxy.h"
 #include "MainWindow.h"
 #include "GKickVstEditor.h"
 
@@ -44,11 +44,11 @@ GKickVstTimer::onTimer()
 
 #endif // GEONKICK_OS_GNU
 
-GKickVstEditor::GKickVstEditor(Vst::EditController *controller, GeonkickApi *api)
+GKickVstEditor::GKickVstEditor(Vst::EditController *controller, DspProxy *dsp)
         : Vst::EditorView(controller)
         , guiApp{nullptr}
         , mainWindow{nullptr}
-        , geonkickApi{api}
+        , dspProxy{dsp}
 #ifdef GEONKICK_OS_GNU
         , loopTimer{nullptr}
 #endif // GEONKICK_OS_GNU
@@ -69,7 +69,7 @@ GKickVstEditor::attached(void* parent, FIDString type)
         loopTimer = std::make_unique<GKickVstTimer>(guiApp.get());
 #endif // GEONKICK_OS_GNU
 
-        geonkickApi->setEventQueue(guiApp->eventQueue());
+        dspProxy->setEventQueue(guiApp->eventQueue());
 
 #ifdef GEONKICK_OS_WINDOWS
         auto info = rk_from_native_win(reinterpret_cast<HWND>(parent),
@@ -85,7 +85,7 @@ GKickVstEditor::attached(void* parent, FIDString type)
         auto info = rk_from_native_x11(xDisplay, screenNumber, reinterpret_cast<Window>(parent));
 #endif // GEONKICK_OS_GNU
 
-        mainWindow = new MainWindow(*guiApp.get(), geonkickApi, info);
+        mainWindow = new MainWindow(*guiApp.get(), dspProxy, info);
         mainWindow->show();
         if (!mainWindow->init()) {
                 GEONKICK_LOG_ERROR("can't init main window");
@@ -130,9 +130,9 @@ GKickVstEditor::getSize(ViewRect* newSize)
 
         auto winRect = MainWindow::getWindowSize();
         newSize->left   = 0;
-	newSize->right  = winRect.width() * geonkickApi->getScaleFactor();
+	newSize->right  = winRect.width() * dspProxy->getScaleFactor();
 	newSize->top    = 0;
-	newSize->bottom = winRect.height() * geonkickApi->getScaleFactor();
+	newSize->bottom = winRect.height() * dspProxy->getScaleFactor();
 	return kResultOk;
 }
 

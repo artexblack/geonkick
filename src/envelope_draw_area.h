@@ -1,6 +1,6 @@
 /**
  * File name: envelope_draw_area.h
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *
@@ -32,18 +32,18 @@
 #include "RkImage.h"
 
 class Envelope;
-class KickGraph;
+class InstrumentWaveform;
 class RkMouseEvent;
-class KickGraph;
-class GeonkickApi;
+class InstrumentWaveform;
+class DspProxy;
 
 class EnvelopeWidgetDrawingArea : public GeonkickWidget
 {
  public:
-   EnvelopeWidgetDrawingArea(GeonkickWidget *parent, GeonkickApi *api);
+   EnvelopeWidgetDrawingArea(GeonkickWidget *parent, DspProxy *dsp);
    Envelope* getEnvelope() const;
    const RkRect getDrawingArea();
-   void updateKickGraph(const std::shared_ptr<RkImage> &graphImage);
+   void updateInstrumentWaveform(const std::shared_ptr<RkImage> &waveformImage);
    bool isHideEnvelope() const;
    void setEnvelope(Envelope* envelope);
    void envelopeUpdated();
@@ -51,6 +51,8 @@ class EnvelopeWidgetDrawingArea : public GeonkickWidget
    void setPointEditingMode(bool b = true);
    void zoomIn();
    void zoomOut();
+   void setBezierMode(bool b);
+   bool isBezierMode() const;
    RK_DECL_ACT(isOverPoint,
                isOverPoint(const std::string info),
                RK_ARG_TYPE(const std::string),
@@ -71,16 +73,17 @@ class EnvelopeWidgetDrawingArea : public GeonkickWidget
    std::string getEnvStateText() const;
 
  private:
-   GeonkickApi* geonkickApi;
+   DspProxy* dspProxy;
    Envelope* currentEnvelope;
    RkRect drawingArea;
    RkPoint mousePoint;
    bool hideEnvelope;
-   std::shared_ptr<RkImage> kickGraphImage;
+   std::shared_ptr<RkImage> instrumentWaveformImage;
    RkImage envelopeImage;
-   KickGraph *kickGraphics;
+   InstrumentWaveform *instrumentWaveform;
    bool pointEditingMode;
    bool addAsControlPoint;
+   bool bezierMode;
 };
 
 #endif // ENVELOPE_DRAW_AREA_H

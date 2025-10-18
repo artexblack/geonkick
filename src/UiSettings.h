@@ -1,6 +1,6 @@
 /**
  * File name: UiSettings.h
- * Project: Geonkick (A percussion synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2020 Iurie Nistor 
  *
@@ -34,7 +34,7 @@
 class UiSettings {
  public:
         using View = ViewState::View;
-        using Oscillator = GeonkickApi::OscillatorType;
+        using Oscillator = DspProxy::OscillatorType;
 
         UiSettings();
         void fromJsonObject(const rapidjson::Value &obj);

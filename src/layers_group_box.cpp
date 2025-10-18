@@ -1,6 +1,6 @@
 /**
  * File name: layers_group_box.cpp
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2019 Iurie Nistor 
  *
@@ -24,19 +24,20 @@
 #include "layers_group_box.h"
 #include "geonkick_slider.h"
 #include "geonkick_button.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 
 #include "RkLabel.h"
 
 RK_DECLARE_IMAGE_RC(layers_mixer);
 
-LayersGroupBox::LayersGroupBox(GeonkickApi *api, GeonkickWidget *parent)
+LayersGroupBox::LayersGroupBox(DspProxy *dsp, GeonkickWidget *parent)
         : GeonkickGroupBox(parent)
-        , geonkickApi{api}
+        , dspProxy{dsp}
         , layerSliders{nullptr, nullptr, nullptr}
 {
         setFixedSize(110, 65);
         setBackgroundImage(RkImage(size(), RK_IMAGE_RC(layers_mixer)));
+
 
         int y = 23;
         for (auto i = 0; i < 3; i++) {
@@ -59,13 +60,13 @@ void LayersGroupBox::setLayerAmplitude(int layer, int val)
 {
         double logVal = -60 * (1.0 - (static_cast<double>(val) / 100));
         double amplitude = pow(10, logVal / 20);
-        geonkickApi->setLayerAmplitude(static_cast<GeonkickApi::Layer>(layer), amplitude);
+        dspProxy->setLayerAmplitude(static_cast<DspProxy::Layer>(layer), amplitude);
 }
 
 void LayersGroupBox::updateGui()
 {
         for (auto i = 0; i < 3; i++) {
-                double amplitude = geonkickApi->getLayerAmplitude(static_cast<GeonkickApi::Layer>(i));
+                double amplitude = dspProxy->getLayerAmplitude(static_cast<DspProxy::Layer>(i));
                 double logVal;
                 if (amplitude > 0)
                         logVal = 20 * log10(amplitude);

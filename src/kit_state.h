@@ -1,6 +1,6 @@
 /**
  * File name: kit_state.h
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2020 Iurie Nistor 
  *
@@ -43,15 +43,15 @@ class KitState {
         void setUrl(const std::string &url);
         std::string getUrl() const;
         std::string toJson() const;
-        void addPercussion(std::unique_ptr<PercussionState> percussion);
+        void addPercussion(std::unique_ptr<PercussionState> instrument);
         const PercussionState* getPercussion(size_t id) const;
-        const std::vector<std::unique_ptr<PercussionState>>& percussions() const;
+        const std::vector<std::unique_ptr<PercussionState>>& instruments() const;
 
  protected:
-        bool parsePercussions(const rapidjson::Value &percussionsArray);
+        bool parseInstruments(const rapidjson::Value &instrumentsArray);
 
  private:
-        std::vector<std::unique_ptr<PercussionState>> percussionsList;
+        std::vector<std::unique_ptr<PercussionState>> instrumentsList;
         int kitAppVersion;
         std::string kitName;
         std::string kitAuthor;

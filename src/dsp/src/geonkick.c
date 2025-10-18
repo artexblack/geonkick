@@ -41,6 +41,7 @@ geonkick_create(struct geonkick **kick, int sample_rate)
 	*kick = (struct geonkick*)calloc(1, sizeof(struct geonkick));
 	if (*kick == NULL)
 		return GEONKICK_ERROR_MEM_ALLOC;
+
 	strcpy((*kick)->name, "Geonkick");
 	(*kick)->sample_rate = sample_rate;
         (*kick)->synthesis_on = false;
@@ -71,7 +72,7 @@ geonkick_create(struct geonkick **kick, int sample_rate)
 
         for (size_t i = 0; i < GEONKICK_MAX_INSTRUMENTS; i++) {
                 gkick_synth_set_output((*kick)->synths[i], (*kick)->audio->audio_outputs[i]);
-                geonkick_set_percussion_channel(*kick, i, i % GEONKICK_MAX_CHANNELS);
+                geonkick_set_instrument_channel(*kick, i, i % GEONKICK_MAX_CHANNELS);
         }
 
         if (!geonkick_worker_created()) {
@@ -103,7 +104,6 @@ void geonkick_free(struct geonkick **kick)
                 geonkick_worker_remove_instance(*kick);
                 if (geonkick_worker_reference_count() == 0)
                         geonkick_worker_destroy();
-                gkick_log_debug("ref count: %d", geonkick_worker_reference_count());
                 for (size_t i = 0; i < GEONKICK_MAX_INSTRUMENTS; i++)
                         gkick_synth_free(&((*kick)->synths[i]));
                 gkick_audio_free(&((*kick)->audio));
@@ -1626,7 +1626,7 @@ geonkick_get_osc_sample(struct geonkick *kick,
 }
 
 enum geonkick_error
-geonkick_set_current_percussion(struct geonkick *kick,
+geonkick_set_current_instrument(struct geonkick *kick,
                                 size_t index)
 {
         if (kick == NULL || index >= GEONKICK_MAX_INSTRUMENTS) {
@@ -1640,11 +1640,11 @@ geonkick_set_current_percussion(struct geonkick *kick,
 }
 
 enum geonkick_error
-geonkick_get_current_percussion(struct geonkick *kick,
+geonkick_get_current_instrument(const struct geonkick *kick,
                                 size_t *index)
 {
         if (kick == NULL || index == NULL) {
-                gkick_log_error("wrong arguments");
+                gkick_log_error("wrong arguments %d, %d", kick, index);
                 return GEONKICK_ERROR;
         }
 
@@ -1662,10 +1662,10 @@ void geonkick_process(struct geonkick *kick)
 }
 
 /**
- * Finds the first unused/free percussion index.
+ * Finds the first unused/free instrument index.
  */
 enum geonkick_error
-geonkick_unused_percussion(struct geonkick *kick,
+geonkick_unused_instrument(struct geonkick *kick,
                            int *index)
 {
         if (kick == NULL || index == NULL) {
@@ -1684,7 +1684,7 @@ geonkick_unused_percussion(struct geonkick *kick,
 }
 
 enum geonkick_error
-geonkick_enable_percussion(struct geonkick *kick,
+geonkick_enable_instrument(struct geonkick *kick,
                            size_t index,
                            bool enable)
 {
@@ -1698,7 +1698,7 @@ geonkick_enable_percussion(struct geonkick *kick,
 }
 
 enum geonkick_error
-geonkick_is_percussion_enabled(struct geonkick *kick,
+geonkick_is_instrument_enabled(struct geonkick *kick,
                                size_t index,
                                bool *enable)
 {
@@ -1796,7 +1796,7 @@ geonkick_midi_channels_number(void)
 }
 
 enum geonkick_error
-geonkick_set_percussion_name(struct geonkick *kick,
+geonkick_set_instrument_name(struct geonkick *kick,
                              size_t id,
                              const char *name,
                              size_t size)
@@ -1818,7 +1818,7 @@ geonkick_set_percussion_name(struct geonkick *kick,
 }
 
 enum geonkick_error
-geonkick_get_percussion_name(struct geonkick *kick,
+geonkick_get_instrument_name(struct geonkick *kick,
                              size_t id,
                              char *name,
                              size_t size)
@@ -1852,7 +1852,7 @@ geonkick_instruments_number()
 }
 
 enum geonkick_error
-geonkick_set_percussion_channel(struct geonkick *kick,
+geonkick_set_instrument_channel(struct geonkick *kick,
                                 size_t id,
                                 size_t channel)
 {
@@ -1865,7 +1865,7 @@ geonkick_set_percussion_channel(struct geonkick *kick,
 }
 
 enum geonkick_error
-geonkick_get_percussion_channel(struct geonkick *kick,
+geonkick_get_instrument_channel(struct geonkick *kick,
                                 size_t id,
                                 size_t *channel)
 {
@@ -1878,7 +1878,7 @@ geonkick_get_percussion_channel(struct geonkick *kick,
 }
 
 enum geonkick_error
-geonkick_percussion_set_limiter(struct geonkick *kick,
+geonkick_instrument_set_limiter(struct geonkick *kick,
                                 size_t id,
                                 gkick_real val)
 {
@@ -1890,7 +1890,7 @@ geonkick_percussion_set_limiter(struct geonkick *kick,
 }
 
 enum geonkick_error
-geonkick_percussion_get_limiter(struct geonkick *kick,
+geonkick_instrument_get_limiter(struct geonkick *kick,
                                 size_t id,
                                 gkick_real *val)
 {
@@ -1902,7 +1902,7 @@ geonkick_percussion_get_limiter(struct geonkick *kick,
 }
 
 enum geonkick_error
-geonkick_percussion_mute(struct geonkick *kick,
+geonkick_instrument_mute(struct geonkick *kick,
                          size_t id,
                          bool b)
 {
@@ -1914,7 +1914,7 @@ geonkick_percussion_mute(struct geonkick *kick,
 }
 
 enum geonkick_error
-geonkick_percussion_is_muted(struct geonkick *kick,
+geonkick_instrument_is_muted(struct geonkick *kick,
                              size_t id,
                              bool *b)
 {
@@ -1926,7 +1926,7 @@ geonkick_percussion_is_muted(struct geonkick *kick,
 }
 
 enum geonkick_error
-geonkick_percussion_solo(struct geonkick *kick,
+geonkick_instrument_solo(struct geonkick *kick,
                          size_t id,
                          bool b)
 {
@@ -1938,7 +1938,7 @@ geonkick_percussion_solo(struct geonkick *kick,
 }
 
 enum geonkick_error
-geonkick_percussion_is_solo(struct geonkick *kick,
+geonkick_instrument_is_solo(struct geonkick *kick,
                             size_t id,
                             bool *b)
 {
@@ -1991,7 +1991,7 @@ geonkick_get_sample_preview_limiter(struct geonkick *kick, gkick_real *val)
 }
 
 enum geonkick_error
-geonkick_percussion_enable_note_off(struct geonkick *kick,
+geonkick_instrument_enable_note_off(struct geonkick *kick,
                                     size_t id,
                                     bool enable)
 {
@@ -1999,7 +1999,7 @@ geonkick_percussion_enable_note_off(struct geonkick *kick,
 }
 
 enum geonkick_error
-geonkick_percussion_note_off_enabled(struct geonkick *kick,
+geonkick_instrument_note_off_enabled(struct geonkick *kick,
                                      size_t id,
                                      bool *enabled)
 {
@@ -2042,3 +2042,92 @@ size_t geonkick_layers_number(void)
         return GKICK_OSC_GROUPS_NUMBER;
 }
 
+static struct gkick_humanizer_params* get_humanizer_params(struct geonkick *dsp)
+{
+        size_t index = 0;
+        enum geonkick_error res = geonkick_get_current_instrument(dsp, &index);
+        if (res != GEONKICK_OK)
+                return NULL;
+
+        struct gkick_audio_output *instrument = dsp->audio->audio_outputs[index];
+        struct gkick_humanizer_params *humanizer_params = &instrument->humanizer_params;
+        return &instrument->humanizer_params;
+}
+
+static const struct gkick_humanizer_params*
+get_humanizer_params_const(const struct geonkick *dsp)
+{
+        size_t index = 0;
+        enum geonkick_error res = geonkick_get_current_instrument(dsp, &index);
+        if (res != GEONKICK_OK)
+                return NULL;
+
+        const struct gkick_audio_output *instrument = dsp->audio->audio_outputs[index];
+        const struct gkick_humanizer_params *humanizer_params = &instrument->humanizer_params;
+        return &instrument->humanizer_params;
+}
+
+enum geonkick_error
+geonkick_humanizer_enable(struct geonkick *dsp, bool b)
+{
+        struct gkick_humanizer_params *params = get_humanizer_params(dsp);
+        if (params == NULL)
+                return GEONKICK_ERROR;
+
+        params->enabled = b;
+        return GEONKICK_OK;
+}
+
+bool geonkick_humanizer_is_enabled(const struct geonkick *dsp)
+{
+        const struct gkick_humanizer_params *params = get_humanizer_params_const(dsp);
+        if (params == NULL)
+                return false;
+
+        return params->enabled;
+}
+
+enum geonkick_error
+geonkick_humanizer_set_velocity(struct geonkick *dsp, float value)
+{
+        struct gkick_humanizer_params *params =  get_humanizer_params(dsp);
+        if (params == NULL)
+                return GEONKICK_ERROR;
+
+        params->velocity = value;
+        return GEONKICK_OK;
+}
+
+float geonkick_humanizer_get_velocity(const struct geonkick *dsp)
+{
+        const struct gkick_humanizer_params *params = get_humanizer_params_const(dsp);
+        if (params == NULL)
+                return false;
+
+        return params->velocity;
+}
+
+enum geonkick_error
+geonkick_humanizer_set_timing(struct geonkick *dsp, float value)
+{
+        struct gkick_humanizer_params *params =  get_humanizer_params(dsp);
+        if (params == NULL)
+                return GEONKICK_ERROR;
+
+        params->timing = value;
+        return GEONKICK_OK;
+}
+
+float geonkick_humanizer_get_timing(const struct geonkick *dsp)
+{
+        const struct gkick_humanizer_params *params = get_humanizer_params_const(dsp);
+        if (params == NULL)
+                return false;
+
+        return params->timing;
+}
+
+void geonkick_wait_playing_ready()
+{
+        geonkick_worker_sync();
+}

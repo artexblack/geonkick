@@ -1,6 +1,6 @@
 /**
  * File name: controls_widget.cpp
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2020 Iurie Nistor
  *
@@ -26,13 +26,14 @@
 #include "oscillator_group_box.h"
 #include "general_group_box.h"
 #include "layers_group_box.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 #ifndef GEONKICK_SINGLE
 #include "KitTabs.h"
 #endif // GEONKICK_SINGLE
 #include "GeonkickModel.h"
 #include "kit_model.h"
-#include "percussion_model.h"
+#include "InstrumentModel.h"
+#include "HumanizerView.h"
 #include "AppInfoWidget.h"
 
 ControlsWidget::ControlsWidget(GeonkickWidget *parent,
@@ -65,12 +66,12 @@ ControlsWidget::ControlsWidget(GeonkickWidget *parent,
         globalWidget->setPosition(3 * (8 + 223), 0);
         RK_ACT_BIND(this, updateGui, RK_ACT_ARGS(), globalWidget, updateView());
         RK_ACT_BIND(kitModel,
-                    percussionSelected,
+                    instrumentSelected,
                     RK_ACT_ARGS(PercussionModel *model),
                     globalWidget,
                     setModel(model));
         RK_ACT_BIND(kitModel,
-                    percussionUpdated,
+                    instrumentUpdated,
                     RK_ACT_ARGS(PercussionModel *model),
                     globalWidget,
                     setModel(model));
@@ -81,14 +82,26 @@ ControlsWidget::ControlsWidget(GeonkickWidget *parent,
                     setModel(kitModel->currentPercussion()));
         globalWidget->show();
 
-        auto layersWidget = new LayersGroupBox(geonkickModel->api(), this);
+        auto layersWidget = new LayersGroupBox(geonkickModel->getDspProxy(), this);
         layersWidget->setPosition(3 * (8 + 223), 270);
         RK_ACT_BIND(this, updateGui, RK_ACT_ARGS(), layersWidget, updateGui());
         layersWidget->show();
 
+        /*#ifndef GEONKICK_BASIC_VERSION
+        auto humanizerView = new HumanizerView(this, kitModel->currentPercussion());
+        humanizerView->setPosition(layersWidget->x() + layersWidget->width(),
+                                   layersWidget->y());
+        RK_ACT_BIND(kitModel,
+                    modelUpdated,
+                    RK_ACT_ARGS(),
+                    humanizerView,
+                    setModel(kitModel->currentPercussion()));
+                    w#else*/
         auto appInfoWidget = new AppInfoWidget(this, geonkickModel);
         appInfoWidget->setPosition(layersWidget->x() + layersWidget->width(),
                                    layersWidget->y());
+        //#endif // GEONKICK_BASIC_VERSION
+
 
 #ifndef GEONKICK_SINGLE
         auto kitTabs = new KitTabs(this, geonkickModel->getKitModel());

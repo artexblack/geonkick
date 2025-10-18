@@ -1,6 +1,6 @@
  /**
  * File name: SampleBrowser.cpp
- * Project: Geonkick (A percussion synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2020 Iurie Nistor
  *
@@ -25,7 +25,7 @@
 #include "FileBrowser.h"
 #include "geonkick_button.h"
 #include "kit_model.h"
-#include "percussion_model.h"
+#include "InstrumentModel.h"
 #include "GeonkickConfig.h"
 
 #include "RkSpinBox.h"
@@ -123,7 +123,7 @@ void SampleBrowser::createBottomMenu(RkContainer* container)
                              RkButton::State::Pressed);
         RK_ACT_BIND(osc1Button, pressed,
                     RK_ACT_ARGS(), this,
-                    setOscillator(GeonkickApi::OscillatorType::Oscillator1));
+                    setOscillator(DspProxy::OscillatorType::Oscillator1));
         container->addWidget(osc1Button);
 
         // Load to osc2
@@ -138,7 +138,7 @@ void SampleBrowser::createBottomMenu(RkContainer* container)
                              RkButton::State::Pressed);
         RK_ACT_BIND(osc2Button, pressed,
                     RK_ACT_ARGS(), this,
-                    setOscillator(GeonkickApi::OscillatorType::Oscillator2));
+                    setOscillator(DspProxy::OscillatorType::Oscillator2));
         container->addWidget(osc2Button);
         container->addSpace(3);
 
@@ -153,7 +153,7 @@ void SampleBrowser::createBottomMenu(RkContainer* container)
                              RkButton::State::Pressed);
         RK_ACT_BIND(osc3Button, pressed,
                     RK_ACT_ARGS(), this,
-                    setOscillator(GeonkickApi::OscillatorType::Oscillator3));
+                    setOscillator(DspProxy::OscillatorType::Oscillator3));
         container->addWidget(osc3Button);
 
         // Export label
@@ -232,11 +232,11 @@ void SampleBrowser::createBottomMenu(RkContainer* container)
         container->addWidget(stereoChannelButton);
 }
 
-void SampleBrowser::setOscillator(GeonkickApi::OscillatorType osc)
+void SampleBrowser::setOscillator(DspProxy::OscillatorType osc)
 {
-        osc1Button->setPressed(osc == GeonkickApi::OscillatorType::Oscillator1);
-        osc2Button->setPressed(osc == GeonkickApi::OscillatorType::Oscillator2);
-        osc3Button->setPressed(osc == GeonkickApi::OscillatorType::Oscillator3);
+        osc1Button->setPressed(osc == DspProxy::OscillatorType::Oscillator1);
+        osc2Button->setPressed(osc == DspProxy::OscillatorType::Oscillator2);
+        osc3Button->setPressed(osc == DspProxy::OscillatorType::Oscillator3);
 }
 
 void SampleBrowser::loadSample(const fs::path &file)

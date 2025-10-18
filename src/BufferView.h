@@ -1,6 +1,6 @@
 /**
  * File name: BufferView.h
- * Project: Geonkick (A percussion synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
 F *
  * Copyright (C) 2020 Iurie Nistor 
  *
@@ -44,7 +44,7 @@ class BufferView : public GeonkickWidget {
   private:
      std::vector<float> bufferData;
      bool updateGraph;
-     std::unique_ptr<RkImage> graphImage;
+     std::unique_ptr<RkImage> waveformImage;
 };
 
 #endif // GEONKICK_BUFFER_VIEW

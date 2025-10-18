@@ -1,6 +1,6 @@
 /**
  * File name: envelope.h
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *
@@ -569,7 +569,7 @@ void Envelope::addPoint(const RkPoint &point, bool isControlPoint)
                 auto prev = std::prev(it);
                 auto next = it;
                 if (prev->isControlPoint() || next->isControlPoint())
-                        return;
+                        scaledPoint.setAsControlPoint(false);
         }
 
         envelopePoints.insert(it, scaledPoint);

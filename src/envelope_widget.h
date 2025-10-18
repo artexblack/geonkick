@@ -1,6 +1,6 @@
 /**
  * File name: envelope_widget.h
- * Project: Geonkick (A kick synthesizer)
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *
@@ -25,7 +25,7 @@
 #define GEONKICK_ENVELOPE_WIDGET_H
 
 #include "geonkick_widget.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 #include "envelope.h"
 
 class RkContainer;
@@ -52,27 +52,30 @@ public:
 
 protected:
         Envelope* getEnvelope(Envelope::Category category);
-        void updateKickGraph(std::shared_ptr<RkImage> graphImage);
-#ifndef GEONKICK_LIMITED_VERSION
+        void updateInstrumentWaveform(std::shared_ptr<RkImage> waveformImage);
+#ifndef GEONKICK_BASIC_VERSION
         void createLayersButtons(GeonkickWidget *buttomAreaWidget);
-#endif // GEONKICK_LIMITED_VERSION
-        void setLayer(GeonkickApi::Layer layer);
-#ifndef GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
+        void setLayer(DspProxy::Layer layer);
+#ifndef GEONKICK_BASIC_VERSION
         void createButtomMenu();
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
+        void createBezierModeControls(GeonkickWidget* widget, RkContainer *container);
         void createZoomInfoLabel();
         void createPointInfoLabel();
+        void enableBezierMode(bool b = true);
 
 private:
         std::unordered_map<int, std::unique_ptr<Envelope>> envelopes;
         EnvelopeWidgetDrawingArea *drawArea;
-#ifndef GEONKICK_LIMITED_VERSION
+#ifndef GEONKICK_BASIC_VERSION
         GeonkickButton *layer1Button;
         GeonkickButton *layer2Button;
         GeonkickButton *layer3Button;
-#endif // GEONKICK_LIMITED_VERSION
+#endif // GEONKICK_BASIC_VERSION
+        GeonkickButton *bezierModeButton;
         GeonkickModel *geonkickModel;
-        GeonkickApi *geonkickApi;
+        DspProxy *dspProxy;
         const std::vector<OscillatorModel*>& oscillators;
 };
 

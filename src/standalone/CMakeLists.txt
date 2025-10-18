@@ -5,9 +5,9 @@ add_executable(geonkick
   ${GKICK_COMMON_RESOURCES}
   ${GKICK_STANDALONE_SOURCES})
 
-add_dependencies(geonkick api_standalone)
+add_dependencies(geonkick dsp_standalone)
 add_dependencies(geonkick redkite)
-target_link_libraries(geonkick  geonkick_common api_standalone redkite)
+target_link_libraries(geonkick  geonkick_common dsp_standalone redkite)
 if (CMAKE_SYSTEM_NAME MATCHES Windows)
     target_link_libraries(geonkick "-mwindows -lstdc++ -lstdc++fs -lsndfile -lm -lpthread")
 else()

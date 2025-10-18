@@ -1,12 +1,12 @@
 /**
- * File name: geonkick_api.h
- * Project: Geonkick (A percussion synthesizer)
+ * File name: DspProxy.h
+ * Project: Geonkick (A percussive synthesizer)
  *
  * Copyright (C) 2017 Iurie Nistor
  *
  * This file is part of Geonkick.
  *
- * GeonKick is free software; you can redistribute it and/or modify
+ * Geonkick is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
@@ -21,12 +21,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GEONKICK_API_H
-#define GEONKICK_API_H
+#ifndef DSP_PROXY_H
+#define DSP_PROXY_H
 
 #include "globals.h"
 #include "EnvelopePoint.h"
 
+class DspProxyHumanizer;
 class OscillatorModel;
 class PercussionState;
 class KitState;
@@ -34,7 +35,8 @@ class RkEventQueue;
 class PresetFolder;
 class UiSettings;
 
-class GeonkickApi : public RkObject {
+
+class DspProxy : public RkObject {
 
  public:
 
@@ -101,10 +103,10 @@ class GeonkickApi : public RkObject {
           FullWaveRect    = GEONKICK_DISTORTION_FULL_WAVE_RECT,
   };
 
-        GeonkickApi(int sample_rate = Geonkick::defaultSampleRate,
-                    InstanceType instance = InstanceType::Standalone,
-                    geonkick *dsp = nullptr);
-  ~GeonkickApi();
+  DspProxy(int sample_rate = Geonkick::defaultSampleRate,
+           InstanceType instance = InstanceType::Standalone,
+           geonkick *dsp = nullptr);
+  ~DspProxy();
   void setInstanceType(InstanceType type);
   InstanceType getInstanceType() const;
   static unsigned int getVersion();
@@ -278,7 +280,7 @@ class GeonkickApi : public RkObject {
   size_t enabledPercussions() const;
   bool setPercussionPlayingKey(int index, int key);
   int getPercussionPlayingKey(int index) const;
-  int percussionsReferenceKey() const;
+  int instrumentsReferenceKey() const;
   bool setPercussionChannel(int index, size_t channel);
   int getPercussionChannel(int index) const;
   bool setPercussionMidiChannel(int index, size_t channel);
@@ -287,7 +289,7 @@ class GeonkickApi : public RkObject {
   bool isMidiChannelForced() const;
   bool setPercussionName(int index, const std::string &name);
   bool setPercussionLimiter(size_t id, double val);
-  double percussionLimiter(size_t id) const;
+  double instrumentLimiter(size_t id) const;
   bool mutePercussion(size_t id, bool b);
   bool isPercussionMuted(size_t id) const;
   bool soloPercussion(size_t id, bool b);
@@ -299,6 +301,7 @@ class GeonkickApi : public RkObject {
   void pasteFromClipboard();
   void setScaleFactor(double factor);
   double getScaleFactor() const;
+  void waitPlayingReady();
 
   RK_DECL_ACT(kickLengthUpdated,
               kickLengthUpdated(double val),
@@ -328,8 +331,8 @@ class GeonkickApi : public RkObject {
               kitUpdated(),
               RK_ARG_TYPE(),
               RK_ARG_VAL());
-  RK_DECL_ACT(percussionUpdated,
-              percussionUpdated(int id),
+  RK_DECL_ACT(instrumentUpdated,
+              instrumentUpdated(int id),
               RK_ARG_TYPE(int),
               RK_ARG_VAL(id));
 
@@ -358,6 +361,7 @@ class GeonkickApi : public RkObject {
                               int sampleRate,
                               size_t channels,
                               const std::string &filePath);
+  DspProxyHumanizer* getHumanizer() const;
 
 protected:
   void setupPaths();
@@ -382,12 +386,13 @@ protected:
                                             int channels = 1);
 
 private:
-  mutable struct geonkick *geonkickApi;
+  mutable struct geonkick *geonkickDsp;
+  std::unique_ptr<DspProxyHumanizer> dspProxyHumanizer;
   InstanceType instanceType;
   std::array<std::atomic<double>, GEONKICK_MAX_INSTRUMENTS> limiterLevelers;
   bool jackEnabled;
   bool standaloneInstance;
-  mutable std::mutex apiMutex;
+  mutable std::mutex dspMutex;
   RkEventQueue *eventQueue;
   std::vector<std::vector<gkick_real>> kickBuffers;
   mutable Layer currentLayer;
@@ -399,15 +404,15 @@ private:
   /**
    * Current working paths for entire application.
    * Since on plugins the GUI is closed, there is a need to
-   * store this path in the API instance.
+   * store this path in the DSP instance.
    */
   std::unordered_map<std::string, std::filesystem::path> workingPaths;
-  std::unordered_map<std::string, std::string> apiSettings;
-  std::vector<int> percussionIdList;
+  std::unordered_map<std::string, std::string> dspSettings;
+  std::vector<int> instrumentIdList;
   std::vector<std::unique_ptr<PresetFolder>> presetsFoldersList;
   std::unique_ptr<UiSettings> uiSettings;
   int sampleRate;
   double scaleFactor;
 };
 
-#endif // GEONKICK_API_H
+#endif // DSP_PROXY_H

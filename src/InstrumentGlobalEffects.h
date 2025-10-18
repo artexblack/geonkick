@@ -41,11 +41,15 @@ protected:
         void unbindModel() override;
         void showFilter();
         void showDistortion();
+        void showHumanizer();
 
  private:
         PercussionModel *instrumentModel;
         EffectTabButton *filterTabButton;
         EffectTabButton *distortionTabButton;
+#ifndef GEONKICK_BASIC_VERSION
+        EffectTabButton *humanizerTabButton;
+#endif // GEONKICK_BASIC_VERSION
         AbstractView *currentTabView;
 };
 

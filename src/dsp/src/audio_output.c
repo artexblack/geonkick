@@ -48,6 +48,14 @@ gkick_audio_output_create(struct gkick_audio_output **audio_output, int sample_r
         (*audio_output)->sample_rate  = sample_rate;
         (*audio_output)->note_off     = false;
 
+        gkick_humanizer_init(&(*audio_output)->velocity_humanizer);
+        gkick_humanizer_init(&(*audio_output)->timing_humanizer);
+
+        (*audio_output)->humanizer_params = (struct gkick_humanizer_params) {
+                .enabled = false,
+                .velocity = (*audio_output)->velocity_humanizer.velocity_percent,
+                .timing = (*audio_output)->velocity_humanizer.timing };
+
         gkick_buffer_new(&(*audio_output)->updated_buffer,
                          (*audio_output)->sample_rate * GEONKICK_MAX_LENGTH);
         if ((*audio_output)->updated_buffer == NULL) {
@@ -110,8 +118,9 @@ gkick_audio_output_key_pressed(struct gkick_audio_output *audio_output,
                 return GEONKICK_OK;
 
         if (key->state == GKICK_KEY_STATE_PRESSED) {
-                audio_output->key   = *key;
-                audio_output->play  = true;
+                audio_output->key = *key;
+                gkick_instrument_humanize_key(audio_output, &audio_output->key);
+                audio_output->play = true;
                 audio_output->decay = -1;
                 gkick_audio_output_swap_buffers(audio_output);
                 if (!gkick_audio_output_note_off(audio_output)) {
@@ -170,6 +179,17 @@ gkick_audio_add_playing_buffer_to_ring(struct gkick_audio_output *audio_output,
         size_t i = 0;
         gkick_real factor = gkick_audio_output_tune_factor(audio_output->key.note_number);
         while (i < size) {
+                if (audio_output->key.timing > 0.0f) {
+                        float time_ms = 1000.0f / audio_output->sample_rate;
+                        audio_output->key.timing -= time_ms;
+                        if (audio_output->key.timing > 0) {
+                                i++;
+                                continue;
+                        } else {
+                                audio_output->key.timing = 0.0f;
+                        }
+                }
+
                 /**
                  * When NOTE OFF is ignored, the entire buffer needs to be added.
                  * Therefore, the loop will terminate because `size` is set to `SIZE_MAX`.
@@ -206,18 +226,6 @@ gkick_audio_output_tune_factor(int note_number)
 {
         gkick_real factor = exp2f((gkick_real)(note_number - 69) / 12.0f);
         return GKICK_CLAMP(factor, 0.25f, 3.0f);
-}
-
-void gkick_audio_output_lock(struct gkick_audio_output *audio_output)
-{
-        if (audio_output != NULL)
-                pthread_mutex_lock(&audio_output->lock);
-}
-
-void gkick_audio_output_unlock(struct gkick_audio_output *audio_output)
-{
-        if (audio_output != NULL)
-                pthread_mutex_unlock(&audio_output->lock);
 }
 
 struct gkick_buffer*
@@ -309,10 +317,10 @@ gkick_audio_output_get_channel(struct gkick_audio_output *audio_output,
         return GEONKICK_OK;
 }
 
-void gkick_audio_get_data(struct gkick_audio_output *audio_output,
-                          gkick_real **data,
-                          gkick_real *leveler,
-                          size_t size)
+void gkick_audio_output_get_data(struct gkick_audio_output *audio_output,
+                                 gkick_real **data,
+                                 gkick_real *leveler,
+                                 size_t size)
 {
         if (gkick_audio_output_note_off(audio_output))
                 gkick_audio_add_playing_buffer_to_ring(audio_output, size);
@@ -337,4 +345,104 @@ void gkick_audio_output_enable_note_off(struct gkick_audio_output *audio_output,
 bool gkick_audio_output_note_off(struct gkick_audio_output *audio_output)
 {
         return audio_output->note_off;
+}
+
+void gkick_instrument_set_param(struct gkick_audio_output *audio_output,
+                                enum gkick_instrument_param param,
+                                const void *value)
+{
+        struct gkick_humanizer_params *p = &audio_output->humanizer_params;
+
+        switch (param) {
+        case GKICK_INSTR_PARAM_HUM_ENABLE:
+                atomic_store_explicit(&p->enabled,
+                                      *(const bool *)value,
+                                      memory_order_relaxed);
+                break;
+        case GKICK_INSTR_PARAM_HUM_VEL:
+                atomic_store_explicit(&p->velocity,
+                                      *(const float *)value,
+                                      memory_order_relaxed);
+                break;
+        case GKICK_INSTR_PARAM_HUM_TIME:
+                atomic_store_explicit(&p->timing,
+                                      *(const float *)value,
+                                      memory_order_relaxed);
+                break;
+        default:
+                break;
+        }
+}
+
+void gkick_instrument_get_param(const struct gkick_audio_output *audio_output,
+                                enum gkick_instrument_param param,
+                                void *value)
+{
+        const struct gkick_humanizer_params *p = &audio_output->humanizer_params;
+
+        switch (param) {
+        case GKICK_INSTR_PARAM_HUM_ENABLE:
+        {
+                bool v = atomic_load_explicit(&p->enabled, memory_order_relaxed);
+                *(bool*)value = v;
+                break;
+        }
+        case GKICK_INSTR_PARAM_HUM_VEL:
+        {
+                float v = atomic_load_explicit(&p->velocity, memory_order_relaxed);
+                *(float *)value = v;
+                break;
+        }
+        case GKICK_INSTR_PARAM_HUM_TIME:
+        {
+                float v = atomic_load_explicit(&p->timing, memory_order_relaxed);
+                *(float *)value = v;
+                break;
+        }
+        default:
+                break;
+        }
+}
+
+struct gkick_note_info*
+gkick_instrument_humanize_key(struct gkick_audio_output *audio_output,
+                              struct gkick_note_info* key)
+{
+        bool enabled = false;
+        float velocity_percent = 0.0f;
+        float timing = 0.0f;
+
+        gkick_instrument_get_param(audio_output,
+                                   GKICK_INSTR_PARAM_HUM_ENABLE,
+                                   &enabled);
+        gkick_instrument_get_param(audio_output, GKICK_INSTR_PARAM_HUM_VEL,
+                                   &velocity_percent);
+        gkick_instrument_get_param(audio_output, GKICK_INSTR_PARAM_HUM_TIME,
+                                   &timing);
+
+        // Velocity
+        struct gkick_humanizer *velocity_humanizer = &audio_output->velocity_humanizer;
+        gkick_humanizer_enable(velocity_humanizer, enabled);
+        gkick_humanizer_set_velocity_percent(velocity_humanizer, velocity_percent);
+        gkick_humanizer_velocity(velocity_humanizer, &key->velocity);
+
+        // Timing
+        struct gkick_humanizer *timing_humanizer = &audio_output->timing_humanizer;
+        gkick_humanizer_enable(timing_humanizer, enabled);
+        gkick_humanizer_set_timing_percent(timing_humanizer, timing);
+        gkick_humanizer_timing(timing_humanizer, &key->timing);
+
+        return key;
+}
+
+void gkick_audio_output_lock(struct gkick_audio_output *audio_output)
+{
+        if (audio_output != NULL)
+                pthread_mutex_lock(&audio_output->lock);
+}
+
+void gkick_audio_output_unlock(struct gkick_audio_output *audio_output)
+{
+        if (audio_output != NULL)
+                pthread_mutex_unlock(&audio_output->lock);
 }

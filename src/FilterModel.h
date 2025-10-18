@@ -25,13 +25,13 @@
 #define FILTER_MODEL_H
 
 #include "AbstractModel.h"
-#include "geonkick_api.h"
+#include "DspProxy.h"
 #include "envelope.h"
 
 class FilterModel: public AbstractModel
 {
  public:
-        using FilterType = GeonkickApi::FilterType;
+        using FilterType = DspProxy::FilterType;
         explicit FilterModel(RkObject *parent);
         virtual ~FilterModel() = default;
         virtual void enable(bool b) = 0;
