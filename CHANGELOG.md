@@ -7,12 +7,13 @@
 
 ### Improvements
 
-- All adding non-control points when Bezier mode is enabled
+- Add non-control points when Bezier mode is enabled
 
 ### Fixes
 
 - Fix accessing dsp when is not yet created
 - Fix prefixes for LV2 (potential problems on some hosts)
+- Fix rendering at different sample rate for some hosts
 
 ## [3.6.2]
 
