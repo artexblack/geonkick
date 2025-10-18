@@ -50,7 +50,9 @@ InstrumentGlobalEffects::InstrumentGlobalEffects(GeonkickWidget *parent, Percuss
         , instrumentModel{model}
         , filterTabButton{nullptr}
         , distortionTabButton{nullptr}
+#ifndef GEONKICK_BASIC_VERSION
         , humanizerTabButton {nullptr}
+#endif // GEONKICK_BASIC_VERSION
         , currentTabView{nullptr}
 {
         setName("InstrumentGlobalEffects");
@@ -123,7 +125,7 @@ void InstrumentGlobalEffects::createView()
                              if (instrumentModel)
                                      instrumentModel->getDistortion()->enable(b);
                      });
-
+#ifndef GEONKICK_BASIC_VERSION
         // Humanizer tab
         tabButtonsLayout->addSpace(2);
         humanizerTabButton = new EffectTabButton(this);
@@ -144,6 +146,7 @@ void InstrumentGlobalEffects::createView()
                              if (instrumentModel)
                                      instrumentModel->getHumanizer()->enable(b);
                      });
+#endif // GEONKICK_BASIC_VERSION
 
         RK_ACT_BIND(filterTabButton,
                      pressed,
@@ -155,11 +158,13 @@ void InstrumentGlobalEffects::createView()
                      RK_ACT_ARGS(),
                      this,
                      showDistortion());
+#ifndef GEONKICK_BASIC_VERSION
         RK_ACT_BIND(humanizerTabButton,
                      pressed,
                      RK_ACT_ARGS(),
                      this,
                      showHumanizer());
+#endif // GEONKICK_BASIC_VERSION
 
         if (filterTabButton->isPressed())
                 showFilter();
@@ -176,7 +181,9 @@ void InstrumentGlobalEffects::showFilter()
         if (currentTabView)
                 delete currentTabView;
         distortionTabButton->setPressed(false);
+#ifndef GEONKICK_BASIC_VERSION
         humanizerTabButton->setPressed(false);
+#endif //GEONKICK_BASIC_VERSION
         currentTabView = new FilterView(this, instrumentModel->getFilter());
         currentTabView->setPosition(0, 22);
 }
@@ -186,7 +193,9 @@ void InstrumentGlobalEffects::showDistortion()
         if (currentTabView)
                 delete currentTabView;
         filterTabButton->setPressed(false);
+#ifndef GEONKICK_BASIC_VERSION
         humanizerTabButton->setPressed(false);
+#endif // GEONKICK_BASIC_VERSION
         currentTabView = new DistortionView(this, instrumentModel->getDistortion());
         currentTabView->setPosition(0, 22);
 }
@@ -207,6 +216,8 @@ void InstrumentGlobalEffects::updateView()
                 return;
         filterTabButton->enable(instrumentModel->getFilter()->isEnabled());
         distortionTabButton->enable(instrumentModel->getDistortion()->isEnabled());
+#ifndef GEONKICK_BASIC_VERSION
         humanizerTabButton->enable(instrumentModel->getHumanizer()->isEnabled());
+#endif // GEONKICK_BASIC_VERSION
         currentTabView->updateView();
 }

@@ -47,7 +47,9 @@ protected:
         PercussionModel *instrumentModel;
         EffectTabButton *filterTabButton;
         EffectTabButton *distortionTabButton;
+#ifndef GEONKICK_BASIC_VERSION
         EffectTabButton *humanizerTabButton;
+#endif // GEONKICK_BASIC_VERSION
         AbstractView *currentTabView;
 };
 
