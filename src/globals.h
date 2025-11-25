@@ -55,25 +55,36 @@ namespace fs = std::filesystem;
 #include "RkObject.h"
 
 #ifdef GKICK_LOG_DEBUG_LEVEL
-#define GEONKICK_LOG_INFO(msg) std::cout << "[" << GEONKICK_NAME << "] " \
-                               << " [" << std::this_thread::get_id() << "] " \
-                               << __PRETTY_FUNCTION__ << "[INFO] " \
-                               << msg << std::endl;
-#define GEONKICK_LOG_ERROR(msg) std::cout << "[" << GEONKICK_NAME << "] " \
-                                << " [" << std::this_thread::get_id() << "] " \
-                                << __PRETTY_FUNCTION__ << "[ERROR] " \
-                                << msg << std::endl;
-#define GEONKICK_LOG_DEBUG(msg) std::cout << "[" << std::this_thread::get_id() << "][" << GEONKICK_NAME << "] " \
-                                << " [" << std::this_thread::get_id() << "] " \
-                                << __PRETTY_FUNCTION__ << "[DEBUG] " \
-                                << msg << std::endl;
+#define GEONKICK_LOG_INFO(msg)                          \
+        std::cerr << "[" << GEONKICK_NAME << "] "       \
+        << "[" << std::this_thread::get_id() << "] "    \
+        << __PRETTY_FUNCTION__ << " [INFO] "            \
+        << msg << std::endl;
+
+#define GEONKICK_LOG_ERROR(msg)                         \
+        std::cerr << "[" << GEONKICK_NAME << "] "       \
+        << "[" << std::this_thread::get_id() << "] "    \
+        << __PRETTY_FUNCTION__ << " [ERROR] "           \
+        << msg << std::endl;
+
+#define GEONKICK_LOG_DEBUG(msg)                         \
+        std::cerr << "[" << GEONKICK_NAME << "] "       \
+        << "[" << std::this_thread::get_id() << "] "    \
+        << __PRETTY_FUNCTION__ << " [DEBUG] "           \
+        << msg << std::endl;
+
 #else
-#define GEONKICK_LOG_INFO(msg) std::cout << "[" << GEONKICK_NAME << "] " \
-                               << "[INFO] " << msg << std::endl;
-#define GEONKICK_LOG_ERROR(msg) std::cout << "[" << GEONKICK_NAME << "] " \
-                               << "[ERROR] " << msg << std::endl;
-#define GEONKICK_LOG_DEBUG(msg)
-#endif //  // GKICK_LIB_LOG_LEVEL_DEBUG
+#define GEONKICK_LOG_INFO(msg)                          \
+        std::cerr << "[" << GEONKICK_NAME << "] "       \
+        << "[INFO] " << msg << std::endl;
+
+#define GEONKICK_LOG_ERROR(msg)                         \
+        std::cerr << "[" << GEONKICK_NAME << "] "       \
+        << "[ERROR] " << msg << std::endl;
+
+#define GEONKICK_LOG_DEBUG(msg)   // disabled
+#endif // GKICK_LOG_DEBUG_LEVEL
+
 
 namespace Geonkick
 {
