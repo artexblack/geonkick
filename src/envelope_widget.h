@@ -57,9 +57,7 @@ protected:
         void createLayersButtons(GeonkickWidget *buttomAreaWidget);
 #endif // GEONKICK_BASIC_VERSION
         void setLayer(DspProxy::Layer layer);
-#ifndef GEONKICK_BASIC_VERSION
         void createButtomMenu();
-#endif // GEONKICK_BASIC_VERSION
         void createBezierModeControls(GeonkickWidget* widget, RkContainer *container);
         void createZoomInfoLabel();
         void createPointInfoLabel();
