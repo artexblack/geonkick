@@ -46,9 +46,9 @@
 
 **License:** This work (including all images it uses) is released under [CC0 1.0 Universal (CC0 1.0) Public Domain Dedication](https://creativecommons.org/publicdomain/zero/1.0/deed.en).
 
-**Version:** 3.6.2
+**Version:** 3.7.0
 
-**Website:** [https://geonkick.org](https://geonkick.org)
+**Website:** [https://quamplex.com/geonkick](https://quamplex.com/geonkick)
 
 
 
@@ -221,6 +221,7 @@ Global controls are applied after the layers mixer. Arranged vertically and appl
 - **"Length":** Sets the maximum sound length of the instrument.
 - **Filter:** Similar to oscillator.
 - **Distortion:** Similar to oscillator.
+- **Humnizer:** Velocity and timing humanizer.
 
 #### Limiter
 
