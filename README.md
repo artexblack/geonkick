@@ -2,7 +2,7 @@
 
 **Geonkick** - a [free software](https://www.gnu.org/philosophy/free-sw.en.html) percussive synthesizer.
 
-**Website:** [https://geonkick.org](https://geonkick.org)
+**Website:** [https://quamplex.com/geonkick](https://quamplex.com/geonkick)
 
 Geonkick is a free software synthesizer capable of generating
 a wide range of percussive sounds, including kicks, snares,
@@ -20,9 +20,8 @@ claps, hi-hats, shakers, and unique effect sounds.
 
 Source code repository:
 
-- https://codeberg.org/Geonkick-Synthesizer/geonkick
-- https://gitlab.com/Geonkick-Synthesizer/geonkick
-- https://github.com/Geonkick-Synthesizer/geonkick
+- https://codeberg.org/quamplex/geonkick
+- https://gitlab.com/quamplex/geonkick
 
 ## Features
 
