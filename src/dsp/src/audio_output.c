@@ -119,7 +119,9 @@ gkick_audio_output_key_pressed(struct gkick_audio_output *audio_output,
 
         if (key->state == GKICK_KEY_STATE_PRESSED) {
                 audio_output->key = *key;
+#ifndef GEONKICK_BASIC_VERSION
                 gkick_instrument_humanize_key(audio_output, &audio_output->key);
+#endif // GEONKICK_BASIC_VERSION
                 audio_output->play = true;
                 audio_output->decay = -1;
                 gkick_audio_output_swap_buffers(audio_output);
