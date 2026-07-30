@@ -50,14 +50,14 @@ jobs:
           cd build
 
           cmake .. \
-            -G "MSYS Makefiles" \
+            -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DVST3_SDK_PATH="${GITHUB_WORKSPACE}/vst3sdk"
 
       - name: Build
         run: |
           cd build
-          make -j$(nproc)
+          ninja
 
       - name: Show build output
         run: |
