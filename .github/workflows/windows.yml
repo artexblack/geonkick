@@ -56,6 +56,7 @@ jobs:
 
           cmake .. \
             -G Ninja \
+            -DCMAKE_SYSTEM_NAME=Windows \
             -DCMAKE_BUILD_TYPE=Release \
             -DVST3_SDK_PATH="${GITHUB_WORKSPACE}/vst3sdk"
 
