@@ -44,6 +44,11 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/steinbergmedia/vst3sdk.git
 
+      - name: Show Redkite CMakeLists
+        run: |
+          echo "===== src/redkite/CMakeLists.txt ====="
+          sed -n '1,40p' src/redkite/CMakeLists.txt
+      
       - name: Configure
         run: |
           mkdir build
