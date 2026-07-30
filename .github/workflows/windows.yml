@@ -1,0 +1,73 @@
+name: Build Windows VST3
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            git
+            make
+            cmake
+            ninja
+            gcc
+            pkgconf
+            cairo
+            rapidjson
+            libsndfile
+            lv2
+            jack2
+
+      - name: Download VST3 SDK
+        run: |
+          git clone --depth=1 https://github.com/steinbergmedia/vst3sdk.git
+
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+
+          cmake .. \
+            -G "MSYS Makefiles" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DVST3_SDK_PATH="${GITHUB_WORKSPACE}/vst3sdk"
+
+      - name: Build
+        run: |
+          cd build
+          make -j$(nproc)
+
+      - name: Show build output
+        run: |
+          find build -type f
+
+      - name: Upload VST3
+        uses: actions/upload-artifact@v4
+        with:
+          name: Geonkick-Windows-VST3
+          path: |
+            build/**/*.vst3
+            build/**/Geonkick.exe
+          if-no-files-found: warn
